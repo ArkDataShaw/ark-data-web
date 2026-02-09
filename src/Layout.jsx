@@ -62,7 +62,7 @@ export default function Layout({ children, currentPageName }) {
       links: [
         { label: 'Contact Us', href: createPageUrl('Contact') },
         { label: 'Email: hello@arkdata.io', href: 'mailto:hello@arkdata.io' },
-        { label: 'Status Page', href: '#' },
+        { label: 'Settings', href: createPageUrl('Settings') },
       ],
     },
   ];
