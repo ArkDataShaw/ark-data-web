@@ -36,7 +36,6 @@ export default function Layout({ children, currentPageName }) {
     { label: 'Integrations', href: createPageUrl('Integrations') },
     { label: 'Pricing', href: createPageUrl('Pricing') },
     { label: 'Case Studies', href: createPageUrl('CaseStudies') },
-    { label: 'Resources', href: createPageUrl('Resources') },
   ];
 
   const footerColumns = [
@@ -49,15 +48,7 @@ export default function Layout({ children, currentPageName }) {
         { label: 'Security', href: createPageUrl('Security') },
       ],
     },
-    {
-      title: 'Resources',
-      links: [
-        { label: 'Blog', href: createPageUrl('Resources') },
-        { label: 'How It Works', href: createPageUrl('HowItWorks') },
-        { label: 'Case Studies', href: createPageUrl('CaseStudies') },
-        { label: 'Contact', href: createPageUrl('Contact') },
-      ],
-    },
+
     {
       title: 'Legal',
       links: [
