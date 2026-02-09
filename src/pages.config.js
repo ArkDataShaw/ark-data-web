@@ -61,6 +61,7 @@ import Resources from './pages/Resources';
 import Security from './pages/Security';
 import Terms from './pages/Terms';
 import Analytics from './pages/Analytics';
+import Settings from './pages/Settings';
 import __Layout from './Layout.jsx';
 
 
@@ -79,6 +80,7 @@ export const PAGES = {
     "Security": Security,
     "Terms": Terms,
     "Analytics": Analytics,
+    "Settings": Settings,
 }
 
 export const pagesConfig = {
