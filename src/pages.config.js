@@ -47,36 +47,36 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Home from './pages/Home';
-import Product from './pages/Product';
 import BookADemo from './pages/BookADemo';
-import Pricing from './pages/Pricing';
+import CaseStudies from './pages/CaseStudies';
+import Contact from './pages/Contact';
+import Cookies from './pages/Cookies';
+import Home from './pages/Home';
 import HowItWorks from './pages/HowItWorks';
 import Integrations from './pages/Integrations';
-import Contact from './pages/Contact';
-import Security from './pages/Security';
-import CaseStudies from './pages/CaseStudies';
-import Resources from './pages/Resources';
+import Pricing from './pages/Pricing';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import Product from './pages/Product';
+import Resources from './pages/Resources';
+import Security from './pages/Security';
 import Terms from './pages/Terms';
-import Cookies from './pages/Cookies';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Home": Home,
-    "Product": Product,
     "BookADemo": BookADemo,
-    "Pricing": Pricing,
+    "CaseStudies": CaseStudies,
+    "Contact": Contact,
+    "Cookies": Cookies,
+    "Home": Home,
     "HowItWorks": HowItWorks,
     "Integrations": Integrations,
-    "Contact": Contact,
-    "Security": Security,
-    "CaseStudies": CaseStudies,
-    "Resources": Resources,
+    "Pricing": Pricing,
     "PrivacyPolicy": PrivacyPolicy,
+    "Product": Product,
+    "Resources": Resources,
+    "Security": Security,
     "Terms": Terms,
-    "Cookies": Cookies,
 }
 
 export const pagesConfig = {
