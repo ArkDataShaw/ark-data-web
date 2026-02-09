@@ -216,7 +216,7 @@ export default function Product() {
       </section>
 
       {/* Final CTA */}
-      <section className="bg-blue-600 text-white py-16">
+      <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to see it in action?</h2>
           <p className="text-lg mb-8 opacity-90">

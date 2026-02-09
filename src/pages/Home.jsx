@@ -471,7 +471,7 @@ export default function Home() {
       )}
 
       {/* Final CTA */}
-      <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20">
+      <section className="bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 text-white py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-6">
             Turn your lost traffic into pipeline today.
