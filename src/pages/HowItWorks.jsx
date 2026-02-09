@@ -109,11 +109,17 @@ export default function HowItWorks() {
                   </p>
                 </div>
 
-                <div className="bg-gradient-to-br from-blue-50 dark:from-blue-950 to-purple-50 dark:to-purple-950 rounded-xl p-12 h-96 flex items-center justify-center">
-                   <div className="text-center text-gray-400 dark:text-gray-600">
-                     <span className="text-sm">Step {step.num} visualization</span>
-                   </div>
-                 </div>
+                <img 
+                  src={[
+                    'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&h=400&fit=crop',
+                    'https://images.unsplash.com/photo-1552664730-d307ca884978?w=500&h=400&fit=crop',
+                    'https://images.unsplash.com/photo-1531492746076-161ca9bcad58?w=500&h=400&fit=crop',
+                    'https://images.unsplash.com/photo-1460925895917-adf4e565e479?w=500&h=400&fit=crop',
+                    'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&h=400&fit=crop',
+                  ][step.num - 1]}
+                  alt={`Step ${step.num}: ${step.title}`}
+                  className="rounded-xl h-96 w-full object-cover shadow-lg"
+                />
               </div>
             );
           })}

@@ -91,24 +91,11 @@ export default function Home() {
 
           {/* Right: Product Mock */}
           <div className="relative hidden lg:block">
-            <div className="bg-gradient-to-br from-blue-50 dark:from-blue-950 to-purple-50 dark:to-purple-950 rounded-2xl p-8 shadow-xl">
-              <div className="bg-white rounded-lg p-6 shadow-sm space-y-4">
-                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-xs text-gray-500 mb-2">Identified Visitors</p>
-                    <p className="text-2xl font-bold text-blue-600">2,847</p>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <p className="text-xs text-gray-500 mb-2">Intent Score</p>
-                    <p className="text-2xl font-bold text-purple-600">8.4/10</p>
-                  </div>
-                </div>
-                <div className="h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <span className="text-xs text-gray-400">Dashboard Preview</span>
-                </div>
-              </div>
-            </div>
+            <img 
+              src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=500&fit=crop" 
+              alt="Analytics Dashboard" 
+              className="rounded-2xl shadow-xl object-cover w-full h-96"
+            />
           </div>
         </div>
       </section>

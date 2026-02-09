@@ -81,11 +81,17 @@ export default function Product() {
             ))}
           </div>
 
-          <div className="bg-gradient-to-br from-blue-50 dark:from-blue-950 to-purple-50 dark:to-purple-950 rounded-2xl p-12 h-96 flex items-center justify-center">
-            <div className="text-center">
-              <Eye className="text-blue-600 mx-auto mb-4" size={48} />
-              <p className="text-gray-500 dark:text-gray-400">{tabs[activeTab].label} Preview</p>
-            </div>
+          <div className="rounded-2xl overflow-hidden shadow-lg h-96">
+            <img 
+              src={[
+                'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop',
+                'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&h=400&fit=crop',
+                'https://images.unsplash.com/photo-1531492746076-161ca9bcad58?w=600&h=400&fit=crop',
+                'https://images.unsplash.com/photo-1460925895917-adf4e565e479?w=600&h=400&fit=crop',
+              ][activeTab]}
+              alt={`${tabs[activeTab].label} Preview`}
+              className="w-full h-full object-cover"
+            />
           </div>
         </div>
       </section>
@@ -96,9 +102,11 @@ export default function Product() {
           {/* Visitor Identification */}
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="order-2 lg:order-1">
-              <div className="bg-white rounded-xl p-8 shadow-sm h-80 flex items-center justify-center">
-                <div className="text-gray-400 text-center">Visitor Profile Preview</div>
-              </div>
+              <img 
+                src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=500&h=400&fit=crop" 
+                alt="Visitor Profile" 
+                className="rounded-xl shadow-sm h-80 w-full object-cover"
+              />
             </div>
             <div className="order-1 lg:order-2">
               <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
@@ -149,17 +157,21 @@ export default function Product() {
                 ))}
               </ul>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm h-80 flex items-center justify-center">
-              <div className="text-gray-400 dark:text-gray-600 text-center">Dashboard Preview</div>
-            </div>
+            <img 
+              src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&h=400&fit=crop" 
+              alt="Lost Traffic Dashboard" 
+              className="rounded-xl shadow-sm h-80 w-full object-cover"
+            />
           </div>
 
           {/* Routing & Automation */}
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="order-2 lg:order-1">
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm h-80 flex items-center justify-center">
-                <div className="text-gray-400 dark:text-gray-600 text-center">Integration Flow</div>
-              </div>
+              <img 
+                src="https://images.unsplash.com/photo-1460925895917-adf4e565e479?w=500&h=400&fit=crop" 
+                alt="Integration Flow" 
+                className="rounded-xl shadow-sm h-80 w-full object-cover"
+              />
             </div>
             <div className="order-1 lg:order-2">
               <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-6">
