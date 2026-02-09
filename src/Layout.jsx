@@ -83,6 +83,8 @@ export default function Layout({ children, currentPageName }) {
           --color-primary: #0066FF;
           --color-primary-dark: #0052CC;
           --color-secondary: #7C3AED;
+          --color-tertiary: #EC4899;
+          --color-accent: #F59E0B;
           --color-neutral-50: #F9FAFB;
           --color-neutral-100: #F3F4F6;
           --color-neutral-200: #E5E7EB;
