@@ -60,6 +60,7 @@ import Product from './pages/Product';
 import Resources from './pages/Resources';
 import Security from './pages/Security';
 import Terms from './pages/Terms';
+import Analytics from './pages/Analytics';
 import __Layout from './Layout.jsx';
 
 
@@ -77,6 +78,7 @@ export const PAGES = {
     "Resources": Resources,
     "Security": Security,
     "Terms": Terms,
+    "Analytics": Analytics,
 }
 
 export const pagesConfig = {
