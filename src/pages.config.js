@@ -55,6 +55,11 @@ import HowItWorks from './pages/HowItWorks';
 import Integrations from './pages/Integrations';
 import Contact from './pages/Contact';
 import Security from './pages/Security';
+import CaseStudies from './pages/CaseStudies';
+import Resources from './pages/Resources';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import Terms from './pages/Terms';
+import Cookies from './pages/Cookies';
 import __Layout from './Layout.jsx';
 
 
@@ -67,6 +72,11 @@ export const PAGES = {
     "Integrations": Integrations,
     "Contact": Contact,
     "Security": Security,
+    "CaseStudies": CaseStudies,
+    "Resources": Resources,
+    "PrivacyPolicy": PrivacyPolicy,
+    "Terms": Terms,
+    "Cookies": Cookies,
 }
 
 export const pagesConfig = {
