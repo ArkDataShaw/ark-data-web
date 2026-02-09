@@ -65,13 +65,13 @@ export default function CaseStudies() {
   const studies = caseStudies.length > 0 ? caseStudies : defaultStudies;
 
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-black">
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32 text-center">
-        <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
+        <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-6">
           How leading teams use Ark Data
         </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+        <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           See real results from companies that transformed their lead pipeline with Ark Data.
         </p>
       </section>
@@ -82,8 +82,8 @@ export default function CaseStudies() {
           {studies.map((study, idx) => (
             <div key={study.id || idx} className="grid lg:grid-cols-2 gap-12 items-center">
               <div className={idx % 2 === 1 ? 'lg:order-2' : ''}>
-                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-12 h-96 flex items-center justify-center">
-                  <div className="text-center text-gray-400">
+                <div className="bg-gradient-to-br from-blue-50 dark:from-blue-950 to-purple-50 dark:to-purple-950 rounded-xl p-12 h-96 flex items-center justify-center">
+                  <div className="text-center text-gray-400 dark:text-gray-600">
                     <TrendingUp className="mx-auto mb-4 opacity-50" size={48} />
                     <span className="text-sm">Results visualization</span>
                   </div>
@@ -92,32 +92,32 @@ export default function CaseStudies() {
 
               <div className={idx % 2 === 1 ? 'lg:order-1' : ''}>
                 <div className="mb-4">
-                  <span className="text-sm font-semibold text-blue-600 uppercase">Case Study</span>
-                  <h3 className="text-3xl font-bold text-gray-900 mt-2 mb-2">{study.title}</h3>
-                  <p className="text-gray-600">
-                    <strong>{study.company}</strong> • {study.industry}
-                  </p>
-                </div>
+                   <span className="text-sm font-semibold text-blue-600 dark:text-blue-400 uppercase">Case Study</span>
+                   <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-2 mb-2">{study.title}</h3>
+                   <p className="text-gray-600 dark:text-gray-400">
+                     <strong>{study.company}</strong> • {study.industry}
+                   </p>
+                 </div>
 
                 <div className="space-y-6 mb-8">
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">The Challenge</h4>
-                    <p className="text-gray-700">{study.problem}</p>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">The Challenge</h4>
+                    <p className="text-gray-700 dark:text-gray-300">{study.problem}</p>
                   </div>
 
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Our Approach</h4>
-                    <p className="text-gray-700">{study.approach}</p>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Our Approach</h4>
+                    <p className="text-gray-700 dark:text-gray-300">{study.approach}</p>
                   </div>
 
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">The Results</h4>
-                    <p className="text-gray-700 mb-4">{study.outcomes}</p>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">The Results</h4>
+                    <p className="text-gray-700 dark:text-gray-300 mb-4">{study.outcomes}</p>
                     <div className="grid grid-cols-3 gap-4">
                       {study.metrics && study.metrics.map((metric, midx) => (
-                        <div key={midx} className="bg-gray-50 rounded-lg p-4">
-                          <p className="text-lg font-bold text-blue-600">{metric.value}</p>
-                          <p className="text-xs text-gray-600 mt-1">{metric.label}</p>
+                        <div key={midx} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                          <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{metric.value}</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{metric.label}</p>
                         </div>
                       ))}
                     </div>
@@ -125,11 +125,11 @@ export default function CaseStudies() {
                 </div>
 
                 {study.quote && (
-                  <div className="bg-gray-50 rounded-lg p-6 border-l-4 border-blue-600">
-                    <p className="text-gray-700 italic mb-3">"{study.quote}"</p>
-                    <p className="text-sm text-gray-600">{study.quote_author}</p>
-                  </div>
-                )}
+                   <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 border-l-4 border-blue-600 dark:border-blue-400">
+                     <p className="text-gray-700 dark:text-gray-300 italic mb-3">"{study.quote}"</p>
+                     <p className="text-sm text-gray-600 dark:text-gray-400">{study.quote_author}</p>
+                   </div>
+                 )}
               </div>
             </div>
           ))}
@@ -137,7 +137,7 @@ export default function CaseStudies() {
       </section>
 
       {/* CTA */}
-      <section className="bg-blue-600 text-white py-16">
+      <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to write your success story?</h2>
           <p className="text-lg mb-8 opacity-90">
