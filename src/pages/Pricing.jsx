@@ -208,20 +208,20 @@ export default function Pricing() {
         <div className="space-y-4">
           {[
             {
-              q: 'Can I switch plans anytime?',
-              a: 'Yes, you can upgrade or downgrade your plan at any time. Changes take effect at the start of your next billing cycle.',
+              q: "Can I switch plans anytime?",
+              a: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect at the start of your next billing cycle.",
             },
             {
-              q: 'What payment methods do you accept?',
-              a: 'We accept all major credit cards, ACH transfers, and wire transfers for annual plans.',
+              q: "What payment methods do you accept?",
+              a: "We accept all major credit cards, ACH transfers, and wire transfers for annual plans.",
             },
             {
-              q: 'Is there a free trial?',
-              a: 'Yes, we offer a 14-day free trial with full access to all Starter features. No credit card required.',
+              q: "Is there a free trial?",
+              a: "Yes, we offer a 14-day free trial with full access to all Starter features. No credit card required.",
             },
             {
-              q: 'What's included in Enterprise?',
-              a: 'Enterprise includes custom field mapping, dedicated support, SLA guarantees, data residency options, and volume discounts.',
+              q: "What's included in Enterprise?",
+              a: "Enterprise includes custom field mapping, dedicated support, SLA guarantees, data residency options, and volume discounts.",
             },
           ].map((item, idx) => (
             <details
