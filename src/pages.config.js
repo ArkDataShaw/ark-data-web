@@ -52,6 +52,9 @@ import Product from './pages/Product';
 import BookADemo from './pages/BookADemo';
 import Pricing from './pages/Pricing';
 import HowItWorks from './pages/HowItWorks';
+import Integrations from './pages/Integrations';
+import Contact from './pages/Contact';
+import Security from './pages/Security';
 import __Layout from './Layout.jsx';
 
 
@@ -61,6 +64,9 @@ export const PAGES = {
     "BookADemo": BookADemo,
     "Pricing": Pricing,
     "HowItWorks": HowItWorks,
+    "Integrations": Integrations,
+    "Contact": Contact,
+    "Security": Security,
 }
 
 export const pagesConfig = {
