@@ -19,17 +19,10 @@ export default function BookADemo() {
 
   const { mutate: submitLead, isLoading } = useMutation({
     mutationFn: async (data) => {
-      const response = await fetch('/api/leads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...data,
-          source_page: 'book-a-demo',
-        }),
+      return base44.entities.Lead.create({
+        ...data,
+        source_page: 'book-a-demo',
       });
-
-      if (!response.ok) throw new Error('Failed to submit');
-      return response.json();
     },
     onSuccess: () => {
       setSubmitted(true);
