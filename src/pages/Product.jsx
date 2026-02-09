@@ -168,8 +168,8 @@ export default function Product() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="order-2 lg:order-1">
               <img 
-                src="https://images.unsplash.com/photo-1460925895917-adf4e565e479?w=500&h=400&fit=crop" 
-                alt="Integration Flow" 
+                src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=500&h=400&fit=crop" 
+                alt="CRM Integration & Routing" 
                 className="rounded-xl shadow-sm h-80 w-full object-cover"
               />
             </div>
