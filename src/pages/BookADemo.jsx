@@ -1,66 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { CheckCircle, ArrowRight } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import { createPageUrl } from '../utils';
-import { base44 } from '@/api/base44Client';
-import { useMutation } from '@tanstack/react-query';
 
 export default function BookADemo() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    company: '',
-    website: '',
-    role: '',
-    message: '',
-  });
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState('');
+  useEffect(() => {
+    // Load Calendly script
+    const script = document.createElement('script');
+    script.src = 'https://assets.calendly.com/assets/external/widget.js';
+    script.async = true;
+    document.body.appendChild(script);
 
-  const { mutate: submitLead, isLoading } = useMutation({
-    mutationFn: async (data) => {
-      const lead = await base44.entities.Lead.create({
-        ...data,
-        source_page: 'book-a-demo',
-      });
-
-      // Send notification email
-      await base44.integrations.Core.SendEmail({
-        to: 'noahmonks2@gmail.com',
-        subject: `New Demo Request from ${data.name}`,
-        body: `
-New demo request received!
-
-Name: ${data.name}
-Email: ${data.email}
-Company: ${data.company}
-Website: ${data.website || 'Not provided'}
-Role: ${data.role || 'Not specified'}
-Message: ${data.message || 'No message'}
-
-Please follow up as soon as possible.
-        `,
-      });
-
-      return lead;
-    },
-    onSuccess: () => {
-      setSubmitted(true);
-      setFormData({ name: '', email: '', company: '', website: '', role: '', message: '' });
-    },
-    onError: (err) => {
-      setError(err.message || 'Something went wrong. Please try again.');
-    },
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.company) {
-      setError('Please fill in all required fields');
-      return;
-    }
-    submitLead(formData);
-  };
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">
