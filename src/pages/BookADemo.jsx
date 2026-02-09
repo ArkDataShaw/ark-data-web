@@ -19,10 +19,30 @@ export default function BookADemo() {
 
   const { mutate: submitLead, isLoading } = useMutation({
     mutationFn: async (data) => {
-      return base44.entities.Lead.create({
+      const lead = await base44.entities.Lead.create({
         ...data,
         source_page: 'book-a-demo',
       });
+
+      // Send notification email
+      await base44.integrations.Core.SendEmail({
+        to: 'noahmonks2@gmail.com',
+        subject: `New Demo Request from ${data.name}`,
+        body: `
+New demo request received!
+
+Name: ${data.name}
+Email: ${data.email}
+Company: ${data.company}
+Website: ${data.website || 'Not provided'}
+Role: ${data.role || 'Not specified'}
+Message: ${data.message || 'No message'}
+
+Please follow up as soon as possible.
+        `,
+      });
+
+      return lead;
     },
     onSuccess: () => {
       setSubmitted(true);
