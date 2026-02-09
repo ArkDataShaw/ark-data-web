@@ -5,13 +5,13 @@ import { createPageUrl } from '../utils';
 
 export default function HowItWorks() {
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-black">
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32 text-center">
-        <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
+        <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-6">
           Get Ark Data running in 15 minutes
         </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+        <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           Five simple steps from pixel install to your first qualified lead. No code required.
         </p>
       </section>
@@ -89,31 +89,31 @@ export default function HowItWorks() {
                     <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
                       <Icon className="text-blue-600" size={32} />
                     </div>
-                    <h3 className="text-3xl font-bold text-gray-900 mb-2">
-                      Step {step.num}: {step.title}
-                    </h3>
-                    <p className="text-xl text-gray-600 mb-8">{step.desc}</p>
+                    <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                       Step {step.num}: {step.title}
+                     </h3>
+                     <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">{step.desc}</p>
                   </div>
 
                   <div className="space-y-3 mb-8">
                     {step.details.map((detail, idx) => (
                       <div key={idx} className="flex items-start gap-3">
-                        <CheckCircle className="text-green-600 flex-shrink-0 mt-1" size={20} />
-                        <span className="text-gray-700">{detail}</span>
-                      </div>
+                         <CheckCircle className="text-green-600 flex-shrink-0 mt-1" size={20} />
+                         <span className="text-gray-700 dark:text-gray-300">{detail}</span>
+                       </div>
                     ))}
                   </div>
 
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     <strong>Time needed:</strong> {step.time}
                   </p>
                 </div>
 
-                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-12 h-96 flex items-center justify-center">
-                  <div className="text-center text-gray-400">
-                    <span className="text-sm">Step {step.num} visualization</span>
-                  </div>
-                </div>
+                <div className="bg-gradient-to-br from-blue-50 dark:from-blue-950 to-purple-50 dark:to-purple-950 rounded-xl p-12 h-96 flex items-center justify-center">
+                   <div className="text-center text-gray-400 dark:text-gray-600">
+                     <span className="text-sm">Step {step.num} visualization</span>
+                   </div>
+                 </div>
               </div>
             );
           })}
@@ -121,28 +121,28 @@ export default function HowItWorks() {
       </section>
 
       {/* Timeline */}
-      <section className="bg-gray-50 py-20">
+      <section className="bg-gray-50 dark:bg-gray-900 py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
             Implementation timeline
           </h2>
 
           <div className="space-y-6">
-            {[
+             {[
               { phase: 'Pre-launch', items: ['Request Ark Data account', 'Get API keys + tracking pixel'] },
               { phase: 'Day 1', items: ['Install pixel code', 'Enable CRM integration', 'Run test leads'] },
               { phase: 'Days 2–3', items: ['Validate data quality', 'Configure routing rules', 'Train team'] },
               { phase: 'Day 4+', items: ['Go live', 'Monitor performance', 'Optimize scoring'] },
             ].map((timeline, idx) => (
-              <div key={idx} className="bg-white rounded-lg p-6 border-l-4 border-blue-600">
-                <h3 className="font-bold text-gray-900 mb-3">{timeline.phase}</h3>
+              <div key={idx} className="bg-white dark:bg-gray-800 rounded-lg p-6 border-l-4 border-blue-600">
+                <h3 className="font-bold text-gray-900 dark:text-white mb-3">{timeline.phase}</h3>
                 <ul className="space-y-2">
-                  {timeline.items.map((item, iidx) => (
-                    <li key={iidx} className="flex items-start gap-3">
-                      <CheckCircle className="text-green-600 flex-shrink-0 mt-1" size={16} />
-                      <span className="text-gray-700 text-sm">{item}</span>
-                    </li>
-                  ))}
+                   {timeline.items.map((item, iidx) => (
+                     <li key={iidx} className="flex items-start gap-3">
+                       <CheckCircle className="text-green-600 flex-shrink-0 mt-1" size={16} />
+                       <span className="text-gray-700 dark:text-gray-300 text-sm">{item}</span>
+                     </li>
+                   ))}
                 </ul>
               </div>
             ))}
@@ -152,12 +152,12 @@ export default function HowItWorks() {
 
       {/* What You Need */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
           What you need to get started
         </h2>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {[
+           {[
             {
               title: 'Your domain',
               items: [
@@ -183,15 +183,15 @@ export default function HowItWorks() {
               ],
             },
           ].map((section, idx) => (
-            <div key={idx} className="bg-gray-50 rounded-lg p-8">
-              <h3 className="font-bold text-gray-900 mb-4">{section.title}</h3>
+            <div key={idx} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-8">
+              <h3 className="font-bold text-gray-900 dark:text-white mb-4">{section.title}</h3>
               <ul className="space-y-3">
-                {section.items.map((item, iidx) => (
-                  <li key={iidx} className="flex items-start gap-3 text-gray-700">
-                    <span className="text-blue-600 font-bold mt-1">✓</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
+                 {section.items.map((item, iidx) => (
+                   <li key={iidx} className="flex items-start gap-3 text-gray-700 dark:text-gray-300">
+                     <span className="text-blue-600 font-bold mt-1">✓</span>
+                     <span>{item}</span>
+                   </li>
+                 ))}
               </ul>
             </div>
           ))}
@@ -199,12 +199,12 @@ export default function HowItWorks() {
       </section>
 
       {/* Support */}
-      <section className="bg-blue-50 py-20">
+      <section className="bg-blue-50 dark:bg-blue-950 py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
             We handle the heavy lifting
           </h2>
-          <p className="text-lg text-gray-600 mb-8">
+          <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
             Our onboarding specialists will walk you through every step. We're not done until you're fully set up and seeing results.
           </p>
           <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
