@@ -77,7 +77,7 @@ export default function Layout({ children, currentPageName }) {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-gray-950">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-black">
       <style>{`
         :root {
           --color-primary: #0066FF;
@@ -146,7 +146,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Header */}
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white dark:bg-gray-950 shadow-lg' : 'bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm'
+        isScrolled ? 'bg-white dark:bg-black shadow-lg' : 'bg-white/95 dark:bg-black/95 backdrop-blur-sm'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -199,7 +199,7 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+          <div className="lg:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-black">
             <div className="px-4 py-4 space-y-3">
               {navLinks.map((link) => (
                 <Link
