@@ -217,7 +217,7 @@ export default function Pricing() {
             },
             {
               q: "Is there a free trial?",
-              a: "Yes, we offer a 30-day free trial with full access to all Starter features. No credit card required.",
+              a: "Yes, we offer a 30-day free trial for $1 with full access to all Starter features. We require valid card information to verify your account.",
             },
             {
               q: "What's included in Enterprise?",
