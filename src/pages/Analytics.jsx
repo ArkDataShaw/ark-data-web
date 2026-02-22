@@ -6,7 +6,6 @@ import { TrendingUp, Users, Target, Zap, Calendar, Filter } from "lucide-react";
 import PredictionCard from "../components/PredictionCard";
 
 export default function Analytics() {
-  const [selectedFilter, setSelectedFilter] = useState("all");
   const [dateRange, setDateRange] = useState("30");
   const [selectedSource, setSelectedSource] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
