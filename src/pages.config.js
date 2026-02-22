@@ -58,6 +58,8 @@ import About from './pages/About';
 import FAQ from './pages/FAQ';
 import Solutions from './pages/Solutions';
 import Services from './pages/Services';
+import Home from './pages/Home';
+import HowItWorks from './pages/HowItWorks';
 import __Layout from './Layout.jsx';
 
 
@@ -73,6 +75,8 @@ export const PAGES = {
     "FAQ": FAQ,
     "Solutions": Solutions,
     "Services": Services,
+    "Home": Home,
+    "HowItWorks": HowItWorks,
 }
 
 export const pagesConfig = {
