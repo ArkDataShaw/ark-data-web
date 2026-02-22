@@ -216,7 +216,7 @@ export default function Layout({ children, currentPageName }) {
       <main style={{ paddingTop: '64px' }}>{children}</main>
 
       {/* Footer */}
-      <footer style={{ background: '#06162A', borderTop: '1px solid #0A2142' }}>
+      <footer style={{ background: 'linear-gradient(180deg, #050F1E 0%, #020A12 100%)', borderTop: '1px solid rgba(20,60,110,0.4)' }}>
         <div className="sc" style={{ paddingTop: '64px', paddingBottom: '32px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '32px', marginBottom: '48px' }}>
             <div style={{ gridColumn: 'span 2' }}>
