@@ -26,43 +26,140 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div style={{ background: '#000002', minHeight: '100vh', color: '#fff', fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif" }}>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; }
-        html, body { background: #000002 !important; margin: 0; padding: 0; }
+        html, body { background: #00000F !important; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         a { text-decoration: none; color: inherit; }
         .ark-link:hover { color: #fff !important; }
-        .ark-btn-red { background: #B1001A; color: #fff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; transition: background 0.2s; letter-spacing: 0.01em; }
-        .ark-btn-red:hover { background: #E00025; }
-        .ark-btn-blue { background: transparent; color: #D9ECFF; border: 1.5px solid #0A2142; border-radius: 4px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-        .ark-btn-blue:hover { border-color: #1a4a8a; color: #fff; background: rgba(10,33,66,0.4); }
-        .ark-btn-green { background: transparent; color: #DFFFEF; border: 1.5px solid #063524; border-radius: 4px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-        .ark-btn-green:hover { border-color: #0a6640; color: #fff; background: rgba(6,53,36,0.4); }
-        .ark-card { background: #06162A; border: 1px solid #0A2142; border-radius: 8px; }
-        .ark-card:hover { border-color: #1a4a8a; }
-        .ark-card-green { background: #042016; border: 1px solid #063524; border-radius: 8px; }
-        .ark-card-green:hover { border-color: #0a6640; }
-        .ark-input { background: #06162A !important; border: 1px solid #0A2142 !important; border-radius: 4px; color: #fff !important; padding: 12px 16px; font-size: 14px; width: 100%; outline: none; transition: border-color 0.2s; }
+
+        /* Buttons */
+        .ark-btn-red {
+          background: linear-gradient(135deg, #C8001E 0%, #8B0015 100%);
+          color: #fff; border: none; border-radius: 6px; font-weight: 700;
+          cursor: pointer; transition: all 0.25s; letter-spacing: 0.02em;
+          box-shadow: 0 2px 12px rgba(177,0,26,0.35);
+        }
+        .ark-btn-red:hover {
+          background: linear-gradient(135deg, #E8002A 0%, #A8001C 100%);
+          box-shadow: 0 4px 20px rgba(177,0,26,0.55);
+          transform: translateY(-1px);
+        }
+        .ark-btn-blue {
+          background: rgba(10,33,66,0.5); color: #C8DFFF;
+          border: 1px solid rgba(40,90,160,0.5); border-radius: 6px;
+          font-weight: 600; cursor: pointer; transition: all 0.25s;
+          backdrop-filter: blur(8px);
+        }
+        .ark-btn-blue:hover {
+          border-color: rgba(80,140,220,0.7); color: #fff;
+          background: rgba(20,55,110,0.6);
+          box-shadow: 0 4px 16px rgba(30,80,180,0.2);
+          transform: translateY(-1px);
+        }
+        .ark-btn-green {
+          background: rgba(6,53,36,0.5); color: #C8FFE0;
+          border: 1px solid rgba(20,100,60,0.5); border-radius: 6px;
+          font-weight: 600; cursor: pointer; transition: all 0.25s;
+          backdrop-filter: blur(8px);
+        }
+        .ark-btn-green:hover {
+          border-color: rgba(30,140,80,0.7); color: #fff;
+          background: rgba(10,80,45,0.6);
+          box-shadow: 0 4px 16px rgba(10,100,50,0.2);
+          transform: translateY(-1px);
+        }
+
+        /* Cards */
+        .ark-card {
+          background: linear-gradient(145deg, #071829 0%, #040E1A 100%);
+          border: 1px solid rgba(20,60,110,0.6); border-radius: 12px;
+          transition: all 0.25s;
+        }
+        .ark-card:hover {
+          border-color: rgba(50,120,200,0.5);
+          box-shadow: 0 8px 32px rgba(10,33,66,0.4);
+          transform: translateY(-2px);
+        }
+        .ark-card-green {
+          background: linear-gradient(145deg, #051A0F 0%, #030E08 100%);
+          border: 1px solid rgba(15,70,40,0.6); border-radius: 12px;
+          transition: all 0.25s;
+        }
+        .ark-card-green:hover {
+          border-color: rgba(20,120,65,0.5);
+          box-shadow: 0 8px 32px rgba(6,53,36,0.4);
+          transform: translateY(-2px);
+        }
+
+        /* Inputs */
+        .ark-input {
+          background: rgba(6,18,42,0.8) !important;
+          border: 1px solid rgba(20,60,110,0.6) !important;
+          border-radius: 6px; color: #fff !important;
+          padding: 12px 16px; font-size: 14px; width: 100%;
+          outline: none; transition: all 0.2s;
+          backdrop-filter: blur(8px);
+        }
         .ark-input::placeholder { color: #4a6a9a !important; }
-        .ark-input:focus { border-color: #063524 !important; }
-        .ark-select { background: #06162A; border: 1px solid #0A2142; border-radius: 4px; color: #fff; padding: 12px 16px; font-size: 14px; width: 100%; outline: none; appearance: none; cursor: pointer; transition: border-color 0.2s; }
-        .ark-select:focus { border-color: #063524; }
-        .ark-select option { background: #06162A; color: #fff; }
-        .ark-textarea { background: #06162A; border: 1px solid #0A2142; border-radius: 4px; color: #fff; padding: 12px 16px; font-size: 14px; width: 100%; outline: none; transition: border-color 0.2s; resize: vertical; font-family: inherit; }
+        .ark-input:focus {
+          border-color: rgba(30,120,70,0.7) !important;
+          box-shadow: 0 0 0 3px rgba(10,100,50,0.12) !important;
+        }
+        .ark-select {
+          background: rgba(6,18,42,0.9);
+          border: 1px solid rgba(20,60,110,0.6);
+          border-radius: 6px; color: #fff;
+          padding: 12px 16px; font-size: 14px; width: 100%;
+          outline: none; appearance: none; cursor: pointer; transition: all 0.2s;
+        }
+        .ark-select:focus {
+          border-color: rgba(30,120,70,0.7);
+          box-shadow: 0 0 0 3px rgba(10,100,50,0.12);
+        }
+        .ark-select option { background: #071829; color: #fff; }
+        .ark-textarea {
+          background: rgba(6,18,42,0.8);
+          border: 1px solid rgba(20,60,110,0.6);
+          border-radius: 6px; color: #fff;
+          padding: 12px 16px; font-size: 14px; width: 100%;
+          outline: none; transition: all 0.2s; resize: vertical; font-family: inherit;
+        }
         .ark-textarea::placeholder { color: #4a6a9a; }
-        .ark-textarea:focus { border-color: #063524; }
-        .sc { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
-        @media (max-width: 768px) { .sc { padding: 0 16px; } }
-        .sp { padding: 80px 0; }
-        @media (max-width: 768px) { .sp { padding: 48px 0; } }
+        .ark-textarea:focus {
+          border-color: rgba(30,120,70,0.7);
+          box-shadow: 0 0 0 3px rgba(10,100,50,0.12);
+        }
+
+        /* Layout */
+        .sc { max-width: 1300px; margin: 0 auto; padding: 0 40px; }
+        @media (max-width: 768px) { .sc { padding: 0 20px; } }
+        .sp { padding: 96px 0; }
+        @media (max-width: 768px) { .sp { padding: 56px 0; } }
         .d-none-mobile { display: flex; }
         .d-none-desktop { display: none; }
         @media (max-width: 1024px) {
           .d-none-mobile { display: none !important; }
           .d-none-desktop { display: flex !important; }
         }
-        .ark-fade { animation: arkFadeUp 0.5s ease-out both; }
-        @keyframes arkFadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Animations */
+        .ark-fade { animation: arkFadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+        @keyframes arkFadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Typography upgrades */
+        h1, h2, h3, h4, h5, h6 { letter-spacing: -0.02em; }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #00000F; }
+        ::-webkit-scrollbar-thumb { background: #0A2142; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #1a4a8a; }
+
         details summary { list-style: none; }
         details summary::-webkit-details-marker { display: none; }
+
+        /* Selection */
+        ::selection { background: rgba(177,0,26,0.3); color: #fff; }
       `}</style>
 
       {/* Nav */}
