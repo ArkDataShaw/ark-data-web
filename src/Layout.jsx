@@ -213,7 +213,7 @@ export default function Layout({ children, currentPageName }) {
         )}
       </header>
 
-      <main style={{ paddingTop: '64px' }}>{children}</main>
+      <main style={{ paddingTop: '70px' }}>{children}</main>
 
       {/* Footer */}
       <footer style={{ background: 'linear-gradient(180deg, #050F1E 0%, #020A12 100%)', borderTop: '1px solid rgba(20,60,110,0.4)' }}>
