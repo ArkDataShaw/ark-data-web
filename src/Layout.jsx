@@ -170,7 +170,7 @@ export default function Layout({ children, currentPageName }) {
         backdropFilter: 'blur(24px)', transition: 'all 0.3s',
         boxShadow: isScrolled ? '0 1px 40px rgba(0,0,0,0.4)' : 'none',
       }}>
-        <div className="sc" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
+        <div className="sc" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '70px' }}>
           <Link to={createPageUrl('Home')} style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
             <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6989af7aa56af5f62af3065e/35cf97429_image.png" alt="Ark Data" style={{ height: '32px' }} />
             <span style={{ fontWeight: 800, fontSize: '17px', color: '#fff', letterSpacing: '-0.3px' }}>Ark Data</span>
