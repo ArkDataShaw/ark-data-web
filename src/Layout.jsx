@@ -1,249 +1,145 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, Moon, Sun } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { createPageUrl } from './utils';
 
 export default function Layout({ children, currentPageName }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('darkMode') === 'true';
-    }
-    return false;
-  });
 
   useEffect(() => {
-    localStorage.setItem('darkMode', darkMode);
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const navLinks = [
-    { label: 'Product', href: createPageUrl('Product') },
-    { label: 'How It Works', href: createPageUrl('HowItWorks') },
-    { label: 'Integrations', href: createPageUrl('Integrations') },
-    { label: 'Pricing', href: createPageUrl('Pricing') },
-    { label: 'Case Studies', href: createPageUrl('CaseStudies') },
-  ];
-
-  const footerColumns = [
-    {
-      title: 'Product',
-      links: [
-        { label: 'Features', href: createPageUrl('Product') },
-        { label: 'Pricing', href: createPageUrl('Pricing') },
-        { label: 'Integrations', href: createPageUrl('Integrations') },
-        { label: 'Security', href: createPageUrl('Security') },
-      ],
-    },
-
-    {
-      title: 'Legal',
-      links: [
-        { label: 'Privacy Policy', href: createPageUrl('PrivacyPolicy') },
-        { label: 'Terms of Service', href: createPageUrl('Terms') },
-        { label: 'Cookie Policy', href: createPageUrl('Cookies') },
-      ],
-    },
-    {
-      title: 'Company',
-      links: [
-        { label: 'Contact Us', href: createPageUrl('Contact') },
-        { label: 'Email: hello@arkdata.io', href: 'mailto:hello@arkdata.io' },
-        { label: 'Settings', href: createPageUrl('Settings') },
-      ],
-    },
+    { label: 'Platform', page: 'Product' },
+    { label: 'Solutions', page: 'Solutions' },
+    { label: 'Services', page: 'Services' },
+    { label: 'Pricing', page: 'Pricing' },
+    { label: 'Case Studies', page: 'CaseStudies' },
+    { label: 'Resources', page: 'Resources' },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-black">
+    <div style={{ background: '#000002', minHeight: '100vh', color: '#fff', fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif" }}>
       <style>{`
-        :root {
-          --color-primary: #0066FF;
-          --color-primary-dark: #0052CC;
-          --color-secondary: #7C3AED;
-          --color-tertiary: #EC4899;
-          --color-accent: #F59E0B;
-          --color-neutral-50: #F9FAFB;
-          --color-neutral-100: #F3F4F6;
-          --color-neutral-200: #E5E7EB;
-          --color-neutral-900: #111827;
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { background: #000002 !important; margin: 0; padding: 0; }
+        a { text-decoration: none; color: inherit; }
+        .ark-link:hover { color: #fff !important; }
+        .ark-btn-red { background: #B1001A; color: #fff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; transition: background 0.2s; letter-spacing: 0.01em; }
+        .ark-btn-red:hover { background: #E00025; }
+        .ark-btn-blue { background: transparent; color: #D9ECFF; border: 1.5px solid #0A2142; border-radius: 4px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .ark-btn-blue:hover { border-color: #1a4a8a; color: #fff; background: rgba(10,33,66,0.4); }
+        .ark-btn-green { background: transparent; color: #DFFFEF; border: 1.5px solid #063524; border-radius: 4px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .ark-btn-green:hover { border-color: #0a6640; color: #fff; background: rgba(6,53,36,0.4); }
+        .ark-card { background: #06162A; border: 1px solid #0A2142; border-radius: 8px; }
+        .ark-card:hover { border-color: #1a4a8a; }
+        .ark-card-green { background: #042016; border: 1px solid #063524; border-radius: 8px; }
+        .ark-card-green:hover { border-color: #0a6640; }
+        .ark-input { background: #06162A !important; border: 1px solid #0A2142 !important; border-radius: 4px; color: #fff !important; padding: 12px 16px; font-size: 14px; width: 100%; outline: none; transition: border-color 0.2s; }
+        .ark-input::placeholder { color: #4a6a9a !important; }
+        .ark-input:focus { border-color: #063524 !important; }
+        .ark-select { background: #06162A; border: 1px solid #0A2142; border-radius: 4px; color: #fff; padding: 12px 16px; font-size: 14px; width: 100%; outline: none; appearance: none; cursor: pointer; transition: border-color 0.2s; }
+        .ark-select:focus { border-color: #063524; }
+        .ark-select option { background: #06162A; color: #fff; }
+        .ark-textarea { background: #06162A; border: 1px solid #0A2142; border-radius: 4px; color: #fff; padding: 12px 16px; font-size: 14px; width: 100%; outline: none; transition: border-color 0.2s; resize: vertical; font-family: inherit; }
+        .ark-textarea::placeholder { color: #4a6a9a; }
+        .ark-textarea:focus { border-color: #063524; }
+        .sc { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+        @media (max-width: 768px) { .sc { padding: 0 16px; } }
+        .sp { padding: 80px 0; }
+        @media (max-width: 768px) { .sp { padding: 48px 0; } }
+        .d-none-mobile { display: flex; }
+        .d-none-desktop { display: none; }
+        @media (max-width: 1024px) {
+          .d-none-mobile { display: none !important; }
+          .d-none-desktop { display: flex !important; }
         }
-
-        .dark {
-          --color-neutral-50: #111827;
-          --color-neutral-100: #1F2937;
-          --color-neutral-200: #374151;
-          --color-neutral-900: #F9FAFB;
-        }
-        
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-        }
-
-        .button-primary {
-          background-color: var(--color-primary);
-          color: white;
-          padding: 10px 24px;
-          border-radius: 6px;
-          font-weight: 500;
-          transition: all 0.3s ease;
-        }
-
-        .button-primary:hover {
-          background-color: var(--color-primary-dark);
-          transform: translateY(-2px);
-          box-shadow: 0 10px 24px rgba(0, 102, 255, 0.2);
-        }
-
-        .button-secondary {
-          border: 1.5px solid var(--color-neutral-200);
-          padding: 10px 24px;
-          border-radius: 6px;
-          font-weight: 500;
-          transition: all 0.3s ease;
-        }
-
-        .button-secondary:hover {
-          border-color: var(--color-primary);
-          color: var(--color-primary);
-        }
-
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-fade-in-up {
-          animation: fadeInUp 0.6s ease-out;
-        }
+        .ark-fade { animation: arkFadeUp 0.5s ease-out both; }
+        @keyframes arkFadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        details summary { list-style: none; }
+        details summary::-webkit-details-marker { display: none; }
       `}</style>
 
-      {/* Header */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white dark:bg-black shadow-lg' : 'bg-white/95 dark:bg-black/95 backdrop-blur-sm'
-      }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <Link to={createPageUrl('Home')} className="flex items-center gap-2 flex-shrink-0">
-              <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6989af7aa56af5f62af3065e/35cf97429_image.png" alt="Ark Data" className="h-10 w-auto" />
-              <span className="font-bold text-lg text-gray-900 dark:text-white hidden sm:inline">Ark Data</span>
+      {/* Nav */}
+      <header style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+        background: isScrolled ? 'rgba(0,0,2,0.97)' : 'rgba(0,0,2,0.82)',
+        borderBottom: `1px solid ${isScrolled ? '#0A2142' : 'transparent'}`,
+        backdropFilter: 'blur(16px)', transition: 'all 0.3s',
+      }}>
+        <div className="sc" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
+          <Link to={createPageUrl('Home')} style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6989af7aa56af5f62af3065e/35cf97429_image.png" alt="Ark Data" style={{ height: '32px' }} />
+            <span style={{ fontWeight: 800, fontSize: '17px', color: '#fff', letterSpacing: '-0.3px' }}>Ark Data</span>
+          </Link>
+
+          <nav className="d-none-mobile" style={{ alignItems: 'center', gap: '26px' }}>
+            {navLinks.map(link => (
+              <Link key={link.label} to={createPageUrl(link.page)} className="ark-link"
+                style={{ color: '#D9ECFF', fontSize: '14px', fontWeight: 500, transition: 'color 0.2s' }}>
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Link to={createPageUrl('Contact')} className="d-none-mobile ark-link"
+              style={{ color: '#D9ECFF', fontSize: '13px', fontWeight: 500 }}>Contact</Link>
+            <Link to={createPageUrl('BookADemo')}>
+              <button className="ark-btn-red" style={{ padding: '9px 20px', fontSize: '14px' }}>Book a Call</button>
             </Link>
-
-            {/* Desktop Nav */}
-            <nav className="hidden lg:flex items-center gap-8">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  to={link.href}
-                  className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-
-            {/* Dark Mode Toggle */}
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-
-            {/* Right CTAs */}
-            <div className="hidden sm:flex items-center gap-3">
-              <button className="button-secondary text-sm">
-                <Link to="/login">Login</Link>
-              </button>
-              <button className="button-primary text-sm">
-                <Link to={createPageUrl('BookADemo')} className="text-white">Book a Demo</Link>
-              </button>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-            >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            <button className="d-none-desktop" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px', alignItems: 'center' }}>
+              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-black">
-            <div className="px-4 py-4 space-y-3">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  to={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white py-2"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-800 space-y-2">
-                <Link
-                  to="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="button-secondary text-sm block text-center"
-                >
-                  Login
-                </Link>
-                <Link
-                  to={createPageUrl('BookADemo')}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="button-primary text-sm block text-center"
-                >
-                  Book a Demo
-                </Link>
-              </div>
-            </div>
+          <div style={{ background: '#06162A', borderTop: '1px solid #0A2142', padding: '20px 20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {navLinks.map(link => (
+              <Link key={link.label} to={createPageUrl(link.page)} onClick={() => setMobileMenuOpen(false)}
+                style={{ color: '#D9ECFF', fontSize: '15px', fontWeight: 500, padding: '12px 0', borderBottom: '1px solid #0A2142', display: 'block' }}>
+                {link.label}
+              </Link>
+            ))}
+            <Link to={createPageUrl('BookADemo')} onClick={() => setMobileMenuOpen(false)} style={{ marginTop: '12px' }}>
+              <button className="ark-btn-red" style={{ width: '100%', padding: '14px', fontSize: '15px' }}>Book a Call</button>
+            </Link>
           </div>
         )}
       </header>
 
-      {/* Page Content */}
-      <main className="flex-grow pt-16">{children}</main>
+      <main style={{ paddingTop: '64px' }}>{children}</main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 dark:bg-black text-gray-100 mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-            {footerColumns.map((col) => (
+      <footer style={{ background: '#06162A', borderTop: '1px solid #0A2142' }}>
+        <div className="sc" style={{ paddingTop: '64px', paddingBottom: '32px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '32px', marginBottom: '48px' }}>
+            <div style={{ gridColumn: 'span 2' }}>
+              <div style={{ fontWeight: 800, fontSize: '18px', color: '#fff', marginBottom: '14px', letterSpacing: '-0.3px' }}>Ark Data</div>
+              <p style={{ color: '#D9ECFF', fontSize: '13px', lineHeight: 1.75, maxWidth: '220px', marginBottom: '16px' }}>
+                High-intent data enrichment for outbound, demand gen, RevOps, and growth.
+              </p>
+              <a href="mailto:hello@arkdata.io" style={{ color: '#DFFFEF', fontSize: '13px' }}>hello@arkdata.io</a>
+            </div>
+
+            {[
+              { title: 'Platform', links: [['Platform', 'Product'], ['How It Works', 'HowItWorks'], ['Integrations', 'Integrations'], ['Security', 'Security']] },
+              { title: 'Solutions', links: [['By Company Size', 'Solutions'], ['By Role', 'Solutions'], ['By Industry', 'Solutions'], ['Services', 'Services']] },
+              { title: 'Company', links: [['About', 'About'], ['Case Studies', 'CaseStudies'], ['Blog', 'Resources'], ['Apply / Partner', 'Apply']] },
+              { title: 'Legal', links: [['Privacy Policy', 'PrivacyPolicy'], ['Terms of Service', 'Terms'], ['Cookie Policy', 'Cookies'], ['Contact Us', 'Contact']] },
+            ].map(col => (
               <div key={col.title}>
-                <h3 className="font-semibold text-white mb-4">{col.title}</h3>
-                <ul className="space-y-2">
-                  {col.links.map((link) => (
-                    <li key={link.label}>
-                      <Link
-                        to={link.href}
-                        className="text-sm text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-gray-300 transition-colors"
-                      >
-                        {link.label}
-                      </Link>
+                <h4 style={{ color: '#fff', fontWeight: 700, fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '16px' }}>{col.title}</h4>
+                <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', padding: 0, margin: 0 }}>
+                  {col.links.map(([label, page]) => (
+                    <li key={label}>
+                      <Link to={createPageUrl(page)} className="ark-link" style={{ color: '#D9ECFF', fontSize: '13px', transition: 'color 0.2s' }}>{label}</Link>
                     </li>
                   ))}
                 </ul>
@@ -251,16 +147,24 @@ export default function Layout({ children, currentPageName }) {
             ))}
           </div>
 
-          <div className="border-t border-gray-800 dark:border-gray-900 pt-8">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-              <p className="text-sm text-gray-400">
-                © 2026 Ark Data. All rights reserved.
-              </p>
-              <div className="flex items-center gap-4">
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">Twitter</a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">LinkedIn</a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">GitHub</a>
-              </div>
+          {/* Newsletter */}
+          <div style={{ borderTop: '1px solid #0A2142', paddingTop: '32px', marginBottom: '32px', display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <p style={{ color: '#fff', fontWeight: 700, fontSize: '14px', marginBottom: '4px' }}>Intelligence in your inbox</p>
+              <p style={{ color: '#D9ECFF', fontSize: '13px' }}>Intent data insights, enrichment playbooks, RevOps strategies.</p>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <input className="ark-input" placeholder="your@email.com" style={{ minWidth: '220px', flex: 1 }} />
+              <button className="ark-btn-red" style={{ padding: '12px 20px', fontSize: '13px', whiteSpace: 'nowrap' }}>Subscribe</button>
+            </div>
+          </div>
+
+          <div style={{ borderTop: '1px solid #0A2142', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <p style={{ color: '#D9ECFF', fontSize: '12px' }}>© 2026 Ark Data. All rights reserved. Compliance-first data, built for operators.</p>
+            <div style={{ display: 'flex', gap: '20px' }}>
+              {['Twitter', 'LinkedIn', 'GitHub'].map(s => (
+                <a key={s} href="#" className="ark-link" style={{ color: '#D9ECFF', fontSize: '12px' }}>{s}</a>
+              ))}
             </div>
           </div>
         </div>
