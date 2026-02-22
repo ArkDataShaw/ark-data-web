@@ -47,7 +47,7 @@ const caseStudies = [
       { label: 'Engagement Rate', value: '61%' },
       { label: 'CAC Reduction', value: '-18%' },
     ],
-    quote: 'Intent data completely changed how our SDRs prioritize their day. They're now calling people who are already looking for what we do.',
+    quote: "Intent data completely changed how our SDRs prioritize their day. They're now calling people who are already looking for what we do.",
     quoteAuthor: 'Head of Sales Development, Apex Logistics',
   },
   {
