@@ -6,21 +6,21 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
 // Reusable CTA Button
-const CTAButton = ({ primary = false, children, href, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`px-6 py-3 rounded-lg font-semibold transition-all ${
-      primary
-        ? 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg hover:-translate-y-1'
-        : 'border-2 border-gray-300 text-gray-900 hover:border-blue-600 hover:text-blue-600'
-    }`}
-  >
+const CTAButton = ({ primary = false, children, href, onClick }) =>
+<button
+  onClick={onClick}
+  className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+  primary ?
+  'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg hover:-translate-y-1' :
+  'border-2 border-gray-300 text-gray-900 hover:border-blue-600 hover:text-blue-600'}`
+  }>
+
     <Link to={href} className="flex items-center gap-2">
       {children}
       {primary && <ArrowRight size={18} />}
     </Link>
-  </button>
-);
+  </button>;
+
 
 export default function Home() {
   const [testimonials, setTestimonials] = useState([]);
@@ -30,22 +30,22 @@ export default function Home() {
 
   const { data: testimonialsData } = useQuery({
     queryKey: ['testimonials'],
-    queryFn: () => base44.entities.Testimonial.list(),
+    queryFn: () => base44.entities.Testimonial.list()
   });
 
   const { data: logosData } = useQuery({
     queryKey: ['logos'],
-    queryFn: () => base44.entities.PartnerLogo.list(),
+    queryFn: () => base44.entities.PartnerLogo.list()
   });
 
   const { data: faqsData } = useQuery({
     queryKey: ['faqs'],
-    queryFn: () => base44.entities.FAQ.filter({ page_scope: 'home' }),
+    queryFn: () => base44.entities.FAQ.filter({ page_scope: 'home' })
   });
 
   useEffect(() => {
     if (testimonialsData) setTestimonials(testimonialsData.slice(0, 3));
-    if (logosData) setLogos(logosData.filter(l => l.category === 'customer').slice(0, 6));
+    if (logosData) setLogos(logosData.filter((l) => l.category === 'customer').slice(0, 6));
     if (faqsData) setFaqs(faqsData.slice(0, 6));
   }, [testimonialsData, logosData, faqsData]);
 
@@ -55,8 +55,8 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8 animate-fade-in-up">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight">
-              See who's visiting your site—and act while intent is high.
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight">See who's visiting your site and act while intent is high.
+
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
               Ark Data identifies high-intent visitors, enriches profiles, and routes leads to your CRM and marketing tools—without changing your funnel.
@@ -95,39 +95,39 @@ export default function Home() {
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6989af7aa56af5f62af3065e/505c7ac5e_Screenshot2026-02-22at14530AM.png"
                 alt="Analytics Dashboard"
-                className="rounded-2xl shadow-xl w-full object-cover"
-              />
+                className="rounded-2xl shadow-xl w-full object-cover" />
+
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6989af7aa56af5f62af3065e/dc30a88dd_Screenshot2026-02-22at14632AM.png"
                 alt="Identity & Intent Analytics"
-                className="rounded-2xl shadow-xl w-full object-cover"
-              />
+                className="rounded-2xl shadow-xl w-full object-cover" />
+
             </div>
           </div>
         </div>
       </section>
 
       {/* Logo Strip */}
-      {logos.length > 0 && (
-        <section className="bg-gray-50 dark:bg-gray-900 py-12">
+      {logos.length > 0 &&
+      <section className="bg-gray-50 dark:bg-gray-900 py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <p className="text-center text-sm font-semibold text-gray-600 dark:text-gray-400 mb-8">
               Trusted by teams at leading companies
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-8 items-center">
-              {logos.map((logo) => (
-                <div key={logo.id} className="flex items-center justify-center">
-                  {logo.image_url ? (
-                    <img src={logo.image_url} alt={logo.name} className="h-8 opacity-60 hover:opacity-100 transition" />
-                  ) : (
-                    <div className="bg-gray-300 h-8 w-24 rounded"></div>
-                  )}
+              {logos.map((logo) =>
+            <div key={logo.id} className="flex items-center justify-center">
+                  {logo.image_url ?
+              <img src={logo.image_url} alt={logo.name} className="h-8 opacity-60 hover:opacity-100 transition" /> :
+
+              <div className="bg-gray-300 h-8 w-24 rounded"></div>
+              }
                 </div>
-              ))}
+            )}
             </div>
           </div>
         </section>
-      )}
+      }
 
       {/* Problem Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -267,13 +267,13 @@ export default function Home() {
 
         <div className="grid md:grid-cols-5 gap-4 md:gap-2">
           {[
-            { num: 1, title: 'Install pixel', desc: 'Add 1 line of code to your site' },
-            { num: 2, title: 'Capture sessions', desc: 'Track behavior & attribution' },
-            { num: 3, title: 'Resolve identities', desc: 'Enrich visitor data' },
-            { num: 4, title: 'Score intent', desc: 'AI-powered signal detection' },
-            { num: 5, title: 'Sync & activate', desc: 'Route to CRM/ESP/tools' },
-          ].map((step, idx) => (
-            <div key={idx} className="relative">
+          { num: 1, title: 'Install pixel', desc: 'Add 1 line of code to your site' },
+          { num: 2, title: 'Capture sessions', desc: 'Track behavior & attribution' },
+          { num: 3, title: 'Resolve identities', desc: 'Enrich visitor data' },
+          { num: 4, title: 'Score intent', desc: 'AI-powered signal detection' },
+          { num: 5, title: 'Sync & activate', desc: 'Route to CRM/ESP/tools' }].
+          map((step, idx) =>
+          <div key={idx} className="relative">
               <div className="bg-white border-2 border-blue-600 rounded-xl p-6 text-center h-full flex flex-col justify-between">
                 <div className="mb-4">
                   <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold mx-auto mb-3">
@@ -283,13 +283,13 @@ export default function Home() {
                 </div>
                 <p className="text-sm text-gray-600">{step.desc}</p>
               </div>
-              {idx < 4 && (
-                <div className="hidden md:block absolute top-1/2 -right-2 w-4 text-blue-600 text-2xl -translate-y-1/2">
+              {idx < 4 &&
+            <div className="hidden md:block absolute top-1/2 -right-2 w-4 text-blue-600 text-2xl -translate-y-1/2">
                   →
                 </div>
-              )}
+            }
             </div>
-          ))}
+          )}
         </div>
 
         <div className="text-center mt-12">
@@ -308,70 +308,70 @@ export default function Home() {
 
           <div className="grid md:grid-cols-4 gap-8">
             {[
-              {
-                role: 'Sales',
-                desc: 'Prioritize outreach by intent score and fit.',
-                icon: TrendingUp,
-              },
-              {
-                role: 'Marketing',
-                desc: 'Improve retargeting audiences and campaign ROI.',
-                icon: BarChart3,
-              },
-              {
-                role: 'RevOps',
-                desc: 'Clean routing, consistent enrichment, and audit trails.',
-                icon: Target,
-              },
-              {
-                role: 'Agencies',
-                desc: 'Prove traffic quality and ROI to clients.',
-                icon: Shield,
-              },
-            ].map((item, idx) => {
+            {
+              role: 'Sales',
+              desc: 'Prioritize outreach by intent score and fit.',
+              icon: TrendingUp
+            },
+            {
+              role: 'Marketing',
+              desc: 'Improve retargeting audiences and campaign ROI.',
+              icon: BarChart3
+            },
+            {
+              role: 'RevOps',
+              desc: 'Clean routing, consistent enrichment, and audit trails.',
+              icon: Target
+            },
+            {
+              role: 'Agencies',
+              desc: 'Prove traffic quality and ROI to clients.',
+              icon: Shield
+            }].
+            map((item, idx) => {
               const Icon = item.icon;
               return (
                 <div key={idx} className="bg-white dark:bg-gray-800 rounded-lg p-6 text-center hover:shadow-lg transition">
                   <Icon className="text-blue-600 mx-auto mb-4" size={32} />
                   <h3 className="font-bold text-gray-900 dark:text-white mb-2">{item.role}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">{item.desc}</p>
-                </div>
-              );
+                </div>);
+
             })}
           </div>
         </div>
       </section>
 
       {/* Testimonials */}
-      {testimonials.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      {testimonials.length > 0 &&
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 text-center mb-16">
             Loved by revenue teams
           </h2>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial) => (
-              <div key={testimonial.id} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-8">
+            {testimonials.map((testimonial) =>
+          <div key={testimonial.id} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-8">
                 <div className="flex gap-4 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-yellow-400">★</span>
-                  ))}
+                  {[...Array(5)].map((_, i) =>
+              <span key={i} className="text-yellow-400">★</span>
+              )}
                 </div>
                 <p className="text-gray-700 dark:text-gray-300 mb-6 italic">"{testimonial.quote}"</p>
                 <div className="flex items-center gap-3">
-                  {testimonial.avatar_url && (
-                    <img src={testimonial.avatar_url} alt={testimonial.name} className="w-10 h-10 rounded-full" />
-                  )}
+                  {testimonial.avatar_url &&
+              <img src={testimonial.avatar_url} alt={testimonial.name} className="w-10 h-10 rounded-full" />
+              }
                   <div>
                     <p className="font-semibold text-gray-900 dark:text-white">{testimonial.name}</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">{testimonial.title} at {testimonial.company}</p>
                   </div>
                 </div>
               </div>
-            ))}
+          )}
           </div>
         </section>
-      )}
+      }
 
       {/* Integrations Teaser */}
       <section className="bg-gray-50 dark:bg-gray-900 py-20">
@@ -395,13 +395,13 @@ export default function Home() {
         </h2>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {['Starter', 'Growth', 'Enterprise'].map((tier, idx) => (
-            <div
-              key={idx}
-              className={`rounded-xl p-8 ${
-                idx === 1 ? 'border-2 border-blue-600 ring-4 ring-blue-100' : 'border border-gray-200'
-              }`}
-            >
+          {['Starter', 'Growth', 'Enterprise'].map((tier, idx) =>
+          <div
+            key={idx}
+            className={`rounded-xl p-8 ${
+            idx === 1 ? 'border-2 border-blue-600 ring-4 ring-blue-100' : 'border border-gray-200'}`
+            }>
+
               <h3 className="text-xl font-bold text-gray-900 mb-2">{tier}</h3>
               <p className="text-gray-600 text-sm mb-6">
                 {idx === 0 && 'For small teams testing the platform'}
@@ -415,14 +415,14 @@ export default function Home() {
                 {idx !== 2 && <p className="text-sm text-gray-600">/month</p>}
               </div>
               <button className={`w-full py-2 px-4 rounded-lg font-semibold transition ${
-                idx === 1
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'border border-gray-300 text-gray-900 hover:border-blue-600'
-              }`}>
+            idx === 1 ?
+            'bg-blue-600 text-white hover:bg-blue-700' :
+            'border border-gray-300 text-gray-900 hover:border-blue-600'}`
+            }>
                 <Link to={createPageUrl('BookADemo')}>Get Started</Link>
               </button>
             </div>
-          ))}
+          )}
         </div>
 
         <div className="text-center mt-12">
@@ -433,36 +433,36 @@ export default function Home() {
       </section>
 
       {/* FAQ */}
-      {faqs.length > 0 && (
-        <section className="bg-gray-50 dark:bg-gray-900 py-20">
+      {faqs.length > 0 &&
+      <section className="bg-gray-50 dark:bg-gray-900 py-20">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white text-center mb-12">
               Frequently asked questions
             </h2>
 
             <div className="space-y-4">
-              {faqs.map((faq, idx) => (
-                <div key={faq.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              {faqs.map((faq, idx) =>
+            <div key={faq.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                   <button
-                    onClick={() => setExpandedFAQ(expandedFAQ === idx ? -1 : idx)}
-                    className="w-full px-6 py-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-                  >
+                onClick={() => setExpandedFAQ(expandedFAQ === idx ? -1 : idx)}
+                className="w-full px-6 py-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+
                     <span className="font-semibold text-gray-900 dark:text-white text-left">{faq.question}</span>
                     <span className={`text-blue-600 transition-transform ${expandedFAQ === idx ? 'rotate-180' : ''}`}>
                       ↓
                     </span>
                   </button>
-                  {expandedFAQ === idx && (
-                    <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+                  {expandedFAQ === idx &&
+              <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
                       <p className="text-gray-700 dark:text-gray-300">{faq.answer}</p>
                     </div>
-                  )}
+              }
                 </div>
-              ))}
+            )}
             </div>
           </div>
         </section>
-      )}
+      }
 
       {/* Final CTA */}
       <section className="bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 text-white py-20">
@@ -483,6 +483,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </div>
-  );
+    </div>);
+
 }
