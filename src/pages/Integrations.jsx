@@ -1,233 +1,185 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CheckCircle, ArrowRight } from 'lucide-react';
 import { createPageUrl } from '../utils';
+import { CheckCircle, ArrowRight } from 'lucide-react';
+
+const S = { muted: '#D9ECFF', mutedGreen: '#DFFFEF', red: '#B1001A' };
+
+const categories = ['All', 'CRM', 'Email & Marketing', 'Automation', 'Ad Platforms', 'Notifications'];
+
+const integrations = [
+  { name: 'Salesforce', category: 'CRM', desc: 'Sync enriched leads and contacts in real-time. Auto-create records, map custom fields, and trigger sequences.', syncs: ['Leads', 'Contacts', 'Accounts'], auth: 'OAuth 2.0', popular: true },
+  { name: 'HubSpot', category: 'CRM', desc: 'Push identified visitors and enriched records directly into HubSpot CRM with full field mapping support.', syncs: ['Contacts', 'Companies', 'Deals'], auth: 'OAuth 2.0', popular: true },
+  { name: 'Pipedrive', category: 'CRM', desc: 'Automated lead creation and routing into Pipedrive. Map intent scores to deal stages.', syncs: ['Leads', 'Persons', 'Organizations'], auth: 'API Key' },
+  { name: 'Klaviyo', category: 'Email & Marketing', desc: 'Sync identified profiles and trigger flows based on intent signals and behavioral data.', syncs: ['Profiles', 'Events', 'Lists'], auth: 'API Key', popular: true },
+  { name: 'ActiveCampaign', category: 'Email & Marketing', desc: 'Add enriched contacts to lists, trigger automations, and tag by intent category.', syncs: ['Contacts', 'Lists', 'Tags'], auth: 'API Key' },
+  { name: 'Mailchimp', category: 'Email & Marketing', desc: 'Subscriber sync and audience building from identified visitor data.', syncs: ['Contacts', 'Audiences'], auth: 'OAuth 2.0' },
+  { name: 'Marketo', category: 'Email & Marketing', desc: 'Enterprise-grade Marketo integration. Push leads, update records, and trigger smart campaigns.', syncs: ['Leads', 'Programs', 'Smart Lists'], auth: 'API Key' },
+  { name: 'Google Ads', category: 'Ad Platforms', desc: 'Upload high-intent audiences to Google Ads for targeted campaigns and bid adjustments.', syncs: ['Customer Match Lists', 'Audiences'], auth: 'OAuth 2.0' },
+  { name: 'Meta Ads', category: 'Ad Platforms', desc: 'Push intent-rich custom audiences to Meta for retargeting and lookalike expansion.', syncs: ['Custom Audiences', 'Lookalikes'], auth: 'OAuth 2.0' },
+  { name: 'LinkedIn Ads', category: 'Ad Platforms', desc: 'Sync matched audiences to LinkedIn for account-based advertising campaigns.', syncs: ['Matched Audiences'], auth: 'OAuth 2.0' },
+  { name: 'Zapier', category: 'Automation', desc: 'Connect Ark Data to 5,000+ apps with no-code Zapier workflows. Trigger on any data event.', syncs: ['Webhooks', 'Events'], auth: 'Webhooks' },
+  { name: 'Make (Integromat)', category: 'Automation', desc: 'Advanced multi-step automation workflows triggered by Ark Data events.', syncs: ['Webhooks', 'Data Sync'], auth: 'Webhooks' },
+  { name: 'Slack', category: 'Notifications', desc: 'Real-time alerts in your Slack workspace when high-intent leads are identified.', syncs: ['Alerts', 'Notifications'], auth: 'OAuth 2.0' },
+  { name: 'Webhooks / REST API', category: 'Automation', desc: 'Full REST API and signed webhook delivery for custom integrations and internal tooling.', syncs: ['All Events', 'Custom Fields'], auth: 'API Key + HMAC' },
+];
 
 export default function Integrations() {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const integrations = [
-    {
-      name: 'Salesforce',
-      category: 'crm',
-      desc: 'Sync leads and contacts in real-time',
-      syncs: ['Leads', 'Contacts', 'Accounts'],
-      auth: 'OAuth 2.0',
-    },
-    {
-      name: 'HubSpot',
-      category: 'crm',
-      desc: 'Direct integration with HubSpot CRM',
-      syncs: ['Contacts', 'Companies', 'Deals'],
-      auth: 'OAuth 2.0',
-    },
-    {
-      name: 'Pipedrive',
-      category: 'crm',
-      desc: 'Automated lead creation and routing',
-      syncs: ['Leads', 'Persons', 'Organizations'],
-      auth: 'API Key',
-    },
-    {
-      name: 'Klaviyo',
-      category: 'email',
-      desc: 'Email marketing sync and segmentation',
-      syncs: ['Profiles', 'Events', 'Lists'],
-      auth: 'API Key',
-    },
-    {
-      name: 'Mailchimp',
-      category: 'email',
-      desc: 'Subscriber sync and audience building',
-      syncs: ['Contacts', 'Lists'],
-      auth: 'OAuth 2.0',
-    },
-    {
-      name: 'Slack',
-      category: 'notifications',
-      desc: 'Real-time alerts in your Slack workspace',
-      syncs: ['Events', 'Alerts'],
-      auth: 'OAuth 2.0',
-    },
-    {
-      name: 'Zapier',
-      category: 'automation',
-      desc: 'Connect to 5000+ apps with Zapier',
-      syncs: ['Events', 'Webhooks'],
-      auth: 'Webhooks',
-    },
-    {
-      name: 'Make (formerly Integromat)',
-      category: 'automation',
-      desc: 'Advanced workflow automation',
-      syncs: ['Events', 'Data Sync'],
-      auth: 'Webhooks',
-    },
-  ];
-
-  const categories = [
-    { id: 'all', label: 'All' },
-    { id: 'crm', label: 'CRM' },
-    { id: 'email', label: 'Email & Marketing' },
-    { id: 'automation', label: 'Automation' },
-    { id: 'notifications', label: 'Notifications' },
-  ];
-
-  const filtered = selectedCategory === 'all' 
-    ? integrations 
+  const filtered = selectedCategory === 'All'
+    ? integrations
     : integrations.filter(i => i.category === selectedCategory);
 
+  const popular = integrations.filter(i => i.popular);
+
   return (
-    <div className="bg-white dark:bg-black">
+    <div style={{ background: '#000002', minHeight: '100vh', color: '#fff' }}>
       {/* Hero */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32 text-center">
-        <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-          Native integrations with your entire stack
-        </h1>
-        <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-          Connect Ark Data to your CRM, email platform, and automation tools. Real-time, bi-directional sync.
-        </p>
-      </section>
-
-      {/* Category Filter */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-wrap gap-3 justify-center mb-12">
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2 rounded-full font-semibold transition ${
-                selectedCategory === cat.id
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Integration Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filtered.map((integration, idx) => (
-            <div key={idx} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-8 hover:shadow-lg transition">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{integration.name}</h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">{integration.desc}</p>
-
-              <div className="mb-6 space-y-3">
-                <div>
-                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">What Syncs</p>
-                   <div className="flex flex-wrap gap-2">
-                     {integration.syncs.map((sync, sidx) => (
-                       <span key={sidx} className="bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                        {sync}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Auth Type</p>
-                   <p className="text-sm text-gray-700 dark:text-gray-300">{integration.auth}</p>
-                </div>
-              </div>
-
-              <button className="w-full text-blue-600 font-semibold py-2 border border-blue-600 rounded-lg hover:bg-blue-50 transition flex items-center justify-center gap-2">
-                <span>View Setup</span>
-                <ArrowRight size={16} />
+      <section style={{ background: 'linear-gradient(135deg, #06162A 0%, #000002 60%)', borderBottom: '1px solid #0A2142', padding: '80px 0 60px' }}>
+        <div className="sc" style={{ textAlign: 'center', maxWidth: '680px' }}>
+          <p style={{ color: S.red, fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>Integrations</p>
+          <h1 style={{ fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px' }}>Your Entire Stack, Connected.</h1>
+          <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, marginBottom: '32px' }}>Native integrations with your CRM, ESP, ad platforms, and automation tools. Real-time, bi-directional data delivery.</p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to={createPageUrl('BookADemo')}>
+              <button className="ark-btn-red" style={{ padding: '13px 28px', fontSize: '15px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                Book a Call <ArrowRight size={15} />
               </button>
-            </div>
-          ))}
+            </Link>
+            <Link to={createPageUrl('Contact')}>
+              <button className="ark-btn-blue" style={{ padding: '13px 28px', fontSize: '15px' }}>Request Custom Integration</button>
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Custom Integration */}
-      <section className="bg-gray-50 dark:bg-gray-900 py-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-            Don't see your tool?
-          </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-            Use our REST API and webhooks to build custom integrations in minutes.
-          </p>
-          <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
-            <Link to={createPageUrl('BookADemo')}>Contact our team</Link>
-          </button>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
-          How integrations work
-        </h2>
-
-        <div className="grid md:grid-cols-3 gap-8">
-           {[
-            {
-              step: 1,
-              title: 'Connect your tool',
-              desc: 'Authenticate with OAuth or API key—takes 30 seconds.',
-            },
-            {
-              step: 2,
-              title: 'Map your fields',
-              desc: 'Configure which Ark Data fields sync to your CRM schema.',
-            },
-            {
-              step: 3,
-              title: 'Set rules & go live',
-              desc: 'Choose real-time or batch sync, then activate.',
-            },
-          ].map((item, idx) => (
-            <div key={idx} className="text-center">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-950 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-blue-600 dark:text-blue-400 font-bold">{item.step}</span>
-              </div>
-              <h3 className="font-bold text-gray-900 dark:text-white mb-2">{item.title}</h3>
-              <p className="text-gray-600 dark:text-gray-400">{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Security & Support */}
-      <section className="bg-blue-50 dark:bg-blue-950 py-20">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
-            Secure and supported
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-8">
-             {[
-              { title: 'Enterprise Security', items: ['OAuth 2.0 / API key encryption', 'End-to-end TLS', 'SOC 2 Type II compliance'] },
-              { title: 'Developer Support', items: ['REST API documentation', 'Webhook event specs', 'Dedicated integration support'] },
-            ].map((section, idx) => (
-              <div key={idx}>
-                <h3 className="font-bold text-gray-900 dark:text-white mb-4">{section.title}</h3>
-                <ul className="space-y-2">
-                   {section.items.map((item, iidx) => (
-                     <li key={iidx} className="flex items-start gap-2">
-                       <CheckCircle className="text-green-600 flex-shrink-0 mt-1" size={18} />
-                       <span className="text-gray-700 dark:text-gray-300">{item}</span>
-                     </li>
-                   ))}
-                </ul>
+      {/* Popular */}
+      <section style={{ background: '#06162A', borderBottom: '1px solid #0A2142', padding: '48px 0' }}>
+        <div className="sc">
+          <p style={{ color: S.muted, fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '20px', textAlign: 'center' }}>Most Popular Integrations</p>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            {popular.map(p => (
+              <div key={p.name} style={{ background: '#020D1F', border: '1px solid #0A2142', borderRadius: '8px', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CheckCircle size={13} style={{ color: '#22c55e' }} />
+                <span style={{ color: '#fff', fontSize: '13px', fontWeight: 600 }}>{p.name}</span>
+                <span style={{ background: '#0A2142', color: S.muted, fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px' }}>{p.category}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 text-white py-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-6">Ready to activate your stack?</h2>
-          <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
-            <Link to={createPageUrl('BookADemo')}>Book a demo</Link>
-          </button>
+      <div className="sc" style={{ paddingTop: '56px', paddingBottom: '80px' }}>
+        {/* Category Filter */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '36px' }}>
+          {categories.map(cat => (
+            <button key={cat} onClick={() => setSelectedCategory(cat)}
+              style={{
+                background: selectedCategory === cat ? '#B1001A' : '#06162A',
+                border: `1px solid ${selectedCategory === cat ? '#B1001A' : '#0A2142'}`,
+                borderRadius: '100px', padding: '7px 16px', color: '#fff', fontSize: '13px',
+                fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
+              }}>
+              {cat}
+            </button>
+          ))}
         </div>
-      </section>
+
+        {/* Integration Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '14px', marginBottom: '64px' }}>
+          {filtered.map((integration, i) => (
+            <div key={i} style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '10px', padding: '28px', transition: 'border-color 0.2s', cursor: 'default' }}
+              onMouseOver={e => e.currentTarget.style.borderColor = '#1a5ca8'}
+              onMouseOut={e => e.currentTarget.style.borderColor = '#0A2142'}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '16px' }}>{integration.name}</h3>
+                <span style={{ background: '#0A2142', color: S.muted, fontSize: '10px', fontWeight: 700, padding: '3px 10px', borderRadius: '4px', letterSpacing: '0.04em' }}>{integration.category}</span>
+              </div>
+              <p style={{ color: S.muted, fontSize: '13px', lineHeight: 1.65, marginBottom: '18px' }}>{integration.desc}</p>
+              <div style={{ marginBottom: '14px' }}>
+                <p style={{ color: '#4a6a9a', fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '8px' }}>What Syncs</p>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {integration.syncs.map(sync => (
+                    <span key={sync} style={{ background: '#020D1F', border: '1px solid #0A2142', borderRadius: '4px', padding: '3px 10px', color: S.muted, fontSize: '11px', fontWeight: 500 }}>{sync}</span>
+                  ))}
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '14px', borderTop: '1px solid #0A2142' }}>
+                <span style={{ color: '#4a6a9a', fontSize: '11px' }}>Auth: <span style={{ color: S.muted, fontWeight: 600 }}>{integration.auth}</span></span>
+                {integration.popular && <span style={{ background: '#042016', border: '1px solid #063524', color: '#22c55e', fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px' }}>Popular</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* How It Works */}
+        <div style={{ marginBottom: '64px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <h2 style={{ fontSize: 'clamp(24px, 2.5vw, 36px)', fontWeight: 900, letterSpacing: '-0.8px', marginBottom: '12px' }}>Up and Running in Minutes.</h2>
+            <p style={{ color: S.muted, fontSize: '15px' }}>Most integrations activate in under 5 minutes with no engineering required.</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+            {[
+              { num: '01', title: 'Connect', desc: 'Authenticate via OAuth or API key. Takes 30 seconds.' },
+              { num: '02', title: 'Map Fields', desc: 'Configure which Ark Data fields map to your CRM schema.' },
+              { num: '03', title: 'Set Rules', desc: 'Choose real-time or batch sync, routing rules, and filters.' },
+              { num: '04', title: 'Go Live', desc: 'Activate and watch enriched leads flow into your stack.' },
+            ].map((step, i) => (
+              <div key={i} style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '10px', padding: '28px' }}>
+                <div style={{ color: '#1a4a8a', fontSize: '32px', fontWeight: 900, letterSpacing: '-1px', marginBottom: '14px' }}>{step.num}</div>
+                <h3 style={{ color: '#fff', fontWeight: 700, fontSize: '15px', marginBottom: '8px' }}>{step.title}</h3>
+                <p style={{ color: S.muted, fontSize: '13px', lineHeight: 1.65 }}>{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Security Strip */}
+        <div style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '12px', padding: '36px 40px', marginBottom: '48px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+            <div>
+              <h3 style={{ color: '#fff', fontWeight: 700, fontSize: '15px', marginBottom: '14px' }}>Enterprise Security</h3>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {['OAuth 2.0 & API key encryption', 'All data transmitted over TLS 1.2+', 'Webhook payloads signed with HMAC', 'SOC 2 Type II (in progress)'].map(item => (
+                  <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CheckCircle size={13} style={{ color: '#22c55e', flexShrink: 0 }} />
+                    <span style={{ color: S.muted, fontSize: '13px' }}>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 style={{ color: '#fff', fontWeight: 700, fontSize: '15px', marginBottom: '14px' }}>Developer Support</h3>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {['REST API with full documentation', 'Webhook event specifications', 'Custom field mapping support', 'Dedicated integration onboarding'].map(item => (
+                  <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CheckCircle size={13} style={{ color: '#22c55e', flexShrink: 0 }} />
+                    <span style={{ color: S.muted, fontSize: '13px' }}>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div style={{ background: 'linear-gradient(135deg, #06162A 0%, #000002 50%, #042016 100%)', border: '1px solid #0A2142', borderRadius: '16px', padding: '56px', textAlign: 'center' }}>
+          <p style={{ color: S.red, fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '12px' }}>Don't See Your Tool?</p>
+          <h2 style={{ fontWeight: 900, fontSize: 'clamp(22px, 2.5vw, 32px)', letterSpacing: '-0.8px', marginBottom: '12px' }}>We'll Build It With You.</h2>
+          <p style={{ color: S.muted, fontSize: '15px', marginBottom: '28px', maxWidth: '440px', margin: '0 auto 28px' }}>Use our REST API and webhooks to build custom integrations, or talk to our team about a native connector.</p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to={createPageUrl('BookADemo')}>
+              <button className="ark-btn-red" style={{ padding: '13px 28px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                Book a Call <ArrowRight size={14} />
+              </button>
+            </Link>
+            <Link to={createPageUrl('Contact')}>
+              <button className="ark-btn-blue" style={{ padding: '13px 28px', fontSize: '14px' }}>Contact Our Team</button>
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
