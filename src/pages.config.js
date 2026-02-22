@@ -63,6 +63,10 @@ import Security from './pages/Security';
 import Settings from './pages/Settings';
 import Terms from './pages/Terms';
 import Apply from './pages/Apply';
+import About from './pages/About';
+import FAQ from './pages/FAQ';
+import Solutions from './pages/Solutions';
+import Services from './pages/Services';
 import __Layout from './Layout.jsx';
 
 
@@ -83,6 +87,10 @@ export const PAGES = {
     "Settings": Settings,
     "Terms": Terms,
     "Apply": Apply,
+    "About": About,
+    "FAQ": FAQ,
+    "Solutions": Solutions,
+    "Services": Services,
 }
 
 export const pagesConfig = {
