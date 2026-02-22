@@ -118,7 +118,7 @@ export default function HowItWorks() {
                     'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&h=400&fit=crop',
                   ][step.num - 1]}
                   alt={`Step ${step.num}: ${step.title}`}
-                  className="rounded-xl h-96 w-full object-cover shadow-lg"
+                  className="rounded-xl w-full object-contain shadow-lg"
                 />
               </div>
             );
