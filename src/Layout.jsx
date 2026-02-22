@@ -218,7 +218,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Footer */}
       <footer style={{ background: 'linear-gradient(180deg, #050F1E 0%, #020A12 100%)', borderTop: '1px solid rgba(20,60,110,0.4)' }}>
         <div className="sc" style={{ paddingTop: '64px', paddingBottom: '32px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '32px', marginBottom: '48px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '40px', marginBottom: '56px' }}>
             <div style={{ gridColumn: 'span 2' }}>
               <div style={{ fontWeight: 800, fontSize: '18px', color: '#fff', marginBottom: '14px', letterSpacing: '-0.3px' }}>Ark Data</div>
               <p style={{ color: '#D9ECFF', fontSize: '13px', lineHeight: 1.75, maxWidth: '220px', marginBottom: '16px' }}>
