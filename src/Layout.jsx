@@ -24,7 +24,7 @@ export default function Layout({ children, currentPageName }) {
   ];
 
   return (
-    <div style={{ background: '#000002', minHeight: '100vh', color: '#fff', fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif" }}>
+    <div style={{ background: '#00000F', minHeight: '100vh', color: '#fff' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; }
