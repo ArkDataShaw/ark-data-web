@@ -49,13 +49,9 @@ export default function Analytics() {
   // Prepare trend data by day
   const trendData = (() => {
     const dayMap = {};
-    const threshold = getDateThreshold();
     appliedFilters.forEach((lead) => {
       const date = new Date(lead.created_date).toLocaleDateString();
-      const leadDate = new Date(lead.created_date);
-      if (leadDate >= threshold) {
-        dayMap[date] = (dayMap[date] || 0) + 1;
-      }
+      dayMap[date] = (dayMap[date] || 0) + 1;
     });
     return Object.entries(dayMap)
       .sort((a, b) => new Date(a[0]) - new Date(b[0]))
