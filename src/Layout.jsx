@@ -165,9 +165,10 @@ export default function Layout({ children, currentPageName }) {
       {/* Nav */}
       <header style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        background: isScrolled ? 'rgba(0,0,2,0.97)' : 'rgba(0,0,2,0.82)',
-        borderBottom: `1px solid ${isScrolled ? '#0A2142' : 'transparent'}`,
-        backdropFilter: 'blur(16px)', transition: 'all 0.3s',
+        background: isScrolled ? 'rgba(0,0,15,0.97)' : 'rgba(0,0,15,0.75)',
+        borderBottom: `1px solid ${isScrolled ? 'rgba(20,60,110,0.6)' : 'transparent'}`,
+        backdropFilter: 'blur(24px)', transition: 'all 0.3s',
+        boxShadow: isScrolled ? '0 1px 40px rgba(0,0,0,0.4)' : 'none',
       }}>
         <div className="sc" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
           <Link to={createPageUrl('Home')} style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
