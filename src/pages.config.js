@@ -61,6 +61,7 @@ import Services from './pages/Services';
 import Home from './pages/Home';
 import HowItWorks from './pages/HowItWorks';
 import Pricing from './pages/Pricing';
+import CaseStudies from './pages/CaseStudies';
 import __Layout from './Layout.jsx';
 
 
@@ -79,6 +80,7 @@ export const PAGES = {
     "Home": Home,
     "HowItWorks": HowItWorks,
     "Pricing": Pricing,
+    "CaseStudies": CaseStudies,
 }
 
 export const pagesConfig = {
