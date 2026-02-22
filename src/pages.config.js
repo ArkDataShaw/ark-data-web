@@ -47,7 +47,6 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Analytics from './pages/Analytics';
 import Cookies from './pages/Cookies';
 import Integrations from './pages/Integrations';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -70,7 +69,6 @@ import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Analytics": Analytics,
     "Cookies": Cookies,
     "Integrations": Integrations,
     "PrivacyPolicy": PrivacyPolicy,
@@ -92,7 +90,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "Analytics",
+    mainPage: "Cookies",
     Pages: PAGES,
     Layout: __Layout,
 };
