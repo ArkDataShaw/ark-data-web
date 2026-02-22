@@ -258,7 +258,7 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </div>
 
-          <div style={{ borderTop: '1px solid #0A2142', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ borderTop: '1px solid rgba(20,60,110,0.4)', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
             <p style={{ color: '#D9ECFF', fontSize: '12px' }}>© 2026 Ark Data. All rights reserved. Compliance-first data, built for operators.</p>
             <div style={{ display: 'flex', gap: '20px' }}>
               {['Twitter', 'LinkedIn', 'GitHub'].map(s => (
