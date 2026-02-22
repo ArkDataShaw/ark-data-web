@@ -111,7 +111,7 @@ export default function HowItWorks() {
 
                 <img 
                   src={[
-                    'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&h=400&fit=crop',
+                    'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6989af7aa56af5f62af3065e/166e1c884_Screenshot2026-02-22at15211AM.png',
                     'https://images.unsplash.com/photo-1552664730-d307ca884978?w=500&h=400&fit=crop',
                     'https://images.unsplash.com/photo-1531492746076-161ca9bcad58?w=500&h=400&fit=crop',
                     'https://images.unsplash.com/photo-1460925895917-adf4e565e479?w=500&h=400&fit=crop',
