@@ -199,10 +199,10 @@ export default function Layout({ children, currentPageName }) {
         </div>
 
         {mobileMenuOpen && (
-          <div style={{ background: '#06162A', borderTop: '1px solid #0A2142', padding: '20px 20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ background: 'rgba(5,14,28,0.98)', borderTop: '1px solid rgba(20,60,110,0.5)', padding: '20px 20px', display: 'flex', flexDirection: 'column', gap: '4px', backdropFilter: 'blur(24px)' }}>
             {navLinks.map(link => (
               <Link key={link.label} to={createPageUrl(link.page)} onClick={() => setMobileMenuOpen(false)}
-                style={{ color: '#D9ECFF', fontSize: '15px', fontWeight: 500, padding: '12px 0', borderBottom: '1px solid #0A2142', display: 'block' }}>
+                style={{ color: '#D9ECFF', fontSize: '15px', fontWeight: 500, padding: '12px 0', borderBottom: '1px solid rgba(20,60,110,0.4)', display: 'block' }}>
                 {link.label}
               </Link>
             ))}
