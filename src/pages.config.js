@@ -48,18 +48,9 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import Analytics from './pages/Analytics';
-import BookADemo from './pages/BookADemo';
-import CaseStudies from './pages/CaseStudies';
-import Contact from './pages/Contact';
 import Cookies from './pages/Cookies';
-import Home from './pages/Home';
-import HowItWorks from './pages/HowItWorks';
 import Integrations from './pages/Integrations';
-import Pricing from './pages/Pricing';
 import PrivacyPolicy from './pages/PrivacyPolicy';
-import Product from './pages/Product';
-import Resources from './pages/Resources';
-import Security from './pages/Security';
 import Settings from './pages/Settings';
 import Terms from './pages/Terms';
 import Apply from './pages/Apply';
@@ -72,18 +63,9 @@ import __Layout from './Layout.jsx';
 
 export const PAGES = {
     "Analytics": Analytics,
-    "BookADemo": BookADemo,
-    "CaseStudies": CaseStudies,
-    "Contact": Contact,
     "Cookies": Cookies,
-    "Home": Home,
-    "HowItWorks": HowItWorks,
     "Integrations": Integrations,
-    "Pricing": Pricing,
     "PrivacyPolicy": PrivacyPolicy,
-    "Product": Product,
-    "Resources": Resources,
-    "Security": Security,
     "Settings": Settings,
     "Terms": Terms,
     "Apply": Apply,
@@ -94,7 +76,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "Home",
+    mainPage: "Analytics",
     Pages: PAGES,
     Layout: __Layout,
 };
