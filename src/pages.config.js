@@ -47,48 +47,50 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Cookies from './pages/Cookies';
-import Integrations from './pages/Integrations';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import Settings from './pages/Settings';
-import Terms from './pages/Terms';
-import Apply from './pages/Apply';
 import About from './pages/About';
+import Apply from './pages/Apply';
+import BookADemo from './pages/BookADemo';
+import CaseStudies from './pages/CaseStudies';
+import Contact from './pages/Contact';
+import Cookies from './pages/Cookies';
 import FAQ from './pages/FAQ';
-import Solutions from './pages/Solutions';
-import Services from './pages/Services';
 import Home from './pages/Home';
 import HowItWorks from './pages/HowItWorks';
+import Integrations from './pages/Integrations';
 import Pricing from './pages/Pricing';
-import CaseStudies from './pages/CaseStudies';
-import Resources from './pages/Resources';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import Product from './pages/Product';
-import Contact from './pages/Contact';
+import Resources from './pages/Resources';
 import Security from './pages/Security';
-import BookADemo from './pages/BookADemo';
+import Services from './pages/Services';
+import Settings from './pages/Settings';
+import Solutions from './pages/Solutions';
+import Terms from './pages/Terms';
+import Blog from './pages/Blog';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Cookies": Cookies,
-    "Integrations": Integrations,
-    "PrivacyPolicy": PrivacyPolicy,
-    "Settings": Settings,
-    "Terms": Terms,
-    "Apply": Apply,
     "About": About,
+    "Apply": Apply,
+    "BookADemo": BookADemo,
+    "CaseStudies": CaseStudies,
+    "Contact": Contact,
+    "Cookies": Cookies,
     "FAQ": FAQ,
-    "Solutions": Solutions,
-    "Services": Services,
     "Home": Home,
     "HowItWorks": HowItWorks,
+    "Integrations": Integrations,
     "Pricing": Pricing,
-    "CaseStudies": CaseStudies,
-    "Resources": Resources,
+    "PrivacyPolicy": PrivacyPolicy,
     "Product": Product,
-    "Contact": Contact,
+    "Resources": Resources,
     "Security": Security,
-    "BookADemo": BookADemo,
+    "Services": Services,
+    "Settings": Settings,
+    "Solutions": Solutions,
+    "Terms": Terms,
+    "Blog": Blog,
 }
 
 export const pagesConfig = {
