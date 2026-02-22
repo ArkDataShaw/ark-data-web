@@ -1,182 +1,102 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, User, ArrowRight } from 'lucide-react';
 import { createPageUrl } from '../utils';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { ArrowRight } from 'lucide-react';
+
+const S = { muted: '#D9ECFF', mutedGreen: '#DFFFEF', red: '#B1001A' };
+
+const categories = ['All', 'Data Enrichment', 'Intent Data', 'RevOps', 'Outbound', 'Compliance'];
+
+const posts = [
+  { title: 'The Complete Guide to Lost Traffic Recovery in 2026', category: 'Data Enrichment', excerpt: 'Up to 97% of your site visitors never fill a form. Here\'s how to turn them into identifiable, enriched leads — and why most teams are leaving pipeline on the table.', read: '8 min', date: 'Feb 2026', featured: true },
+  { title: 'What Is Intent Data and Why Does It Actually Matter?', category: 'Intent Data', excerpt: 'Not all data is created equal. Intent data tells you who is in-market right now. Here\'s the definitive breakdown of signals, scoring, and activation.', read: '6 min', date: 'Feb 2026' },
+  { title: 'RevOps Playbook: Enriching Your Entire CRM Without Breaking It', category: 'RevOps', excerpt: 'Field mapping, deduplication, and normalization at scale. A step-by-step guide for RevOps teams modernizing their CRM data layer.', read: '10 min', date: 'Jan 2026' },
+  { title: 'The SDR Prioritization Framework Using Intent Signals', category: 'Outbound', excerpt: 'Stop prospecting blind. How SDR teams are using intent scores to triple their reply rates and cut their research time in half.', read: '7 min', date: 'Jan 2026' },
+  { title: 'GDPR, CCPA, and Intent Data: What Revenue Teams Need to Know', category: 'Compliance', excerpt: 'Intent data doesn\'t have to be a compliance headache. Here\'s how to use enrichment and intent signals in a way that supports your legal obligations.', read: '9 min', date: 'Jan 2026' },
+  { title: 'How to Build an ABM Program Using High Intent Data', category: 'Intent Data', excerpt: 'Account-based marketing powered by real buying signals. From ICP definition to segment creation to activation across ads and outbound.', read: '11 min', date: 'Dec 2025' },
+  { title: 'Data Hygiene 101: Why Your CRM is Slowly Rotting', category: 'Data Enrichment', excerpt: 'Stale contacts, duplicate records, missing firmographics. Here\'s how to audit, clean, and maintain a CRM that actually helps your team close deals.', read: '6 min', date: 'Dec 2025' },
+  { title: '5 Ways Demand Gen Teams Are Using Intent Data to Lower CPL', category: 'RevOps', excerpt: 'Intent signals aren\'t just for SDRs. Here are five concrete tactics demand gen teams are using to reduce wasted ad spend and improve pipeline quality.', read: '5 min', date: 'Nov 2025' },
+  { title: 'The Anatomy of a High-Quality B2B Data Record', category: 'Data Enrichment', excerpt: 'Domain, industry, headcount, tech stack, buyer role, and intent signals. What does a truly complete enriched record look like — and how do you get there?', read: '7 min', date: 'Nov 2025' },
+  { title: 'Building a Vendor Review Packet for B2B Data Tools', category: 'Compliance', excerpt: 'Security questionnaires, DPA reviews, and architecture calls. How to evaluate B2B data vendors as an enterprise procurement team.', read: '8 min', date: 'Oct 2025' },
+];
+
+const catColor = { 'Data Enrichment': { bg: '#06162A', border: '#0A2142', text: S.muted }, 'Intent Data': { bg: '#042016', border: '#063524', text: '#DFFFEF' }, 'RevOps': { bg: '#0A2142', border: '#1a4a8a', text: S.muted }, 'Outbound': { bg: '#06162A', border: '#0A2142', text: S.muted }, 'Compliance': { bg: '#042016', border: '#063524', text: '#DFFFEF' } };
 
 export default function Resources() {
-  const [selectedCategory, setSelectedCategory] = useState('all');
-
-  const { data: blogPosts = [] } = useQuery({
-    queryKey: ['blog_posts'],
-    queryFn: () => base44.entities.BlogPost.filter({ published: true }),
-  });
-
-  const defaultPosts = [
-    {
-      id: '1',
-      title: 'How to Identify Lost Revenue in Your Website Traffic',
-      category: 'guide',
-      excerpt: 'A complete guide to finding the qualified prospects you\'re currently losing to form abandonment.',
-      cover_image_url: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80',
-      author_name: 'Sarah Chen',
-      published: true,
-    },
-    {
-      id: '2',
-      title: 'Intent Scoring: Beyond Basic Lead Scoring',
-      category: 'product',
-      excerpt: 'Learn how AI-powered intent signals give you competitive advantage in sales.',
-      cover_image_url: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&q=80',
-      author_name: 'Mike Johnson',
-      published: true,
-    },
-    {
-      id: '3',
-      title: 'SaaS Revenue Operations: A Playbook for 2024',
-      category: 'tips',
-      excerpt: 'Best practices for building a high-performing RevOps function in 2024.',
-      cover_image_url: 'https://images.unsplash.com/photo-1557821552-17105176677c?w=800&q=80',
-      author_name: 'Alex Rivera',
-      published: true,
-    },
-    {
-      id: '4',
-      title: 'Privacy-First Analytics: A New Era Begins',
-      category: 'industry',
-      excerpt: 'How cookie deprecation is reshaping visitor identification and what to do about it.',
-      cover_image_url: 'https://images.unsplash.com/photo-1516534775068-bb57451e330f?w=800&q=80',
-      author_name: 'Jordan Taylor',
-      published: true,
-    },
-    {
-      id: '5',
-      title: 'Measuring Sales Productivity: Metrics That Matter',
-      category: 'guide',
-      excerpt: 'Define and track the KPIs that actually drive revenue outcomes.',
-      cover_image_url: 'https://images.unsplash.com/photo-1460925895917-adf4e565db7d?w=800&q=80',
-      author_name: 'Emma Wilson',
-      published: true,
-    },
-  ];
-
-  const posts = blogPosts.filter(p => p.published).length > 0 ? blogPosts : defaultPosts;
-  
-  const categories = [
-    { id: 'all', label: 'All' },
-    { id: 'guide', label: 'Guides' },
-    { id: 'product', label: 'Product' },
-    { id: 'industry', label: 'Industry' },
-    { id: 'tips', label: 'Tips' },
-  ];
-
-  const filtered = selectedCategory === 'all'
-    ? posts
-    : posts.filter(p => p.category === selectedCategory);
+  const [active, setActive] = useState('All');
+  const [email, setEmail] = useState('');
+  const filtered = active === 'All' ? posts : posts.filter(p => p.category === active);
+  const featured = filtered.find(p => p.featured) || filtered[0];
+  const rest = filtered.filter(p => p !== featured);
 
   return (
-    <div className="bg-white">
-      {/* Hero */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32 text-center">
-        <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
-          Resources & insights
-        </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Learn best practices, industry trends, and practical guides for revenue teams.
-        </p>
+    <div style={{ background: '#000002', minHeight: '100vh', color: '#fff' }}>
+      <section style={{ background: 'linear-gradient(135deg, #06162A 0%, #000002 60%)', borderBottom: '1px solid #0A2142', padding: '80px 0 60px' }}>
+        <div className="sc" style={{ textAlign: 'center', maxWidth: '680px' }}>
+          <p style={{ color: '#B1001A', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>Blog & Resources</p>
+          <h1 style={{ fontSize: 'clamp(32px, 4vw, 50px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px' }}>Intelligence Hub</h1>
+          <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7 }}>Playbooks, guides, and operator insights on data enrichment, intent data, and RevOps.</p>
+        </div>
       </section>
 
-      {/* Category Filter */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-wrap gap-3 justify-center mb-16">
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2 rounded-full font-semibold transition ${
-                selectedCategory === cat.id
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {cat.label}
+      <div className="sc" style={{ paddingTop: '48px', paddingBottom: '80px' }}>
+        {/* Category filters */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '40px' }}>
+          {categories.map(cat => (
+            <button key={cat} onClick={() => setActive(cat)}
+              style={{ padding: '7px 16px', background: active === cat ? '#B1001A' : '#06162A', border: `1px solid ${active === cat ? '#B1001A' : '#0A2142'}`, borderRadius: '100px', color: '#fff', fontSize: '13px', fontWeight: active === cat ? 700 : 500, cursor: 'pointer', transition: 'all 0.2s' }}>
+              {cat}
             </button>
           ))}
         </div>
 
-        {/* Blog Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filtered.map((post) => (
-            <article key={post.id} className="bg-white rounded-lg overflow-hidden border border-gray-200 hover:shadow-lg transition">
-              <div className="h-48 bg-gray-200 overflow-hidden">
-                {post.cover_image_url ? (
-                  <img src={post.cover_image_url} alt={post.title} className="w-full h-full object-cover hover:scale-105 transition" />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100" />
-                )}
+        {/* Featured */}
+        {featured && (
+          <div style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '14px', padding: '40px', marginBottom: '32px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center' }}>
+            <div>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                <span style={{ background: '#B1001A22', border: '1px solid #B1001A44', borderRadius: '100px', padding: '3px 10px', color: '#B1001A', fontSize: '11px', fontWeight: 700 }}>Featured</span>
+                <span style={{ background: (catColor[featured.category]?.bg || '#06162A'), border: `1px solid ${catColor[featured.category]?.border || '#0A2142'}`, borderRadius: '100px', padding: '3px 10px', color: catColor[featured.category]?.text || S.muted, fontSize: '11px', fontWeight: 600 }}>{featured.category}</span>
               </div>
-
-              <div className="p-6">
-                <span className="text-xs font-semibold text-blue-600 uppercase">
-                  {categories.find(c => c.id === post.category)?.label}
-                </span>
-
-                <h3 className="text-lg font-bold text-gray-900 mt-3 mb-2 line-clamp-2">
-                  {post.title}
-                </h3>
-
-                <p className="text-gray-600 text-sm mb-6 line-clamp-3">
-                  {post.excerpt}
-                </p>
-
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                  <div className="flex items-center gap-4">
-                    {post.author_name && (
-                      <span className="flex items-center gap-1">
-                        <User size={14} />
-                        {post.author_name}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <button className="text-blue-600 font-semibold text-sm hover:text-blue-700 flex items-center gap-2">
-                  Read more
-                  <ArrowRight size={16} />
-                </button>
+              <h2 style={{ color: '#fff', fontWeight: 900, fontSize: '24px', letterSpacing: '-0.5px', lineHeight: 1.3, marginBottom: '14px' }}>{featured.title}</h2>
+              <p style={{ color: S.muted, fontSize: '14px', lineHeight: 1.7, marginBottom: '20px' }}>{featured.excerpt}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <span style={{ color: '#4a7aaa', fontSize: '12px' }}>{featured.date}</span>
+                <span style={{ color: S.muted, fontSize: '12px' }}>{featured.read} read</span>
               </div>
-            </article>
+            </div>
+            <div style={{ background: 'linear-gradient(135deg, #0A2142, #042016)', borderRadius: '10px', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: '#4a7aaa', fontSize: '48px' }}>📊</span>
+            </div>
+          </div>
+        )}
+
+        {/* Post grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginBottom: '60px' }}>
+          {rest.map((post, i) => (
+            <div key={i} style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '10px', padding: '28px', display: 'flex', flexDirection: 'column' }}>
+              <span style={{ background: (catColor[post.category]?.bg || '#06162A'), border: `1px solid ${catColor[post.category]?.border || '#0A2142'}`, borderRadius: '100px', padding: '3px 10px', color: catColor[post.category]?.text || S.muted, fontSize: '11px', fontWeight: 600, width: 'fit-content', marginBottom: '14px' }}>{post.category}</span>
+              <h3 style={{ color: '#fff', fontWeight: 700, fontSize: '16px', lineHeight: 1.4, marginBottom: '10px', flex: 1 }}>{post.title}</h3>
+              <p style={{ color: S.muted, fontSize: '13px', lineHeight: 1.65, marginBottom: '16px' }}>{post.excerpt}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ color: '#4a7aaa', fontSize: '11px' }}>{post.date}</span>
+                <span style={{ color: S.muted, fontSize: '11px' }}>{post.read} read</span>
+              </div>
+            </div>
           ))}
         </div>
-      </section>
 
-      {/* Newsletter Signup */}
-      <section className="bg-blue-50 py-20">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">
-            Stay updated
-          </h2>
-          <p className="text-lg text-gray-600 mb-8">
-            Subscribe to our newsletter for weekly insights on revenue operations and visitor intelligence.
-          </p>
-
-          <form onSubmit={(e) => { e.preventDefault(); }} className="flex flex-col sm:flex-row gap-3">
-            <input
-              type="email"
-              placeholder="you@company.com"
-              className="flex-grow px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition whitespace-nowrap">
-              Subscribe
-            </button>
-          </form>
-
-          <p className="text-xs text-gray-600 mt-4">
-            We respect your privacy. Unsubscribe anytime.
-          </p>
+        {/* Newsletter */}
+        <div style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '12px', padding: '40px', textAlign: 'center' }}>
+          <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '22px', marginBottom: '8px' }}>Intelligence in Your Inbox</h3>
+          <p style={{ color: S.muted, fontSize: '14px', marginBottom: '24px', maxWidth: '400px', margin: '0 auto 24px' }}>Intent data insights, enrichment playbooks, and RevOps strategy — delivered weekly.</p>
+          <div style={{ display: 'flex', gap: '8px', maxWidth: '400px', margin: '0 auto' }}>
+            <input className="ark-input" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} style={{ flex: 1 }} />
+            <button className="ark-btn-red" style={{ padding: '12px 20px', fontSize: '14px', whiteSpace: 'nowrap' }}>Subscribe</button>
+          </div>
+          <p style={{ color: S.muted, fontSize: '11px', marginTop: '12px' }}>No spam. Unsubscribe anytime. Compliance-first.</p>
         </div>
-      </section>
+      </div>
     </div>
   );
 }
