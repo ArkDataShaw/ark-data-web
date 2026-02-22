@@ -81,24 +81,6 @@ export default function Analytics() {
     { name: "Lost", value: appliedFilters.filter((l) => l.status === "lost").length, color: "#ef4444" },
   ].filter((s) => s.value > 0);
 
-  // Filter predictions
-  const filteredPredictions = () => {
-    switch (selectedFilter) {
-      case "high-conversion":
-        return predictions.filter((p) => p.conversion_likelihood > 70);
-      case "upsell":
-        return predictions.filter((p) => p.upsell_opportunity);
-      case "at-risk":
-        return predictions.filter((p) => p.risk_factors && p.risk_factors.length > 0);
-      default:
-        return predictions;
-    }
-  };
-
-  const getLeadData = (leadId) => {
-    return leads.find((l) => l.id === leadId);
-  };
-
   return (
     <div className="min-h-screen bg-white dark:bg-black">
       {/* Header */}
