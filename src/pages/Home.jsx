@@ -91,11 +91,18 @@ export default function Home() {
 
           {/* Right: Product Mock */}
           <div className="relative hidden lg:block">
-            <img 
-              src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=500&fit=crop" 
-              alt="Analytics Dashboard" 
-              className="rounded-2xl shadow-xl object-cover w-full h-96"
-            />
+            <div className="flex flex-col gap-4">
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6989af7aa56af5f62af3065e/505c7ac5e_Screenshot2026-02-22at14530AM.png"
+                alt="Analytics Dashboard"
+                className="rounded-2xl shadow-xl w-full object-cover"
+              />
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6989af7aa56af5f62af3065e/dc30a88dd_Screenshot2026-02-22at14632AM.png"
+                alt="Identity & Intent Analytics"
+                className="rounded-2xl shadow-xl w-full object-cover"
+              />
+            </div>
           </div>
         </div>
       </section>

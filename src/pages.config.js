@@ -47,6 +47,7 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import Analytics from './pages/Analytics';
 import BookADemo from './pages/BookADemo';
 import CaseStudies from './pages/CaseStudies';
 import Contact from './pages/Contact';
@@ -59,13 +60,13 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import Product from './pages/Product';
 import Resources from './pages/Resources';
 import Security from './pages/Security';
-import Terms from './pages/Terms';
-import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
+import Terms from './pages/Terms';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "Analytics": Analytics,
     "BookADemo": BookADemo,
     "CaseStudies": CaseStudies,
     "Contact": Contact,
@@ -78,9 +79,8 @@ export const PAGES = {
     "Product": Product,
     "Resources": Resources,
     "Security": Security,
-    "Terms": Terms,
-    "Analytics": Analytics,
     "Settings": Settings,
+    "Terms": Terms,
 }
 
 export const pagesConfig = {
