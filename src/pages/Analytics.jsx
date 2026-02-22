@@ -9,11 +9,6 @@ export default function Analytics() {
   const [selectedSource, setSelectedSource] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
 
-  const { data: predictions = [] } = useQuery({
-    queryKey: ["predictions"],
-    queryFn: () => base44.entities.LeadPrediction.list(),
-  });
-
   const { data: leads = [] } = useQuery({
     queryKey: ["leads"],
     queryFn: () => base44.entities.Lead.list(),
