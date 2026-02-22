@@ -67,6 +67,7 @@ import Settings from './pages/Settings';
 import Solutions from './pages/Solutions';
 import Terms from './pages/Terms';
 import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
 import __Layout from './Layout.jsx';
 
 
@@ -91,6 +92,7 @@ export const PAGES = {
     "Solutions": Solutions,
     "Terms": Terms,
     "Blog": Blog,
+    "BlogPost": BlogPost,
 }
 
 export const pagesConfig = {
