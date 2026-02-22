@@ -20,6 +20,7 @@ export default function Layout({ children, currentPageName }) {
     { label: 'Pricing', page: 'Pricing' },
     { label: 'Case Studies', page: 'CaseStudies' },
     { label: 'Resources', page: 'Resources' },
+    { label: 'Blog', page: 'Blog' },
   ];
 
   return (
