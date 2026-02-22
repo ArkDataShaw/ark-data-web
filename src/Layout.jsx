@@ -132,7 +132,7 @@ export default function Layout({ children, currentPageName }) {
             {[
               { title: 'Platform', links: [['Platform', 'Product'], ['How It Works', 'HowItWorks'], ['Integrations', 'Integrations'], ['Security', 'Security']] },
               { title: 'Solutions', links: [['By Company Size', 'Solutions'], ['By Role', 'Solutions'], ['By Industry', 'Solutions'], ['Services', 'Services']] },
-              { title: 'Company', links: [['About', 'About'], ['Case Studies', 'CaseStudies'], ['Blog', 'Resources'], ['Apply / Partner', 'Apply']] },
+              { title: 'Company', links: [['About', 'About'], ['Case Studies', 'CaseStudies'], ['Blog', 'Blog'], ['Apply / Partner', 'Apply']] },
               { title: 'Legal', links: [['Privacy Policy', 'PrivacyPolicy'], ['Terms of Service', 'Terms'], ['Cookie Policy', 'Cookies'], ['Contact Us', 'Contact']] },
             ].map(col => (
               <div key={col.title}>
