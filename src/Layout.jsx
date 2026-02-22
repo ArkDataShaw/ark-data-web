@@ -247,7 +247,7 @@ export default function Layout({ children, currentPageName }) {
           </div>
 
           {/* Newsletter */}
-          <div style={{ borderTop: '1px solid #0A2142', paddingTop: '32px', marginBottom: '32px', display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ borderTop: '1px solid rgba(20,60,110,0.4)', paddingTop: '36px', marginBottom: '36px', display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <p style={{ color: '#fff', fontWeight: 700, fontSize: '14px', marginBottom: '4px' }}>Intelligence in your inbox</p>
               <p style={{ color: '#D9ECFF', fontSize: '13px' }}>Intent data insights, enrichment playbooks, RevOps strategies.</p>
