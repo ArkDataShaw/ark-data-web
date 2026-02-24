@@ -49,6 +49,8 @@
  */
 import About from './pages/About';
 import Apply from './pages/Apply';
+import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
 import BookADemo from './pages/BookADemo';
 import CaseStudies from './pages/CaseStudies';
 import Contact from './pages/Contact';
@@ -66,14 +68,14 @@ import Services from './pages/Services';
 import Settings from './pages/Settings';
 import Solutions from './pages/Solutions';
 import Terms from './pages/Terms';
-import Blog from './pages/Blog';
-import BlogPost from './pages/BlogPost';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "About": About,
     "Apply": Apply,
+    "Blog": Blog,
+    "BlogPost": BlogPost,
     "BookADemo": BookADemo,
     "CaseStudies": CaseStudies,
     "Contact": Contact,
@@ -91,12 +93,10 @@ export const PAGES = {
     "Settings": Settings,
     "Solutions": Solutions,
     "Terms": Terms,
-    "Blog": Blog,
-    "BlogPost": BlogPost,
 }
 
 export const pagesConfig = {
-    mainPage: "Cookies",
+    mainPage: "Home",
     Pages: PAGES,
     Layout: __Layout,
 };
