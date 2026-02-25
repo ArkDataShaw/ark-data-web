@@ -20,7 +20,7 @@ const faqCategories = [
     cat: 'Lost Traffic',
     items: [
       { q: 'How is lost traffic recovered?', a: 'Our pixel captures anonymous sessions and cross-references against our identity graph. We resolve visitor identity using behavioral signals, IP resolution, device matching, and proprietary data partnerships, then deliver enriched leads to your CRM.' },
-      { q: 'What match rates can I expect?', a: 'Match rates vary by traffic mix and industry. Most clients see 20–40% of traffic resolved to company-level, and 10–20% resolved to individual contact level with verified email.' },
+      { q: 'What match rates can I expect?', a: 'Match rates vary by traffic mix and industry. Most clients see 20-40% of traffic resolved to company-level, and 10-20% resolved to individual contact level with verified email.' },
       { q: 'What sources count as "lost traffic"?', a: 'Website visits, form partial completions, newsletter signups that bounced, chat widget interactions, PDF downloads without form fills, and any session that ended without conversion.' },
       { q: 'Will this slow down my website?', a: 'No. Our pixel is under 2KB and fully asynchronous. It has zero impact on page load performance or Core Web Vitals.' },
     ]

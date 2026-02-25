@@ -121,7 +121,7 @@ const faqs = [
   { q: 'What is high-intent data?', a: 'High-intent data identifies businesses or individuals showing active buying signals: researching solutions, visiting competitor sites, downloading guides, or engaging with in-category content. It tells you who is ready to buy now.' },
   { q: 'How is Lost Traffic recovered?', a: 'Our pixel captures anonymous sessions and cross-references them against our identity graph. We resolve visitor identity, enrich with firmographic and contact data, and deliver actionable leads to your CRM in real time.' },
   { q: 'What CRMs do you integrate with?', a: 'We integrate natively with Salesforce, HubSpot, Pipedrive, Klaviyo, ActiveCampaign, Mailchimp, Marketo, and any platform supporting webhook or API delivery.' },
-  { q: 'What match rates can I expect?', a: 'Match rates vary by traffic mix and industry, but most clients see 20–40% of anonymous traffic resolved to company-level, with 10–20% resolved to individual contact level.' },
+  { q: 'What match rates can I expect?', a: 'Match rates vary by traffic mix and industry, but most clients see 20-40% of anonymous traffic resolved to company-level, with 10-20% resolved to individual contact level.' },
   { q: 'How do you handle compliance?', a: 'Ark Data is designed to support GDPR, CCPA, and major privacy frameworks. We operate with privacy-first data handling, offer DPAs, and support vendor security reviews.' },
   { q: 'What is the onboarding timeline?', a: 'Most clients are fully live in under 1 week. Pixel installation takes 15 minutes. CRM integration and field mapping typically takes 2–3 hours with our team.' },
 ];
@@ -411,7 +411,7 @@ export default function Home() {
         <div className="sc" style={{ textAlign: 'center' }}>
           <p style={{ color: '#B1001A', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '16px' }}>Ready to Activate?</p>
           <h2 style={{ fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px', lineHeight: 1.1 }}>
-            Turn Lost Traffic Into<br />Revenue — Starting Now.
+            Turn Lost Traffic Into<br />Revenue. Starting Now.
           </h2>
           <p style={{ color: S.muted, fontSize: '18px', maxWidth: '480px', margin: '0 auto 36px', lineHeight: 1.65 }}>Get a personalized walkthrough and see how Ark Data fits into your stack.</p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -422,7 +422,7 @@ export default function Home() {
               <button className="ark-btn-green" style={{ padding: '16px 36px', fontSize: '16px' }}>Get a Package Recommendation</button>
             </Link>
           </div>
-          <p style={{ color: S.muted, fontSize: '12px', marginTop: '20px' }}>We respond within 1 business day · Compliance-first</p>
+          <p style={{ color: S.muted, fontSize: '12px', marginTop: '20px' }}>We respond within 1 business day. Compliance-first.</p>
         </div>
       </section>
     </div>
