@@ -164,7 +164,7 @@ export default function CaseStudies() {
               {/* Quote */}
               <div style={{ background: '#06162A', border: '1px solid #0A2142', borderLeft: '3px solid #B1001A', borderRadius: '0 8px 8px 0', padding: '20px 24px', marginTop: '32px' }}>
                 <p style={{ color: '#fff', fontSize: '14px', lineHeight: 1.75, fontStyle: 'italic', marginBottom: '10px' }}>"{cs.quote}"</p>
-                <p style={{ color: S.muted, fontSize: '12px', fontWeight: 600 }}>— {cs.quoteAuthor}</p>
+                <p style={{ color: S.muted, fontSize: '12px', fontWeight: 600 }}>{cs.quoteAuthor}</p>
               </div>
             </div>
 

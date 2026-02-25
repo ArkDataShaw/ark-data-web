@@ -80,7 +80,7 @@ export default function Product() {
             Command-Center Grade<br />Data Infrastructure.
           </h1>
           <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, marginBottom: '32px' }}>
-            Two powerful engines — Lost Traffic Recovery and High Intent Data — unified in a single platform built for revenue operators.
+            Two powerful engines, Lost Traffic Recovery and High Intent Data, unified in a single platform built for revenue operators.
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to={createPageUrl('BookADemo')}>

@@ -29,7 +29,7 @@ export default function About() {
               <p style={{ color: '#DFFFEF', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>Our Mission</p>
               <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '20px', lineHeight: 1.2 }}>Make Every Lead Visible. Make Every Action Informed.</h2>
               <p style={{ color: S.muted, fontSize: '15px', lineHeight: 1.75, marginBottom: '20px' }}>
-                We believe revenue teams deserve data that actually works — enriched in real time, scored by intent, and delivered directly to their stack. No more guesswork. No more manual research. No more wasted pipeline.
+                We believe revenue teams deserve data that actually works: enriched in real time, scored by intent, and delivered directly to their stack. No more guesswork. No more manual research. No more wasted pipeline.
               </p>
               <p style={{ color: S.muted, fontSize: '15px', lineHeight: 1.75 }}>
                 Ark Data exists to close the gap between anonymous traffic and qualified opportunity — at scale, with compliance, and without friction.

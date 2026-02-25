@@ -68,7 +68,7 @@ const resources = [
   {
     type: 'Article',
     title: 'How to Enrich HubSpot Records Automatically with Ark Data',
-    excerpt: 'A step-by-step walkthrough of the Ark Data ↔ HubSpot integration: field mapping, sync frequency, deduplication, and sequence triggers.',
+    excerpt: 'A step-by-step walkthrough of the Ark Data + HubSpot integration: field mapping, sync frequency, deduplication, and sequence triggers.',
     readTime: '6 min read',
     tag: 'Integrations',
     tagColor: '#0A2142',

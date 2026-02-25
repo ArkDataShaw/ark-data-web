@@ -69,7 +69,7 @@ export default function Security() {
         <div className="sc" style={{ textAlign: 'center', maxWidth: '680px' }}>
           <p style={{ color: S.red, fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>Security & Compliance</p>
           <h1 style={{ fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px' }}>Compliance-First.<br />Built for Enterprise Trust.</h1>
-          <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, marginBottom: '32px' }}>Ark Data is designed with privacy and security at its core — not bolted on. GDPR, CCPA, and enterprise-grade controls from day one.</p>
+          <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, marginBottom: '32px' }}>Ark Data is designed with privacy and security at its core, not bolted on. GDPR, CCPA, and enterprise-grade controls from day one.</p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to={createPageUrl('Contact')}>
               <button className="ark-btn-blue" style={{ padding: '13px 28px', fontSize: '14px' }}>Request Security Docs</button>

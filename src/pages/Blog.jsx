@@ -161,7 +161,7 @@ export default function Blog() {
         <div style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '14px', padding: '48px', textAlign: 'center', marginTop: '64px' }}>
           <p style={{ color: S.red, fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '10px' }}>Stay Ahead</p>
           <h2 style={{ color: '#fff', fontWeight: 900, fontSize: '24px', letterSpacing: '-0.6px', marginBottom: '10px' }}>Intelligence in your inbox</h2>
-          <p style={{ color: S.muted, fontSize: '14px', marginBottom: '24px' }}>Intent data insights, enrichment playbooks, and RevOps strategies — delivered weekly.</p>
+          <p style={{ color: S.muted, fontSize: '14px', marginBottom: '24px' }}>Intent data insights, enrichment playbooks, and RevOps strategies. Delivered weekly.</p>
           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <input className="ark-input" placeholder="your@email.com" style={{ maxWidth: '260px' }} />
             <button className="ark-btn-red" style={{ padding: '12px 20px', fontSize: '13px', whiteSpace: 'nowrap' }}>Subscribe</button>
