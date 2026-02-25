@@ -291,7 +291,7 @@ export default function Home() {
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
             <h2 style={{ fontSize: 'clamp(22px, 2.5vw, 32px)', fontWeight: 900, letterSpacing: '-0.5px' }}>Real Results from Revenue Teams</h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2px', marginBottom: '48px' }}>
             {results.map((r, i) => (
               <div key={i} style={{ textAlign: 'center', padding: '32px 24px', borderRight: i < results.length - 1 ? '1px solid #0A2142' : 'none' }}>
                 <p style={{ color: '#B1001A', fontSize: '44px', fontWeight: 900, letterSpacing: '-2px', marginBottom: '6px' }}>{r.metric}</p>
@@ -299,6 +299,11 @@ export default function Home() {
                 <p style={{ color: S.muted, fontSize: '12px' }}>{r.who}</p>
               </div>
             ))}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+            <PipelineGrowthChart />
+            <ReplyRateChart />
+            <ROIOverTimeChart />
           </div>
         </div>
       </section>

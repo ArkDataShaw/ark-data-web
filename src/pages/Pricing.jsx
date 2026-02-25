@@ -355,6 +355,18 @@ export default function Pricing() {
             </div>
           </div>
 
+          {/* ROI Charts */}
+          <div style={{ marginBottom: '60px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <p style={{ color: '#B1001A', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '10px' }}>ROI Data</p>
+              <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '24px', letterSpacing: '-0.5px' }}>What Customers Typically See</h2>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+              <ROIOverTimeChart />
+              <CACReductionChart />
+            </div>
+          </div>
+
           {/* Package Checker CTA */}
           <div style={{ background: '#042016', border: '1px solid #063524', borderRadius: '12px', padding: '48px', textAlign: 'center', marginBottom: '60px' }}>
             <p style={{ color: '#DFFFEF', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '12px' }}>Not Sure Which Plan?</p>

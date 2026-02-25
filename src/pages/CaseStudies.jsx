@@ -200,6 +200,20 @@ export default function CaseStudies() {
         </div>
       </section>
 
+      {/* Charts Section */}
+      <section style={{ background: '#020D1F', borderTop: '1px solid #0A2142', padding: '64px 0' }}>
+        <div className="sc">
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <p style={{ color: '#B1001A', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '12px' }}>By the Numbers</p>
+            <h2 style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 900, letterSpacing: '-1px' }}>Revenue Impact Across the Customer Base</h2>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+            <ReplyRateChart />
+            <LeadFunnelChart />
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section style={{ background: '#06162A', borderTop: '1px solid #0A2142', padding: '64px 0' }}>
         <div className="sc" style={{ textAlign: 'center' }}>
