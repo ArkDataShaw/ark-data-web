@@ -99,7 +99,7 @@ function MetricsPanel() {
 
 const painPoints = [
   { title: 'Anonymous Traffic', desc: 'Up to 97% of visitors never fill a form. Their intent disappears without a trace.' },
-  { title: 'Incomplete CRM Records', desc: 'Missing firmographics, wrong contacts, stale data — your reps are flying blind.' },
+  { title: 'Incomplete CRM Records', desc: 'Missing firmographics, wrong contacts, stale data. Your reps are flying blind.' },
   { title: 'Low-Quality Lists', desc: 'Scraped data with no intent signals wastes SDR hours and burns domain reputation.' },
   { title: 'Wasted Ad Spend', desc: 'Retargeting anonymous audiences with no context kills ROAS and CPL efficiency.' },
   { title: 'SDR Burnout', desc: "When reps can't prioritize by intent, they work harder with diminishing results." },
@@ -108,7 +108,7 @@ const painPoints = [
 const features = [
   { title: 'Real-Time Enrichment', desc: 'Enrich visitor sessions and CRM records with firmographic, technographic, and contact data as signals emerge.' },
   { title: 'Intent Signals & Scoring', desc: 'AI-scored intent across 10,000+ data points. Know who is in-market before your competitors do.' },
-  { title: 'Firmographic + Technographic', desc: 'Industry, headcount, revenue band, tech stack, HQ location, decision-maker roles — all enriched automatically.' },
+  { title: 'Firmographic + Technographic', desc: 'Industry, headcount, revenue band, tech stack, HQ location, decision-maker roles. All enriched automatically.' },
   { title: 'CRM & Platform Delivery', desc: 'Push enriched, scored data directly to Salesforce, HubSpot, Klaviyo, ad platforms, or custom webhooks.' },
   { title: 'Data Quality Controls', desc: 'Validation, deduplication, bounce suppression, and normalization on every record before delivery.' },
   { title: 'Compliance & Governance', desc: 'Designed to support GDPR, CCPA, and enterprise data governance requirements. DPA available.' },
@@ -118,7 +118,7 @@ const features = [
 ];
 
 const faqs = [
-  { q: 'What is high-intent data?', a: 'High-intent data identifies businesses or individuals showing active buying signals — researching solutions, visiting competitor sites, downloading guides, or engaging with in-category content. It tells you who is ready to buy now.' },
+  { q: 'What is high-intent data?', a: 'High-intent data identifies businesses or individuals showing active buying signals: researching solutions, visiting competitor sites, downloading guides, or engaging with in-category content. It tells you who is ready to buy now.' },
   { q: 'How is Lost Traffic recovered?', a: 'Our pixel captures anonymous sessions and cross-references them against our identity graph. We resolve visitor identity, enrich with firmographic and contact data, and deliver actionable leads to your CRM in real time.' },
   { q: 'What CRMs do you integrate with?', a: 'We integrate natively with Salesforce, HubSpot, Pipedrive, Klaviyo, ActiveCampaign, Mailchimp, Marketo, and any platform supporting webhook or API delivery.' },
   { q: 'What match rates can I expect?', a: 'Match rates vary by traffic mix and industry, but most clients see 20–40% of anonymous traffic resolved to company-level, with 10–20% resolved to individual contact level.' },
@@ -153,7 +153,7 @@ export default function Home() {
                 High-Intent Data<br />That <span style={{ color: '#B1001A' }}>Converts.</span>
               </h1>
               <p style={{ color: S.muted, fontSize: 'clamp(15px, 1.5vw, 18px)', lineHeight: 1.7, marginBottom: '32px', maxWidth: '480px' }}>
-                Ark Data turns unknown traffic into actionable identities and delivers intent-rich data to your CRM, sales team, and ad platforms — compliance-first, always.
+                Ark Data turns unknown traffic into actionable identities and delivers intent-rich data to your CRM, sales team, and ad platforms. Compliance-first, always.
               </p>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '28px' }}>
                 <Link to={createPageUrl('BookADemo')}>
