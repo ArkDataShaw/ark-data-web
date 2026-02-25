@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { CheckCircle, ArrowRight } from 'lucide-react';
 import ParticleCanvas from '../components/home/ParticleCanvas';
+import { PipelineGrowthChart, ReplyRateChart, ROIOverTimeChart } from '../components/charts/RevenueCharts';
 
 const S = {
   red: '#B1001A',

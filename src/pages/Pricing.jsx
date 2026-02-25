@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { CheckCircle, ArrowRight, X } from 'lucide-react';
+import { ROIOverTimeChart, CACReductionChart } from '../components/charts/RevenueCharts';
 
 const S = { muted: '#D9ECFF', mutedGreen: '#DFFFEF', red: '#B1001A' };
 

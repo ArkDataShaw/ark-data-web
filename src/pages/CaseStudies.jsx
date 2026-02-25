@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { ArrowRight, CheckCircle } from 'lucide-react';
+import { ReplyRateChart, LeadFunnelChart } from '../components/charts/RevenueCharts';
 
 const S = { muted: '#D9ECFF', mutedGreen: '#DFFFEF', red: '#B1001A' };
 
