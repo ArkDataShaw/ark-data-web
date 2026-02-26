@@ -326,7 +326,7 @@ export default function EnrichedVisitsCalculator() {
                     <td style={{ padding: '13px 16px', color: isActive ? '#fff' : '#2a3a5a', fontSize: '13px', fontWeight: 600, textAlign: 'right', fontFamily: 'monospace' }}>{fmt(t.charged)}</td>
                     <td style={{ padding: '13px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                       <span style={{ color: isActive ? t.color : '#2a3a5a', fontSize: '12px', fontWeight: 700, background: isActive ? `${t.color}15` : 'transparent', border: `1px solid ${isActive ? t.color + '33' : 'transparent'}`, borderRadius: '4px', padding: '2px 7px' }}>
-                        {t.label === 'A' ? 'FREE' : t.rateLabel}
+                        {t.rateLabel}
                       </span>
                     </td>
                     <td style={{ padding: '13px 20px', color: isActive ? '#fff' : '#2a3a5a', fontSize: '13px', fontWeight: 700, textAlign: 'right', fontFamily: 'monospace' }}>{fmtUSD(t.subtotal)}</td>
