@@ -282,7 +282,7 @@ export default function EnrichedVisitsCalculator() {
 
         {/* Inputs */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '24px', marginBottom: '28px' }}>
-          <div>
+          <div data-tour="visits-input">
             <label style={{ color: '#7eb8ff', fontSize: '11px', fontWeight: 700, display: 'block', marginBottom: '7px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
               Monthly Website Visits
             </label>
