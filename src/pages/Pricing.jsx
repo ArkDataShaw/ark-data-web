@@ -32,7 +32,7 @@ export default function Pricing() {
                 { text: 'Enter your monthly website visits.', color: '#7eb8ff' },
                 { text: 'Choose an enrichment rate (default 55%).', color: '#a78bfa' },
                 { text: 'We calculate Enriched Visits = floor(visits × rate).', color: '#34d399' },
-                { text: 'Pricing is stacked by tier; first 1,000 enriched visits are free.', color: '#fbbf24' },
+                { text: 'Pricing is stacked by tier; you only pay each tier rate for visits within that tier.', color: '#fbbf24' },
               ].map((item, i) => (
                 <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                   <span style={{ color: item.color, fontWeight: 900, fontSize: '13px', flexShrink: 0 }}>{i + 1}.</span>
