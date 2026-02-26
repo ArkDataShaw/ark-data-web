@@ -209,8 +209,8 @@ export default function Layout({ children, currentPageName }) {
                 {link.label}
               </Link>
             ))}
-            <a href="#" onClick={() => setMobileMenuOpen(false)} style={{ marginTop: '12px', display: 'block' }}>
-              <button className="ark-btn-green" style={{ width: '100%', padding: '14px', fontSize: '15px' }}>Start Free Trial</button>
+            <a href="https://app.arkdata.io" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} style={{ marginTop: '12px', display: 'block' }}>
+              <button style={{ width: '100%', padding: '14px', fontSize: '15px', background: '#064e2a', color: '#fff', border: '1px solid rgba(34,197,94,0.45)', borderRadius: '6px', fontWeight: 700, cursor: 'pointer' }}>Start Free Trial</button>
             </a>
             <Link to={createPageUrl('BookADemo')} onClick={() => setMobileMenuOpen(false)} style={{ marginTop: '8px' }}>
               <button className="ark-btn-red" style={{ width: '100%', padding: '14px', fontSize: '15px' }}>Book a Call</button>
