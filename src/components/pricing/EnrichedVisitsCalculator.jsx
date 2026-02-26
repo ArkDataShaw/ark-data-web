@@ -100,11 +100,25 @@ function CombinedTooltip({ active, payload }) {
 }
 
 export default function EnrichedVisitsCalculator() {
-  const [visitsRaw, setVisitsRaw] = useState('');
-  const [rateRaw, setRateRaw] = useState('55');
-  const [rateError, setRateError] = useState('');
-  const [modalStep, setModalStep] = useState(0); // 0=closed, 1=form, 2=confirmation
-  const [formData, setFormData] = useState({ email: '', phone: '', company: '', url: '', monthlyVisits: '' });
+   const [visitsRaw, setVisitsRaw] = useState('');
+   const [rateRaw, setRateRaw] = useState('55');
+   const [rateError, setRateError] = useState('');
+   const [showPrompt, setShowPrompt] = useState(true);
+   const [promptInput, setPromptInput] = useState('');
+   const [modalStep, setModalStep] = useState(0); // 0=closed, 1=form, 2=confirmation
+   const [formData, setFormData] = useState({ email: '', phone: '', company: '', url: '', monthlyVisits: '' });
+
+   const handlePromptSubmit = () => {
+     if (promptInput.trim()) {
+       setVisitsRaw(promptInput.replace(/[^0-9]/g, ''));
+       setShowPrompt(false);
+       setPromptInput('');
+     }
+   };
+
+   const handlePromptClose = () => {
+     setShowPrompt(false);
+   };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
