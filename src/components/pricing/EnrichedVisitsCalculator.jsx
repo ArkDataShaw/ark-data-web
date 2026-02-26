@@ -412,10 +412,12 @@ export default function EnrichedVisitsCalculator() {
 
   <ResponsiveContainer width="100%" height={280}>
     <BarChart data={[
-      { month: 'Month 1', return: 0.30, cost: 0.17 },
-      { month: 'Month 2', return: 0.45, cost: 0.17 },
-      { month: 'Month 3', return: 0.60, cost: 0.17 },
-      { month: 'Month 4', return: 0.75, cost: 0.17 },
+      { month: 'Month 1', cost: 0.17, return: 0.30 },
+      { month: 'Month 2', cost: 0.17, return: 0.45 },
+      { month: 'Month 3', cost: 0.17, return: 0.60 },
+      { month: 'Month 4', cost: 0.17, return: 0.75 },
+      { month: 'Month 5', cost: 0.17, return: 0.80 },
+      { month: 'Month 6', cost: 0.17, return: 0.85 },
     ]} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
       <CartesianGrid strokeDasharray="3 3" stroke="rgba(10,33,66,0.9)" />
       <XAxis
@@ -440,8 +442,8 @@ export default function EnrichedVisitsCalculator() {
         formatter={(val) => <span style={{ color: '#D9ECFF', fontSize: '11px' }}>{val}</span>}
         wrapperStyle={{ paddingTop: '12px' }}
       />
-      <Bar dataKey="return" name="Return / visit" fill="#f59e0b" stackId="a" />
-      <Bar dataKey="cost" name="Cost / visit" fill="#3b82f6" stackId="a" />
+      <Bar dataKey="cost" name="Cost / visit" fill="#ef4444" stackId="a" />
+      <Bar dataKey="return" name="Return / visit" fill="#22c55e" stackId="a" />
     </BarChart>
   </ResponsiveContainer>
 </div>
