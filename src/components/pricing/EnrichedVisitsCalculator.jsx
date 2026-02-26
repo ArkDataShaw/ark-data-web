@@ -455,6 +455,9 @@ export default function EnrichedVisitsCalculator() {
           <p style={{ color: '#4a6a9a', fontSize: '12px' }}>
             {fmt(enrichedVisits)} enriched visits · Total: <span style={{ color: '#ff8a99', fontWeight: 700 }}>{fmtUSD(totalCost)}</span>
           </p>
+          <p style={{ color: '#7eb8ff', fontSize: '11px', marginTop: '8px' }}>
+            <em>Estimate based on historical data from past clients. Actual results may vary.</em>
+          </p>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '520px' }}>
