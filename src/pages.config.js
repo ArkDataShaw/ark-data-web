@@ -59,6 +59,7 @@ import FAQ from './pages/FAQ';
 import Home from './pages/Home';
 import HowItWorks from './pages/HowItWorks';
 import Integrations from './pages/Integrations';
+import Pricing from './pages/Pricing';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Product from './pages/Product';
 import Resources from './pages/Resources';
@@ -67,7 +68,6 @@ import Services from './pages/Services';
 import Settings from './pages/Settings';
 import Solutions from './pages/Solutions';
 import Terms from './pages/Terms';
-import Pricing from './pages/Pricing';
 import __Layout from './Layout.jsx';
 
 
@@ -84,6 +84,7 @@ export const PAGES = {
     "Home": Home,
     "HowItWorks": HowItWorks,
     "Integrations": Integrations,
+    "Pricing": Pricing,
     "PrivacyPolicy": PrivacyPolicy,
     "Product": Product,
     "Resources": Resources,
@@ -92,7 +93,6 @@ export const PAGES = {
     "Settings": Settings,
     "Solutions": Solutions,
     "Terms": Terms,
-    "Pricing": Pricing,
 }
 
 export const pagesConfig = {

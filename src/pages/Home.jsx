@@ -208,7 +208,7 @@ export default function Home() {
             <p style={{ color: '#B1001A', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>The Problem</p>
             <h2 style={{ fontSize: 'clamp(28px, 3.5vw, 44px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>Your Best Leads Are Invisible.</h2>
             <p style={{ color: S.muted, fontSize: '17px', maxWidth: '560px', margin: '0 auto', lineHeight: 1.65 }}>
-              95–98% of visitors never identify themselves. Most data tools show you what happened — Ark Data shows you <em>who</em> and <em>why</em>.
+              95–98% of visitors never identify themselves. Most data tools show you what happened. Ark Data shows you <em>who</em> and <em>why</em>.
             </p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
