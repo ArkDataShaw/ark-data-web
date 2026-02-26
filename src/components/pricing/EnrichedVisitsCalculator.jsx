@@ -236,7 +236,7 @@ export default function EnrichedVisitsCalculator() {
               borderRadius: '10px',
               padding: '18px 32px',
               color: '#fff',
-              fontSize: '17px',
+              fontSize: '14px',
               fontWeight: 800,
               cursor: 'pointer',
               letterSpacing: '-0.2px',
