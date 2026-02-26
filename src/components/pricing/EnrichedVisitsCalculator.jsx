@@ -264,7 +264,7 @@ export default function EnrichedVisitsCalculator() {
               Start Your Free 30-Day Trial
             </button>
           </a>
-          <p style={{ color: '#4a6a9a', fontSize: '11px', marginTop: '8px' }}>No credit card required · Cancel anytime</p>
+          <p style={{ color: '#3ab870', fontSize: '14px', marginTop: '8px' }}>No credit card required · Cancel anytime</p>
         </div>
       </div>
 
