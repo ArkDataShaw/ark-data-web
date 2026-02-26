@@ -644,7 +644,7 @@ export default function EnrichedVisitsCalculator() {
           {/* Bottom CTA */}
           <div style={{ marginTop: '48px', borderTop: '1px solid rgba(34,197,94,0.15)', paddingTop: '36px', paddingBottom: '24px', display: 'flex', justifyContent: 'center' }}>
             <div style={{ textAlign: 'center', maxWidth: '700px' }}>
-              <button onClick={() => setModalStep(1)} style={{
+              <button data-tour="trial-button" onClick={() => setModalStep(1)} style={{
                   display: 'block',
                   width: '100%',
                   background: 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)',
