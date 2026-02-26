@@ -169,10 +169,7 @@ export default function EnrichedVisitsCalculator() {
           <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '18px', letterSpacing: '-0.3px' }}>
             Enter Your Estimated Monthly Website Visits
           </h2>
-          <button onClick={handleReset}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(177,0,26,0.1)', border: '1px solid rgba(177,0,26,0.3)', borderRadius: '6px', padding: '7px 14px', color: '#ff6b7a', fontSize: '12px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-            <RefreshCw size={12} /> Reset
-          </button>
+
         </div>
 
         {/* Inputs */}
