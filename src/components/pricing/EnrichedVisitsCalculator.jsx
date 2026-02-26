@@ -285,7 +285,7 @@ export default function EnrichedVisitsCalculator() {
             }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: t.color, flexShrink: 0, display: 'inline-block' }} />
               <span style={{ color: i === activeTierIdx ? '#fff' : '#4a6a9a', fontSize: '10px', fontWeight: i === activeTierIdx ? 700 : 400 }}>
-                Tier {t.label}{t.label === 'A' ? ' (free)' : ` $${t.rate}`}
+                Tier {t.label} ${t.rate}
               </span>
             </div>
           ))}
