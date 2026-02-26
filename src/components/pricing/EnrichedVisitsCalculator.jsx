@@ -440,8 +440,8 @@ export default function EnrichedVisitsCalculator() {
         formatter={(val) => <span style={{ color: '#D9ECFF', fontSize: '11px' }}>{val}</span>}
         wrapperStyle={{ paddingTop: '12px' }}
       />
-      <Bar dataKey="return" name="Return / visit" fill="#f59e0b" stackId="a" />
-      <Bar dataKey="cost" name="Cost / visit" fill="#3b82f6" stackId="a" />
+      <Bar dataKey="cost" name="Cost / visit" fill="#ef4444" />
+      <Bar dataKey="return" name="Return / visit" fill="#22c55e" />
     </BarChart>
   </ResponsiveContainer>
 </div>
