@@ -242,7 +242,7 @@ export default function EnrichedVisitsCalculator() {
         </div>
       </div>
 
-      {/* CHART */}
+      {/* CHART 1 — Cost per Enriched Visit */}
       <div style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(26,92,168,0.4)', borderRadius: '14px', padding: '28px', marginBottom: '28px' }}>
         <div style={{ marginBottom: '20px' }}>
           <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '17px', marginBottom: '4px' }}>
@@ -279,25 +279,14 @@ export default function EnrichedVisitsCalculator() {
               tickLine={false}
               width={52}
             />
-            <Tooltip content={<CustomTooltip ratePercent={ratePercent} />} />
+            <Tooltip content={<CpeTooltip ratePercent={ratePercent} />} />
             {refX !== null && (
-              <ReferenceLine
-                x={refX}
-                stroke="#B1001A"
-                strokeDasharray="4 3"
-                strokeWidth={2}
-                label={{ value: 'You', fill: '#ff8a99', fontSize: 11, fontWeight: 700, position: 'top' }}
-              />
+              <ReferenceLine x={refX} stroke="#B1001A" strokeDasharray="4 3" strokeWidth={2}
+                label={{ value: 'You', fill: '#ff8a99', fontSize: 11, fontWeight: 700, position: 'top' }} />
             )}
-            <Area
-              type="monotone"
-              dataKey="cpe"
-              stroke="#3b82f6"
-              strokeWidth={2.5}
-              fill="url(#cpeGradient)"
-              dot={false}
-              activeDot={{ r: 5, fill: '#fff', stroke: '#3b82f6', strokeWidth: 2 }}
-            />
+            <Area type="monotone" dataKey="cpe" stroke="#3b82f6" strokeWidth={2.5}
+              fill="url(#cpeGradient)" dot={false}
+              activeDot={{ r: 5, fill: '#fff', stroke: '#3b82f6', strokeWidth: 2 }} />
           </AreaChart>
         </ResponsiveContainer>
 
@@ -312,11 +301,123 @@ export default function EnrichedVisitsCalculator() {
             }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: t.color, flexShrink: 0, display: 'inline-block' }} />
               <span style={{ color: i === activeTierIdx ? '#fff' : '#4a6a9a', fontSize: '10px', fontWeight: i === activeTierIdx ? 700 : 400 }}>
-                Tier {t.label} ${t.rate}
+                {t.label} ${t.rate}
               </span>
             </div>
           ))}
         </div>
+      </div>
+
+      {/* CHART 2 — Return per Enrichment */}
+      <div style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '14px', padding: '28px', marginBottom: '28px' }}>
+        <div style={{ marginBottom: '20px' }}>
+          <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '17px', marginBottom: '4px' }}>
+            Return per Enriched Visit <span style={{ color: '#4a6a9a', fontWeight: 400 }}>vs. Monthly Volume</span>
+          </h2>
+          <p style={{ color: '#4a6a9a', fontSize: '12px' }}>
+            Each enriched visit generates <span style={{ color: '#f59e0b', fontWeight: 700 }}>${RETURN_PER_ENRICHMENT.toFixed(2)}</span> in return.
+            {enrichedVisits > 0 && (
+              <span style={{ color: '#f59e0b', fontWeight: 600 }}> Your estimated return: {fmtUSD(enrichedVisits * RETURN_PER_ENRICHMENT)} / month.</span>
+            )}
+          </p>
+        </div>
+
+        <ResponsiveContainer width="100%" height={250}>
+          <AreaChart data={chartData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+            <defs>
+              <linearGradient id="returnGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%"  stopColor="#f59e0b" stopOpacity={0.35} />
+                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(10,33,66,0.9)" />
+            <XAxis
+              dataKey="enriched"
+              tickFormatter={v => v >= 1000000 ? `${v/1000000}M` : v >= 1000 ? `${v/1000}k` : v}
+              tick={{ fill: '#4a6a9a', fontSize: 10 }}
+              axisLine={{ stroke: '#0A2142' }}
+              tickLine={false}
+            />
+            <YAxis
+              tickFormatter={v => `$${v.toFixed(2)}`}
+              tick={{ fill: '#4a6a9a', fontSize: 10 }}
+              axisLine={{ stroke: '#0A2142' }}
+              tickLine={false}
+              width={52}
+            />
+            <Tooltip content={<ReturnTooltip />} />
+            {refX !== null && (
+              <ReferenceLine x={refX} stroke="#B1001A" strokeDasharray="4 3" strokeWidth={2}
+                label={{ value: 'You', fill: '#ff8a99', fontSize: 11, fontWeight: 700, position: 'top' }} />
+            )}
+            <Area type="monotone" dataKey="returnPerEnrichment" name="Return / visit"
+              stroke="#f59e0b" strokeWidth={2.5} fill="url(#returnGradient)" dot={false}
+              activeDot={{ r: 5, fill: '#fff', stroke: '#f59e0b', strokeWidth: 2 }} />
+          </AreaChart>
+        </ResponsiveContainer>
+
+        {enrichedVisits > 0 && (
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid rgba(245,158,11,0.2)' }}>
+            {[
+              { label: 'Return / visit', val: `$${RETURN_PER_ENRICHMENT.toFixed(2)}`, color: '#f59e0b' },
+              { label: 'Total return', val: fmtUSD(enrichedVisits * RETURN_PER_ENRICHMENT), color: '#34d399' },
+              { label: 'Total cost', val: fmtUSD(totalCost), color: '#ff8a99' },
+              { label: 'Net profit', val: fmtUSD(enrichedVisits * RETURN_PER_ENRICHMENT - totalCost), color: enrichedVisits * RETURN_PER_ENRICHMENT - totalCost >= 0 ? '#22c55e' : '#ef4444' },
+            ].map(item => (
+              <div key={item.label} style={{ background: 'rgba(10,20,40,0.6)', border: '1px solid rgba(26,92,168,0.3)', borderRadius: '8px', padding: '10px 16px', flex: '1 1 120px' }}>
+                <p style={{ color: '#4a6a9a', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>{item.label}</p>
+                <p style={{ color: item.color, fontWeight: 800, fontSize: '15px', fontFamily: 'monospace' }}>{item.val}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* CHART 3 — Combined: Cost vs Return */}
+      <div style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '14px', padding: '28px', marginBottom: '28px' }}>
+        <div style={{ marginBottom: '20px' }}>
+          <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '17px', marginBottom: '4px' }}>
+            Cost vs. Return per Enriched Visit <span style={{ color: '#4a6a9a', fontWeight: 400 }}>— Combined View</span>
+          </h2>
+          <p style={{ color: '#4a6a9a', fontSize: '12px' }}>
+            The gap between the return line and cost line is your margin per enriched visit. As volume grows, margins widen.
+          </p>
+        </div>
+
+        <ResponsiveContainer width="100%" height={280}>
+          <LineChart data={chartData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(10,33,66,0.9)" />
+            <XAxis
+              dataKey="enriched"
+              tickFormatter={v => v >= 1000000 ? `${v/1000000}M` : v >= 1000 ? `${v/1000}k` : v}
+              tick={{ fill: '#4a6a9a', fontSize: 10 }}
+              axisLine={{ stroke: '#0A2142' }}
+              tickLine={false}
+            />
+            <YAxis
+              tickFormatter={v => `$${v.toFixed(2)}`}
+              tick={{ fill: '#4a6a9a', fontSize: 10 }}
+              axisLine={{ stroke: '#0A2142' }}
+              tickLine={false}
+              width={52}
+            />
+            <Tooltip content={<CombinedTooltip />} />
+            <Legend
+              formatter={(val) => <span style={{ color: '#D9ECFF', fontSize: '11px' }}>{val}</span>}
+              wrapperStyle={{ paddingTop: '12px' }}
+            />
+            {refX !== null && (
+              <ReferenceLine x={refX} stroke="#B1001A" strokeDasharray="4 3" strokeWidth={2}
+                label={{ value: 'You', fill: '#ff8a99', fontSize: 11, fontWeight: 700, position: 'top' }} />
+            )}
+            <Line type="monotone" dataKey="returnPerEnrichment" name="Return / visit ($0.75)"
+              stroke="#f59e0b" strokeWidth={2.5} dot={false}
+              activeDot={{ r: 5, fill: '#fff', stroke: '#f59e0b', strokeWidth: 2 }} />
+            <Line type="monotone" dataKey="cpe" name="Cost / visit"
+              stroke="#3b82f6" strokeWidth={2.5} dot={false}
+              activeDot={{ r: 5, fill: '#fff', stroke: '#3b82f6', strokeWidth: 2 }} />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
 
       {/* TIER BREAKDOWN TABLE */}
