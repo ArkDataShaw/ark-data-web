@@ -254,7 +254,30 @@ export default function EnrichedVisitsCalculator() {
           <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '18px', letterSpacing: '-0.3px' }}>
             Enter Your Estimated Monthly Website Visits
           </h2>
-
+          <button
+            onClick={() => {
+              setShowTour(true);
+              localStorage.removeItem('pricingCalcTourSeen');
+            }}
+            style={{
+              background: 'rgba(34,197,94,0.15)',
+              border: '1px solid rgba(34,197,94,0.3)',
+              color: '#22c55e',
+              borderRadius: '6px',
+              padding: '8px 14px',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.25)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.5)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.15)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)'; }}
+          >
+            <HelpCircle size={16} /> Tour
+          </button>
         </div>
 
         {/* Inputs */}
