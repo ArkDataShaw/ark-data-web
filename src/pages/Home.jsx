@@ -83,8 +83,7 @@ function TwoPillarsSection({ S }) {
             <Link to={createPageUrl('Services')}><button className="ark-btn-green" style={{ padding: '10px 20px', fontSize: '13px' }}>Learn More →</button></Link>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
   );
 }
 
