@@ -188,8 +188,8 @@ export default function Layout({ children, currentPageName }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Link to={createPageUrl('Contact')} className="d-none-mobile ark-link"
               style={{ color: '#D9ECFF', fontSize: '13px', fontWeight: 500 }}>Contact</Link>
-            <a href="#" className="d-none-mobile">
-              <button className="ark-btn-green" style={{ padding: '9px 20px', fontSize: '14px' }}>Free Trial</button>
+            <a href="https://app.arkdata.io" target="_blank" rel="noopener noreferrer" className="d-none-mobile">
+              <button style={{ padding: '9px 20px', fontSize: '14px', background: '#064e2a', color: '#fff', border: '1px solid rgba(34,197,94,0.45)', borderRadius: '6px', fontWeight: 700, cursor: 'pointer' }}>Free Trial</button>
             </a>
             <Link to={createPageUrl('BookADemo')}>
               <button className="ark-btn-red" style={{ padding: '9px 20px', fontSize: '14px' }}>Book a Call</button>
