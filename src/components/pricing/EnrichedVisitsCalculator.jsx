@@ -176,6 +176,59 @@ export default function EnrichedVisitsCalculator() {
 
   return (
     <div>
+      {showPrompt && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000, backdropFilter: 'blur(4px)'
+        }}>
+          <div style={{
+            background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)',
+            border: '1px solid rgba(26,92,168,0.6)', borderRadius: '16px', padding: '36px',
+            maxWidth: '400px', width: '90%'
+          }}>
+            <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '20px', marginBottom: '12px' }}>
+              Calculate Your Pricing
+            </h3>
+            <p style={{ color: '#D9ECFF', fontSize: '14px', marginBottom: '24px', lineHeight: 1.6 }}>
+              Enter your estimated monthly website visits to see your personalized pricing and ROI.
+            </p>
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="e.g., 12,000"
+              value={promptInput}
+              onChange={(e) => setPromptInput(e.target.value.replace(/[^0-9]/g, ''))}
+              onKeyPress={(e) => e.key === 'Enter' && handlePromptSubmit()}
+              className="ark-input"
+              style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px' }}
+            />
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={handlePromptSubmit}
+                disabled={!promptInput.trim()}
+                className="ark-btn-green"
+                style={{
+                  flex: 1, padding: '12px 20px', fontSize: '14px', fontWeight: 700,
+                  opacity: promptInput.trim() ? 1 : 0.5, cursor: promptInput.trim() ? 'pointer' : 'not-allowed'
+                }}
+              >
+                Calculate
+              </button>
+              <button
+                onClick={handlePromptClose}
+                style={{
+                  padding: '12px 20px', fontSize: '14px', fontWeight: 700,
+                  background: 'transparent', border: '1px solid rgba(212,212,216,0.3)',
+                  color: '#D9ECFF', borderRadius: '6px', cursor: 'pointer'
+                }}
+              >
+                Skip
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* CALCULATOR CARD */}
       <div style={{
         background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)',
