@@ -399,52 +399,52 @@ export default function EnrichedVisitsCalculator() {
         </div>
       </div>
 
-{/* CHART 3 — Combined: Cost vs Return */}
-      <div style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '14px', padding: '28px', marginBottom: '28px' }}>
-        <div style={{ marginBottom: '20px' }}>
-          <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '17px', marginBottom: '4px' }}>
-            Cost vs. Return per Enriched Visit <span style={{ color: '#4a6a9a', fontWeight: 400 }}>— Combined View</span>
-          </h2>
-          <p style={{ color: '#4a6a9a', fontSize: '12px' }}>
-            The gap between the return line and cost line is your margin per enriched visit. As volume grows, margins widen.
-          </p>
-        </div>
+{/* CHART 3 — ROI Growth Over Time */}
+<div style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '14px', padding: '28px', marginBottom: '28px' }}>
+  <div style={{ marginBottom: '20px' }}>
+    <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '17px', marginBottom: '4px' }}>
+      Return Growth Over Time <span style={{ color: '#4a6a9a', fontWeight: 400 }}>— Stacked Monthly View</span>
+    </h2>
+    <p style={{ color: '#4a6a9a', fontSize: '12px' }}>
+      Your return per enriched visit grows monthly, while costs remain stable. This compounds your margins as you scale.
+    </p>
+  </div>
 
-        <ResponsiveContainer width="100%" height={280}>
-          <LineChart data={chartData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(10,33,66,0.9)" />
-            <XAxis
-              dataKey="enriched"
-              tickFormatter={v => v >= 1000000 ? `${v/1000000}M` : v >= 1000 ? `${v/1000}k` : v}
-              tick={{ fill: '#4a6a9a', fontSize: 10 }}
-              axisLine={{ stroke: '#0A2142' }}
-              tickLine={false}
-            />
-            <YAxis
-              tickFormatter={v => `$${v.toFixed(2)}`}
-              tick={{ fill: '#4a6a9a', fontSize: 10 }}
-              axisLine={{ stroke: '#0A2142' }}
-              tickLine={false}
-              width={52}
-            />
-            <Tooltip content={<CombinedTooltip />} />
-            <Legend
-              formatter={(val) => <span style={{ color: '#D9ECFF', fontSize: '11px' }}>{val}</span>}
-              wrapperStyle={{ paddingTop: '12px' }}
-            />
-            {refX !== null && (
-              <ReferenceLine x={refX} stroke="#B1001A" strokeDasharray="4 3" strokeWidth={2}
-                label={{ value: 'You', fill: '#ff8a99', fontSize: 11, fontWeight: 700, position: 'top' }} />
-            )}
-            <Line type="monotone" dataKey="returnPerEnrichment" name="Return / visit ($0.75)"
-              stroke="#f59e0b" strokeWidth={2.5} dot={false}
-              activeDot={{ r: 5, fill: '#fff', stroke: '#f59e0b', strokeWidth: 2 }} />
-            <Line type="monotone" dataKey="cpe" name="Cost / visit"
-              stroke="#3b82f6" strokeWidth={2.5} dot={false}
-              activeDot={{ r: 5, fill: '#fff', stroke: '#3b82f6', strokeWidth: 2 }} />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+  <ResponsiveContainer width="100%" height={280}>
+    <BarChart data={[
+      { month: 'Month 1', return: 0.30, cost: 0.17 },
+      { month: 'Month 2', return: 0.45, cost: 0.17 },
+      { month: 'Month 3', return: 0.60, cost: 0.17 },
+      { month: 'Month 4', return: 0.75, cost: 0.17 },
+    ]} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+      <CartesianGrid strokeDasharray="3 3" stroke="rgba(10,33,66,0.9)" />
+      <XAxis
+        dataKey="month"
+        tick={{ fill: '#4a6a9a', fontSize: 10 }}
+        axisLine={{ stroke: '#0A2142' }}
+        tickLine={false}
+      />
+      <YAxis
+        tickFormatter={v => `$${v.toFixed(2)}`}
+        tick={{ fill: '#4a6a9a', fontSize: 10 }}
+        axisLine={{ stroke: '#0A2142' }}
+        tickLine={false}
+        width={52}
+      />
+      <Tooltip
+        contentStyle={{ background: 'rgba(2,13,31,0.95)', border: '1px solid rgba(26,92,168,0.6)', borderRadius: '6px', padding: '8px 12px' }}
+        formatter={(value) => `$${value.toFixed(2)}`}
+        labelStyle={{ color: '#D9ECFF', fontSize: '12px' }}
+      />
+      <Legend
+        formatter={(val) => <span style={{ color: '#D9ECFF', fontSize: '11px' }}>{val}</span>}
+        wrapperStyle={{ paddingTop: '12px' }}
+      />
+      <Bar dataKey="return" name="Return / visit" fill="#f59e0b" stackId="a" />
+      <Bar dataKey="cost" name="Cost / visit" fill="#3b82f6" stackId="a" />
+    </BarChart>
+  </ResponsiveContainer>
+</div>
 
       {/* TIER BREAKDOWN TABLE */}
       <div style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(26,92,168,0.4)', borderRadius: '14px', overflow: 'hidden', marginBottom: '28px' }}>
