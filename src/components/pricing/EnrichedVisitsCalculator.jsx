@@ -220,7 +220,7 @@ export default function EnrichedVisitsCalculator() {
           ))}
         </div>
 
-        <p style={{ color: '#4a6a9a', fontSize: '11px', fontFamily: 'monospace', marginBottom: '20px', paddingLeft: '4px' }}>
+        <p style={{ color: '#3ab870', fontSize: '11px', fontFamily: 'monospace', marginBottom: '20px', paddingLeft: '4px' }}>
           {fmt(visitsInt)} × {ratePercent}% = {fmt(enrichedVisits)}
         </p>
 
