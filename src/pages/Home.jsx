@@ -228,7 +228,7 @@ export default function Home() {
               </p>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '28px' }}>
                 <Link to={createPageUrl('BookADemo')}>
-                  <button className="ark-btn-red" style={{ padding: '14px 28px', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button className="ark-btn-red" style={{ padding: '14px 28px', fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     Book a Call <ArrowRight size={16} />
                   </button>
                 </Link>
