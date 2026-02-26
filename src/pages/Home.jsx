@@ -241,12 +241,7 @@ export default function Home() {
       </section>
 
       {/* TWO PILLARS */}
-      <section className="sp" style={{ background: '#020D1F' }}>
-        <div className="sc">
-          <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-            <p style={{ color: '#DFFFEF', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>Two Powerful Engines</p>
-            <h2 style={{ fontSize: 'clamp(28px, 3.5vw, 44px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>One Goal: More Revenue.</h2>
-          </div>
+      <TwoPillarsSection S={S} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
             <div style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '12px', padding: '40px', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #0A2142, #1a5ca8)' }} />
