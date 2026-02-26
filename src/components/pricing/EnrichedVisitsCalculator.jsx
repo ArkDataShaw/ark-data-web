@@ -607,8 +607,8 @@ export default function EnrichedVisitsCalculator() {
           </div>
           </div>
 
-          {/* Bottom CTA */}
-          <div style={{ marginTop: '48px', textAlign: 'center', borderTop: '1px solid rgba(34,197,94,0.15)', paddingTop: '36px' }}>
+          {/* Center CTA */}
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', zIndex: 50, maxWidth: '500px', width: '90%' }}>
           <button onClick={() => setModalStep(1)} style={{
               width: '100%',
               background: 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)',
