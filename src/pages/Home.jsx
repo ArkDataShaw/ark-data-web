@@ -89,7 +89,6 @@ function TwoPillarsSection({ S }) {
 }
 
 function useCountUp(target, duration = 1800, start = false) {
-
   const [val, setVal] = useState(0);
   useEffect(() => {
     if (!start) return;
