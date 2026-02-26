@@ -221,7 +221,7 @@ export default function EnrichedVisitsCalculator() {
         </div>
 
         <p style={{ color: '#4a6a9a', fontSize: '11px', fontFamily: 'monospace', marginBottom: '20px', paddingLeft: '4px' }}>
-          floor({fmt(visitsInt)} × {ratePercent}%) = {fmt(enrichedVisits)}
+          {fmt(visitsInt)} × {ratePercent}% = {fmt(enrichedVisits)}
         </p>
 
         {/* Total cost */}
