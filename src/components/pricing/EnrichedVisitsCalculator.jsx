@@ -261,7 +261,7 @@ export default function EnrichedVisitsCalculator() {
             onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #0a6e3b 0%, #0d8f4c 50%, #0a6e3b 100%)'; e.currentTarget.style.boxShadow = '0 6px 32px rgba(34,197,94,0.35)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(34,197,94,0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
             >
-              🚀 Start Your Free 30-Day Trial
+              Start Your Free 30-Day Trial
             </button>
           </a>
           <p style={{ color: '#4a6a9a', fontSize: '11px', marginTop: '8px' }}>No credit card required · Cancel anytime</p>
