@@ -209,7 +209,10 @@ export default function Layout({ children, currentPageName }) {
                 {link.label}
               </Link>
             ))}
-            <Link to={createPageUrl('BookADemo')} onClick={() => setMobileMenuOpen(false)} style={{ marginTop: '12px' }}>
+            <a href="#" onClick={() => setMobileMenuOpen(false)} style={{ marginTop: '12px', display: 'block' }}>
+              <button className="ark-btn-green" style={{ width: '100%', padding: '14px', fontSize: '15px' }}>Start Free Trial</button>
+            </a>
+            <Link to={createPageUrl('BookADemo')} onClick={() => setMobileMenuOpen(false)} style={{ marginTop: '8px' }}>
               <button className="ark-btn-red" style={{ width: '100%', padding: '14px', fontSize: '15px' }}>Book a Call</button>
             </Link>
           </div>
