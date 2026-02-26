@@ -211,13 +211,15 @@ export default function Home() {
               95–98% of visitors never identify themselves. Most data tools show you what happened. Ark Data shows you <em>who</em> and <em>why</em>.
             </p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-            {painPoints.map((p, i) => (
-              <div key={i} className="ark-card" style={{ padding: '28px' }}>
-                <h3 style={{ color: '#fff', fontWeight: 700, fontSize: '15px', marginBottom: '8px' }}>{p.title}</h3>
-                <p style={{ color: S.muted, fontSize: '13px', lineHeight: 1.65 }}>{p.desc}</p>
-              </div>
-            ))}
+          <div style={{ background: 'linear-gradient(145deg, #03200F 0%, #011508 100%)', border: '1px solid rgba(15,80,45,0.6)', borderRadius: '16px', padding: '40px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+              {painPoints.map((p, i) => (
+                <div key={i} style={{ padding: '24px', background: 'rgba(0,0,0,0.25)', borderRadius: '10px', border: '1px solid rgba(15,80,45,0.4)' }}>
+                  <h3 style={{ color: '#fff', fontWeight: 700, fontSize: '15px', marginBottom: '8px' }}>{p.title}</h3>
+                  <p style={{ color: '#9dcfb5', fontSize: '13px', lineHeight: 1.65 }}>{p.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
