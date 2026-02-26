@@ -215,7 +215,17 @@ export default function EnrichedVisitsCalculator() {
               >
                 Calculate
               </button>
-              </div>
+              <button
+                onClick={handlePromptClose}
+                style={{
+                  padding: '12px 20px', fontSize: '14px', fontWeight: 700,
+                  background: 'transparent', border: '1px solid rgba(212,212,216,0.3)',
+                  color: '#D9ECFF', borderRadius: '6px', cursor: 'pointer'
+                }}
+              >
+                Skip
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -597,8 +607,8 @@ export default function EnrichedVisitsCalculator() {
           </div>
           </div>
 
-          {/* Center CTA */}
-          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', zIndex: 50, maxWidth: '500px', width: '90%' }}>
+          {/* Bottom CTA */}
+          <div style={{ marginTop: '48px', textAlign: 'center', borderTop: '1px solid rgba(34,197,94,0.15)', paddingTop: '36px' }}>
           <button onClick={() => setModalStep(1)} style={{
               width: '100%',
               background: 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)',
