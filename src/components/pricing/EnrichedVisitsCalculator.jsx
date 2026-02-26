@@ -215,17 +215,7 @@ export default function EnrichedVisitsCalculator() {
               >
                 Calculate
               </button>
-              <button
-                onClick={handlePromptClose}
-                style={{
-                  padding: '12px 20px', fontSize: '14px', fontWeight: 700,
-                  background: 'transparent', border: '1px solid rgba(212,212,216,0.3)',
-                  color: '#D9ECFF', borderRadius: '6px', cursor: 'pointer'
-                }}
-              >
-                Skip
-              </button>
-            </div>
+              </div>
           </div>
         </div>
       )}
