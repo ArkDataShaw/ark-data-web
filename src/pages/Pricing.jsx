@@ -1,6 +1,5 @@
 import React from 'react';
 import EnrichedVisitsCalculator from '../components/pricing/EnrichedVisitsCalculator';
-// eslint-disable-next-line no-unused-vars
 
 const S = { muted: '#D9ECFF' };
 
