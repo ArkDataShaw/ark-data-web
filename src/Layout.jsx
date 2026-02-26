@@ -230,16 +230,7 @@ export default function Layout({ children, currentPageName }) {
               <p style={{ color: '#D9ECFF', fontSize: '13px', lineHeight: 1.75, maxWidth: '220px', marginBottom: '16px' }}>
                 High-intent data enrichment for outbound, demand gen, RevOps, and growth.
               </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div>
-                  <p style={{ color: '#DFFFEF', fontSize: '13px', margin: 0 }}>noah@arkdata.io</p>
-                  <p style={{ color: '#4a6a9a', fontSize: '12px', margin: '2px 0 0 0' }}>CEO</p>
-                </div>
-                <div>
-                  <p style={{ color: '#DFFFEF', fontSize: '13px', margin: 0 }}>shaw@arkdata.io</p>
-                  <p style={{ color: '#4a6a9a', fontSize: '12px', margin: '2px 0 0 0' }}>CTO</p>
-                </div>
-              </div>
+              <a href="mailto:hello@arkdata.io" style={{ color: '#DFFFEF', fontSize: '13px' }}>hello@arkdata.io</a>
             </div>
 
             {[
