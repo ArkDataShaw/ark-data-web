@@ -16,6 +16,22 @@ const S = {
   mutedGreen: '#DFFFEF',
 };
 
+function useTypewriter(text, speed = 55, start = false) {
+  const [displayed, setDisplayed] = useState('');
+  useEffect(() => {
+    if (!start) return;
+    setDisplayed('');
+    let i = 0;
+    const interval = setInterval(() => {
+      i++;
+      setDisplayed(text.slice(0, i));
+      if (i >= text.length) clearInterval(interval);
+    }, speed);
+    return () => clearInterval(interval);
+  }, [text, speed, start]);
+  return displayed;
+}
+
 function useCountUp(target, duration = 1800, start = false) {
   const [val, setVal] = useState(0);
   useEffect(() => {
