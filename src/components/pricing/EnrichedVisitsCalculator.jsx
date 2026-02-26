@@ -6,7 +6,7 @@ import {
 
 const S = { muted: '#D9ECFF', mutedGreen: '#DFFFEF' };
 
-const TIER_COLORS = ['#22c55e','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#ec4899','#f97316'];
+const TIER_COLORS = ['#22c55e','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#ec4899'];
 
 const TIERS = [
   { label: 'A', range: '0 – 5,000',         min: 0,      rate: 0.17, rateLabel: '$0.17 / enriched visit', cap: 5000,    color: TIER_COLORS[0] },
@@ -38,16 +38,7 @@ function fmtUSD(n) {
   return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-const CHART_POINTS = [
-  500, 1000,
-  3000, 5000,
-  10000, 15000,
-  20000, 30000,
-  40000, 50000,
-  75000, 100000,
-  175000, 250000,
-  375000, 500000,
-];
+const CHART_POINTS = [0, 1000, 5000, 15000, 30000, 50000, 100000, 250000];
 
 function buildChartData(ratePercent) {
   return CHART_POINTS.map(enriched => {
@@ -98,7 +89,6 @@ export default function EnrichedVisitsCalculator() {
 
   const chartData = useMemo(() => buildChartData(ratePercent), [ratePercent]);
 
-  // Find the closest chart point to the user's enriched visits for the reference line
   const refX = useMemo(() => {
     if (enrichedVisits === 0) return null;
     let closest = chartData[0];
@@ -135,7 +125,6 @@ export default function EnrichedVisitsCalculator() {
         borderRadius: '16px', padding: '36px', marginBottom: '28px',
         boxShadow: '0 0 60px rgba(26,92,168,0.1)',
       }}>
-        {/* Color accent bar */}
         <div style={{ height: '3px', background: 'linear-gradient(90deg, #B1001A, #1a5ca8, #22c55e)', borderRadius: '2px', marginBottom: '28px' }} />
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
@@ -240,7 +229,7 @@ export default function EnrichedVisitsCalculator() {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(10,33,66,0.9)" />
             <XAxis
               dataKey="enriched"
-              tickFormatter={v => v >= 1000000 ? `${v/1000000}M` : v >= 1000 ? `${v/1000}k` : v}
+              tickFormatter={v => v >= 1000000 ? `${v/1000000}M` : v >= 1000 ? `${v/1000}k` : v === 0 ? '0' : v}
               tick={{ fill: '#4a6a9a', fontSize: 10 }}
               axisLine={{ stroke: '#0A2142' }}
               tickLine={false}
