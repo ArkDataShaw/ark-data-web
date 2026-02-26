@@ -228,7 +228,7 @@ export default function EnrichedVisitsCalculator() {
           display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '20px',
         }}>
           <div>
-            <p style={{ color: '#ff8a99', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '8px' }}>Estimated Monthly Cost</p>
+            <p style={{ color: '#ff8a99', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '8px' }}>Estimated Monthly Cost After Free Trial</p>
             <p style={{ color: '#fff', fontWeight: 900, fontSize: 'clamp(36px, 5vw, 54px)', letterSpacing: '-2.5px', lineHeight: 1 }}>{fmtUSD(totalCost)}</p>
           </div>
           <div style={{ textAlign: 'right' }}>
