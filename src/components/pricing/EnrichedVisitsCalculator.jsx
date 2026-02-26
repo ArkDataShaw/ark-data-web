@@ -45,11 +45,12 @@ function buildChartData(ratePercent) {
     const cost = calcCost(enriched);
     const cpe = enriched > 0 ? cost / enriched : 0;
     const visits = Math.round(enriched / (ratePercent / 100));
-    return { enriched, visits, cost, cpe: parseFloat(cpe.toFixed(4)) };
+    const returnVal = RETURN_PER_ENRICHMENT;
+    return { enriched, visits, cost, cpe: parseFloat(cpe.toFixed(4)), returnPerEnrichment: returnVal };
   });
 }
 
-function CustomTooltip({ active, payload, ratePercent }) {
+function CpeTooltip({ active, payload, ratePercent }) {
   if (!active || !payload || !payload.length) return null;
   const d = payload[0]?.payload;
   if (!d) return null;
@@ -59,6 +60,41 @@ function CustomTooltip({ active, payload, ratePercent }) {
       <p style={{ color: '#4a6a9a', marginBottom: '3px' }}>~{fmt(d.visits)} website visits @ {ratePercent}%</p>
       <p style={{ color: '#22c55e', fontWeight: 700, marginBottom: '3px' }}>Cost / enriched visit: ${d.cpe.toFixed(4)}</p>
       <p style={{ color: '#fff', fontWeight: 800 }}>Monthly cost: {fmtUSD(d.cost)}</p>
+    </div>
+  );
+}
+
+function ReturnTooltip({ active, payload }) {
+  if (!active || !payload || !payload.length) return null;
+  const d = payload[0]?.payload;
+  if (!d) return null;
+  const totalReturn = d.enriched * RETURN_PER_ENRICHMENT;
+  const totalCost = d.cost;
+  const profit = totalReturn - totalCost;
+  return (
+    <div style={{ background: '#06162A', border: '1px solid rgba(26,92,168,0.6)', borderRadius: '8px', padding: '12px 16px', fontSize: '12px' }}>
+      <p style={{ color: '#D9ECFF', fontWeight: 700, marginBottom: '6px' }}>{fmt(d.enriched)} enriched visits</p>
+      <p style={{ color: '#f59e0b', fontWeight: 700, marginBottom: '3px' }}>Return / enriched visit: ${RETURN_PER_ENRICHMENT.toFixed(2)}</p>
+      <p style={{ color: '#fff', fontWeight: 800, marginBottom: '3px' }}>Total return: {fmtUSD(totalReturn)}</p>
+      <p style={{ color: profit >= 0 ? '#22c55e' : '#ef4444', fontWeight: 800 }}>Net: {fmtUSD(profit)}</p>
+    </div>
+  );
+}
+
+function CombinedTooltip({ active, payload }) {
+  if (!active || !payload || !payload.length) return null;
+  const d = payload[0]?.payload;
+  if (!d) return null;
+  const totalReturn = d.enriched * RETURN_PER_ENRICHMENT;
+  const profit = totalReturn - d.cost;
+  return (
+    <div style={{ background: '#06162A', border: '1px solid rgba(26,92,168,0.6)', borderRadius: '8px', padding: '12px 16px', fontSize: '12px' }}>
+      <p style={{ color: '#D9ECFF', fontWeight: 700, marginBottom: '8px' }}>{fmt(d.enriched)} enriched visits</p>
+      <p style={{ color: '#3b82f6', fontWeight: 700, marginBottom: '3px' }}>Cost / visit: ${d.cpe.toFixed(4)}</p>
+      <p style={{ color: '#f59e0b', fontWeight: 700, marginBottom: '3px' }}>Return / visit: ${RETURN_PER_ENRICHMENT.toFixed(2)}</p>
+      <p style={{ color: profit >= 0 ? '#22c55e' : '#ef4444', fontWeight: 800, marginTop: '6px', borderTop: '1px solid rgba(26,92,168,0.3)', paddingTop: '6px' }}>
+        Net per visit: ${(RETURN_PER_ENRICHMENT - d.cpe).toFixed(4)}
+      </p>
     </div>
   );
 }
