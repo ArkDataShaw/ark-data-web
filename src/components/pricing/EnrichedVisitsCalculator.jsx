@@ -209,24 +209,6 @@ export default function EnrichedVisitsCalculator() {
           </div>
         </div>
 
-        {/* Summary tiles */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginBottom: '16px' }}>
-          {[
-            { label: 'Website Visits',    val: fmt(visitsInt),       color: '#7eb8ff', bg: 'rgba(26,92,168,0.12)',    border: 'rgba(26,92,168,0.3)' },
-            { label: 'Enrichment Rate',   val: `${ratePercent}%`,    color: '#a78bfa', bg: 'rgba(139,92,246,0.12)',   border: 'rgba(139,92,246,0.3)' },
-            { label: 'Enriched Visits',   val: fmt(enrichedVisits),  color: '#34d399', bg: 'rgba(52,211,153,0.12)',   border: 'rgba(52,211,153,0.3)', note: 'rounded down' },
-          ].map(item => (
-            <div key={item.label} style={{ background: item.bg, border: `1px solid ${item.border}`, borderRadius: '10px', padding: '16px 18px' }}>
-              <p style={{ color: item.color, fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>{item.label}</p>
-              <p style={{ color: '#fff', fontWeight: 800, fontSize: '22px', letterSpacing: '-0.5px', lineHeight: 1 }}>{item.val}</p>
-              {item.note && <p style={{ color: '#4a6a9a', fontSize: '10px', marginTop: '4px' }}>{item.note}</p>}
-            </div>
-          ))}
-        </div>
-
-        <p style={{ color: '#3ab870', fontSize: '11px', fontFamily: 'monospace', marginBottom: '20px', paddingLeft: '4px' }}>
-          {fmt(visitsInt)} × {ratePercent}% = {fmt(enrichedVisits)}
-        </p>
 
         {/* Total cost */}
         <div style={{
