@@ -247,8 +247,7 @@ export default function EnrichedVisitsCalculator() {
 
         {/* Free Trial CTA */}
         <div style={{ marginTop: '20px', textAlign: 'center' }}>
-          <a href="#" style={{ display: 'inline-block', width: '100%', textDecoration: 'none' }}>
-            <button style={{
+          <button onClick={() => setModalStep(1)} style={{
               width: '100%',
               background: 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)',
               border: '1px solid rgba(34,197,94,0.45)',
@@ -267,9 +266,87 @@ export default function EnrichedVisitsCalculator() {
             >
               Start Your Free 30-Day Trial
             </button>
-          </a>
           <p style={{ color: '#3ab870', fontSize: '14px', marginTop: '8px' }}>No credit card required · Cancel anytime</p>
         </div>
+
+        {/* Modal */}
+        {modalStep > 0 && (
+          <div style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,15,0.85)', zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
+          }} onClick={() => setModalStep(0)}>
+            <div style={{
+              background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)',
+              border: '1px solid rgba(34,197,94,0.35)', borderRadius: '16px',
+              padding: '36px', width: '100%', maxWidth: '480px', position: 'relative',
+            }} onClick={e => e.stopPropagation()}>
+              <button onClick={() => setModalStep(0)} style={{
+                position: 'absolute', top: '16px', right: '16px', background: 'none',
+                border: 'none', color: '#4a6a9a', cursor: 'pointer', padding: '4px',
+              }}>
+                <X size={20} />
+              </button>
+
+              {modalStep === 1 && (
+                <>
+                  <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '22px', marginBottom: '6px', letterSpacing: '-0.5px' }}>Start Your Free Trial</h3>
+                  <p style={{ color: '#4a6a9a', fontSize: '13px', marginBottom: '24px' }}>Tell us a bit about yourself to get started.</p>
+                  <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    {[
+                      { label: 'Email', key: 'email', type: 'email', placeholder: 'you@company.com' },
+                      { label: 'Phone Number', key: 'phone', type: 'tel', placeholder: '+1 (555) 000-0000' },
+                      { label: 'Company Name', key: 'company', type: 'text', placeholder: 'Acme Inc.' },
+                      { label: 'Company URL', key: 'url', type: 'url', placeholder: 'https://yourcompany.com' },
+                      { label: 'Estimated Monthly Website Visits', key: 'monthlyVisits', type: 'text', placeholder: 'e.g. 50,000' },
+                    ].map(({ label, key, type, placeholder }) => (
+                      <div key={key}>
+                        <label style={{ color: '#D9ECFF', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>{label}</label>
+                        <input
+                          required
+                          type={type}
+                          placeholder={placeholder}
+                          value={formData[key]}
+                          onChange={e => setFormData(p => ({ ...p, [key]: e.target.value }))}
+                          className="ark-input"
+                        />
+                      </div>
+                    ))}
+                    <button type="submit" style={{
+                      marginTop: '8px', width: '100%',
+                      background: 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)',
+                      border: '1px solid rgba(34,197,94,0.45)', borderRadius: '8px',
+                      padding: '14px', color: '#fff', fontSize: '15px', fontWeight: 800,
+                      cursor: 'pointer',
+                    }}>Continue →</button>
+                  </form>
+                </>
+              )}
+
+              {modalStep === 2 && (
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '40px', marginBottom: '16px' }}>🎉</div>
+                  <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '22px', marginBottom: '10px' }}>You're all set!</h3>
+                  <p style={{ color: '#4a6a9a', fontSize: '14px', marginBottom: '28px' }}>Click below to access the Ark Data platform and start your free trial.</p>
+                  <a
+                    href="https://app.arkdata.io"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-block', width: '100%',
+                      background: 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)',
+                      border: '1px solid rgba(34,197,94,0.45)', borderRadius: '8px',
+                      padding: '16px', color: '#fff', fontSize: '16px', fontWeight: 800,
+                      textDecoration: 'none', letterSpacing: '-0.2px',
+                      boxShadow: '0 4px 24px rgba(34,197,94,0.2)',
+                    }}
+                  >
+                    Go to app.arkdata.io →
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* CHART 1 — Cost per Enriched Visit */}
