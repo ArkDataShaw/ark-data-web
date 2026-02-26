@@ -293,7 +293,7 @@ export default function EnrichedVisitsCalculator() {
               Total website traffic. Billing is based on Enriched Visits.
             </p>
           </div>
-          <div>
+          <div data-tour="enrichment-rate">
             <label style={{ color: '#7eb8ff', fontSize: '11px', fontWeight: 700, display: 'block', marginBottom: '7px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
               Enrichment Rate <span style={{ color: '#4a6a9a', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(35% – 70%)</span>
             </label>
