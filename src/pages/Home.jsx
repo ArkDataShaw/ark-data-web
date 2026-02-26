@@ -214,9 +214,6 @@ export default function Home() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
             {painPoints.map((p, i) => (
               <div key={i} className="ark-card" style={{ padding: '28px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#0A2142', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-                  <span style={{ color: '#B1001A', fontWeight: 900, fontSize: '15px' }}>✕</span>
-                </div>
                 <h3 style={{ color: '#fff', fontWeight: 700, fontSize: '15px', marginBottom: '8px' }}>{p.title}</h3>
                 <p style={{ color: S.muted, fontSize: '13px', lineHeight: 1.65 }}>{p.desc}</p>
               </div>
