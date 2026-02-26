@@ -272,7 +272,7 @@ export default function EnrichedVisitsCalculator() {
             Cost per Enriched Visit <span style={{ color: '#4a6a9a', fontWeight: 400 }}>vs. Monthly Volume</span>
           </h2>
           <p style={{ color: '#4a6a9a', fontSize: '12px' }}>
-            Shows how your effective cost per enriched visit drops as volume increases (enrichment rate: {ratePercent}%).
+            Shows how your effective cost per enriched visit drops as volume increases.
             {enrichedVisits > 0 && (
               <span style={{ color: '#22c55e', fontWeight: 600 }}> Your position: {fmt(enrichedVisits)} enriched visits @ ${cpeAvg.toFixed(4)}/visit.</span>
             )}
