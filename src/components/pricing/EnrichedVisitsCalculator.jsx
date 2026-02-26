@@ -1,8 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { RefreshCw } from 'lucide-react';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer
+  AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, Legend
 } from 'recharts';
+
+const RETURN_PER_ENRICHMENT = 0.75;
 
 const S = { muted: '#D9ECFF', mutedGreen: '#DFFFEF' };
 
