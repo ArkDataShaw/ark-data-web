@@ -32,6 +32,62 @@ function useTypewriter(text, speed = 55, start = false) {
   return displayed;
 }
 
+function TwoPillarsSection({ S }) {
+  const [started, setStarted] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setStarted(true); }, { threshold: 0.3 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+  const typed = useTypewriter('One Goal: More Revenue.', 55, started);
+
+  return (
+    <section className="sp" style={{ background: '#020D1F' }}>
+      <div className="sc">
+        <div style={{ textAlign: 'center', marginBottom: '56px' }} ref={ref}>
+          <p style={{ color: '#DFFFEF', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>Two Powerful Engines</p>
+          <h2 style={{ fontSize: 'clamp(28px, 3.5vw, 44px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px', minHeight: '1.2em' }}>
+            {typed}<span style={{ opacity: started && typed.length < 'One Goal: More Revenue.'.length ? 1 : 0, borderRight: '2px solid #fff', marginLeft: '2px' }}>&nbsp;</span>
+          </h2>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+          <div style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '12px', padding: '40px', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #0A2142, #1a5ca8)' }} />
+            <div style={{ width: '48px', height: '48px', background: '#0A2142', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px', fontSize: '22px' }}>🔍</div>
+            <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '22px', marginBottom: '12px', letterSpacing: '-0.5px' }}>Lost Traffic Recovery</h3>
+            <p style={{ color: S.muted, fontSize: '14px', lineHeight: 1.7, marginBottom: '24px' }}>Convert anonymous website visitors into verified identities with company data, contact info, and behavioral signals. Route them to your CRM before they go dark.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px 0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {['Real person identification (not just company)', 'Verified contact data + work email', 'Intent signals from on-site behavior', 'Real-time CRM + ESP routing'].map(item => (
+                <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <CheckCircle size={15} style={{ color: '#22c55e', flexShrink: 0, marginTop: '1px' }} />
+                  <span style={{ color: S.muted, fontSize: '13px' }}>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <Link to={createPageUrl('Services')}><button className="ark-btn-blue" style={{ padding: '10px 20px', fontSize: '13px' }}>Learn More →</button></Link>
+          </div>
+          <div style={{ background: '#042016', border: '1px solid #063524', borderRadius: '12px', padding: '40px', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #063524, #0a6640)' }} />
+            <div style={{ width: '48px', height: '48px', background: '#063524', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px', fontSize: '22px' }}>⚡</div>
+            <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '22px', marginBottom: '12px', letterSpacing: '-0.5px' }}>High Intent Data</h3>
+            <p style={{ color: '#DFFFEF', fontSize: '14px', lineHeight: 1.7, marginBottom: '24px' }}>Access verified individuals actively researching your solution category across the web. Know who is in-market today, what they're evaluating, and reach them first.</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px 0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {['Off-site research signals across 10k+ topics', 'Individual-level (not account-level) data', 'Daily refresh of in-market intent signals', 'Competitor + vendor comparison tracking'].map(item => (
+                <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <CheckCircle size={15} style={{ color: '#22c55e', flexShrink: 0, marginTop: '1px' }} />
+                  <span style={{ color: '#DFFFEF', fontSize: '13px' }}>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <Link to={createPageUrl('Services')}><button className="ark-btn-green" style={{ padding: '10px 20px', fontSize: '13px' }}>Learn More →</button></Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function useCountUp(target, duration = 1800, start = false) {
   const [val, setVal] = useState(0);
   useEffect(() => {
