@@ -101,13 +101,23 @@ function CombinedTooltip({ active, payload }) {
 }
 
 export default function EnrichedVisitsCalculator() {
-   const [visitsRaw, setVisitsRaw] = useState('');
-   const [rateRaw, setRateRaw] = useState('55');
-   const [rateError, setRateError] = useState('');
-   const [showPrompt, setShowPrompt] = useState(true);
-   const [promptInput, setPromptInput] = useState('');
-   const [modalStep, setModalStep] = useState(0); // 0=closed, 1=form, 2=confirmation
-   const [formData, setFormData] = useState({ email: '', phone: '', company: '', url: '', monthlyVisits: '' });
+    const [visitsRaw, setVisitsRaw] = useState('');
+    const [rateRaw, setRateRaw] = useState('55');
+    const [rateError, setRateError] = useState('');
+    const [showPrompt, setShowPrompt] = useState(true);
+    const [promptInput, setPromptInput] = useState('');
+    const [modalStep, setModalStep] = useState(0); // 0=closed, 1=form, 2=confirmation
+    const [formData, setFormData] = useState({ email: '', phone: '', company: '', url: '', monthlyVisits: '' });
+    const [showTour, setShowTour] = useState(false);
+
+    useEffect(() => {
+      // Check if user has seen the tour before
+      const hasSeenTour = localStorage.getItem('pricingCalcTourSeen');
+      if (!hasSeenTour && visitsRaw === '') {
+        // Show tour on first load (optional - set to false if you want manual trigger only)
+        // setShowTour(true);
+      }
+    }, []);
 
    const handlePromptSubmit = () => {
      if (promptInput.trim()) {
