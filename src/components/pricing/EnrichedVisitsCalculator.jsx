@@ -669,5 +669,13 @@ export default function EnrichedVisitsCalculator() {
           </div>
           </div>
           </div>
+
+          <PricingCalculatorTour 
+            isOpen={showTour} 
+            onClose={() => {
+              setShowTour(false);
+              localStorage.setItem('pricingCalcTourSeen', 'true');
+            }} 
+          />
           );
           }
