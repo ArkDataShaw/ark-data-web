@@ -38,16 +38,7 @@ function fmtUSD(n) {
   return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-const CHART_POINTS = [
-  500, 1000,
-  3000, 5000,
-  10000, 15000,
-  20000, 30000,
-  40000, 50000,
-  75000, 100000,
-  175000, 250000,
-  375000, 500000,
-];
+const CHART_POINTS = [0, 1000, 5000, 15000, 30000, 50000, 100000, 250000];
 
 function buildChartData(ratePercent) {
   return CHART_POINTS.map(enriched => {
