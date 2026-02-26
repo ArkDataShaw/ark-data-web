@@ -278,6 +278,8 @@ export default function EnrichedVisitsCalculator() {
               axisLine={{ stroke: '#0A2142' }}
               tickLine={false}
               width={52}
+              domain={[0.10, 0.20]}
+              ticks={[0.10, 0.12, 0.14, 0.16, 0.18, 0.20]}
             />
             <Tooltip content={<CpeTooltip ratePercent={ratePercent} />} />
             {refX !== null && (
