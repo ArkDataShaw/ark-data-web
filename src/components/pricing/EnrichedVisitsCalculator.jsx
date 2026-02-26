@@ -23,8 +23,7 @@ function clamp(x, lo, hi) { return Math.min(Math.max(x, lo), hi); }
 function calcTiers(v) {
   return TIERS.map(t => {
     let charged;
-    if (t.label === 'A') charged = clamp(v, 0, 1000);
-    else if (t.label === 'H') charged = Math.max(0, v - 250000);
+    if (t.label === 'G') charged = Math.max(0, v - 250000);
     else charged = clamp(v - t.min, 0, t.cap);
     return { ...t, charged, subtotal: charged * t.rate };
   });
