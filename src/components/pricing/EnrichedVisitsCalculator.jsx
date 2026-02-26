@@ -103,6 +103,13 @@ export default function EnrichedVisitsCalculator() {
   const [visitsRaw, setVisitsRaw] = useState('');
   const [rateRaw, setRateRaw] = useState('55');
   const [rateError, setRateError] = useState('');
+  const [modalStep, setModalStep] = useState(0); // 0=closed, 1=form, 2=confirmation
+  const [formData, setFormData] = useState({ email: '', phone: '', company: '', url: '', monthlyVisits: '' });
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    setModalStep(2);
+  };
 
   const visitsInt = Math.max(0, Math.floor(parseFloat(visitsRaw.replace(/,/g, '')) || 0));
 
