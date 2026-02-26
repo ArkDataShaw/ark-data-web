@@ -309,6 +309,9 @@ export default function Pricing() {
             })}
           </div>
 
+          {/* Enriched Visits Calculator */}
+          <EnrichedVisitsCalculator />
+
           {/* Feature Comparison Table */}
           <div style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '12px', overflow: 'hidden', marginBottom: '60px' }}>
             <div style={{ padding: '28px 32px', borderBottom: '1px solid #0A2142' }}>
