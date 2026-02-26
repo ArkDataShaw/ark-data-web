@@ -627,13 +627,13 @@ export default function EnrichedVisitsCalculator() {
           </p>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {[
-              { label: 'Website Visits',             val: fmt(visitsInt),              color: '#7eb8ff' },
-              { label: 'Enrichment Rate',            val: `${ratePercent}%`,           color: '#a78bfa' },
-              { label: 'Enriched Visits',            val: fmt(enrichedVisits),         color: '#34d399' },
+              { label: 'Website Visits',             val: fmt(visitsInt),              color: '#7eb8ff', tour: 'visits-example' },
+              { label: 'Enrichment Rate',            val: `${ratePercent}%`,           color: '#a78bfa', tour: 'enrichment-example' },
+              { label: 'Enriched Visits',            val: fmt(enrichedVisits),         color: '#34d399', tour: 'contacts-row' },
               { label: 'Avg. Cost / Enriched Visit', val: `$${cpeAvg.toFixed(4)}`,    color: '#fbbf24' },
-              { label: 'Estimated Monthly Cost',     val: fmtUSD(totalCost),           color: '#ff8a99', large: true },
+              { label: 'Estimated Monthly Cost',     val: fmtUSD(totalCost),           color: '#ff8a99', large: true, tour: 'cost-row' },
             ].map((row, i, arr) => (
-              <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(34,197,94,0.12)' : 'none' }}>
+              <div key={row.label} data-tour={row.tour} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(34,197,94,0.12)' : 'none' }}>
                 <span style={{ color: S.mutedGreen, fontSize: '13px' }}>{row.label}</span>
                 <span style={{ color: row.color, fontWeight: row.large ? 900 : 700, fontSize: row.large ? '16px' : '13px', fontFamily: 'monospace' }}>{row.val}</span>
               </div>
