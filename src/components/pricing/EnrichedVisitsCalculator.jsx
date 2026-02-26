@@ -351,7 +351,7 @@ export default function EnrichedVisitsCalculator() {
               'Billing is based on Enriched Visits, not raw website visits.',
               'Enriched Visits = floor(Website Visits x Enrichment Rate).',
               "Pricing is stacked: you only pay each tier's rate for visits inside that tier.",
-              'Your first 1,000 enriched visits are always free.',
+              'All enriched visits are billed at the applicable tier rate.',
             ].map((note, i) => (
               <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                 <span style={{ color: '#ff8a99', fontWeight: 700, fontSize: '14px', flexShrink: 0, marginTop: '1px' }}>→</span>
