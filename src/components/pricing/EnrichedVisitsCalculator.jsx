@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
-import { RefreshCw, X } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { RefreshCw, X, HelpCircle } from 'lucide-react';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, Legend
 } from 'recharts';
+import PricingCalculatorTour from './PricingCalculatorTour';
 
 const RETURN_PER_ENRICHMENT = 0.75;
 
