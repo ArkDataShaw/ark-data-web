@@ -188,6 +188,9 @@ export default function Layout({ children, currentPageName }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Link to={createPageUrl('Contact')} className="d-none-mobile ark-link"
               style={{ color: '#D9ECFF', fontSize: '13px', fontWeight: 500 }}>Contact</Link>
+            <a href="#" className="d-none-mobile">
+              <button className="ark-btn-green" style={{ padding: '9px 20px', fontSize: '14px' }}>Free Trial</button>
+            </a>
             <Link to={createPageUrl('BookADemo')}>
               <button className="ark-btn-red" style={{ padding: '9px 20px', fontSize: '14px' }}>Book a Call</button>
             </Link>
