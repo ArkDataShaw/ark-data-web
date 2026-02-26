@@ -284,7 +284,7 @@ export default function EnrichedVisitsCalculator() {
             <Tooltip content={<CpeTooltip ratePercent={ratePercent} />} />
             {refX !== null && (
               <ReferenceLine x={refX} stroke="#B1001A" strokeDasharray="4 3" strokeWidth={2}
-                label={{ value: 'You', fill: '#ff8a99', fontSize: 11, fontWeight: 700, position: 'top' }} />
+                label={{ value: 'You', fill: '#ff8a99', fontSize: 11, fontWeight: 700, position: 'insideTopRight', offset: 5, y: 0.18 }} />
             )}
             <Area type="monotone" dataKey="cpe" stroke="#3b82f6" strokeWidth={2.5}
               fill="url(#cpeGradient)" dot={false}
