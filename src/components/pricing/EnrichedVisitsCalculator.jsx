@@ -665,17 +665,17 @@ export default function EnrichedVisitsCalculator() {
                   Start Your Free 30-Day Trial
                 </button>
               <p style={{ color: '#3ab870', fontSize: '14px', marginTop: '8px' }}>No credit card required · Cancel anytime</p>
-            </div>
-          </div>
-          </div>
-          </div>
+              </div>
+              </div>
+              </div>
 
-          <PricingCalculatorTour 
-            isOpen={showTour} 
-            onClose={() => {
+              <PricingCalculatorTour 
+              isOpen={showTour} 
+              onClose={() => {
               setShowTour(false);
               localStorage.setItem('pricingCalcTourSeen', 'true');
-            }} 
-          />
-          );
+              }} 
+              />
+              </div>
+              );
           }
