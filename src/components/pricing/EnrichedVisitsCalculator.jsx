@@ -641,31 +641,7 @@ export default function EnrichedVisitsCalculator() {
           </div>
           </div>
 
-          {/* Bottom CTA */}
-          <div style={{ marginTop: '48px', borderTop: '1px solid rgba(34,197,94,0.15)', paddingTop: '36px', paddingBottom: '24px', display: 'flex', justifyContent: 'center' }}>
-            <button data-tour="trial-button" onClick={() => setModalStep(1)} style={{
-                display: 'block',
-                width: '100%',
-                background: 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)',
-                border: '1px solid rgba(34,197,94,0.45)',
-                borderRadius: '10px',
-                padding: '18px 32px',
-                color: '#fff',
-                fontSize: '14px',
-                fontWeight: 800,
-                cursor: 'pointer',
-                letterSpacing: '-0.2px',
-                boxShadow: '0 4px 24px rgba(34,197,94,0.2)',
-                transition: 'all 0.25s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #0a6e3b 0%, #0d8f4c 50%, #0a6e3b 100%)'; e.currentTarget.style.boxShadow = '0 6px 32px rgba(34,197,94,0.35)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(34,197,94,0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-              >
-                Start Your Free 30-Day Trial
-              </button>
-            <p style={{ color: '#3ab870', fontSize: '14px', marginTop: '8px' }}>No credit card required · Cancel anytime</p>
-              </div>
-              </div>
+          </div>
 
               <PricingCalculatorTour 
               isOpen={showTour} 
