@@ -13,6 +13,14 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.idpixel.app/v1/idp-analytics-69a10b8d81c12e22bc59638e.min.js';
+    script.defer = true;
+    document.head.appendChild(script);
+    return () => document.head.removeChild(script);
+  }, []);
+
   const navLinks = [
     { label: 'Platform', page: 'Product' },
     { label: 'Solutions', page: 'Solutions' },
