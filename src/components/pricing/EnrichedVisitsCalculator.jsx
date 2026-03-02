@@ -304,7 +304,7 @@ export default function EnrichedVisitsCalculator() {
                 className="ark-input" style={{ fontSize: '17px', fontWeight: 700, paddingRight: '34px', borderColor: 'rgba(26,92,168,0.6)' }} />
               <span style={{ position: 'absolute', right: '13px', top: '50%', transform: 'translateY(-50%)', color: '#4a6a9a', fontSize: '16px', fontWeight: 700, pointerEvents: 'none' }}>%</span>
             </div>
-            <p style={{ color: '#3ab870', fontSize: '11px', marginTop: '6px', lineHeight: 1.55 }}>
+            <p style={{ color: '#4a6a9a', fontSize: '11px', marginTop: '6px', lineHeight: 1.55 }}>
               Percent of visits that become billable Enriched Visits.
             </p>
             {rateError && <p style={{ color: '#ef4444', fontSize: '11px', marginTop: '5px', fontWeight: 600 }}>⚠ {rateError}</p>}
