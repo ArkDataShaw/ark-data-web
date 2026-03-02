@@ -147,7 +147,7 @@ export default function EnrichedVisitsCalculator() {
   };
 
   const rateParsed = parseRate(rateRaw);
-  const ratePercent = clamp(isNaN(rateParsed) ? 55 : rateParsed, 35, 70);
+  const ratePercent = isNaN(rateParsed) ? 40 : Math.max(0, rateParsed);
   const enrichedVisits = Math.floor(visitsInt * (ratePercent / 100));
 
   const tierRows = useMemo(() => calcTiers(enrichedVisits), [enrichedVisits]);
