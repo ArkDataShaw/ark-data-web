@@ -250,7 +250,7 @@ export default function EnrichedVisitsCalculator() {
         boxShadow: '0 0 60px rgba(26,92,168,0.1)',
       }}>
         {/* Color accent bar */}
-        <div style={{ height: '3px', background: 'linear-gradient(90deg, #B1001A, #1a5ca8, #22c55e)', borderRadius: '2px', marginBottom: '28px' }} />
+        <div style={{ height: '3px', background: 'linear-gradient(90deg, #B1001A 0%, #1a5ca8 100%)', borderRadius: '2px', marginBottom: '28px' }} />
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
           <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '18px', letterSpacing: '-0.3px' }}>
