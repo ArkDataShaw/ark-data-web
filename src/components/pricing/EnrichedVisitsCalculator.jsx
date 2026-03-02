@@ -501,7 +501,7 @@ export default function EnrichedVisitsCalculator() {
       </div>
 
 {/* CHART 3 — ROI Growth Over Time */}
-<div style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '14px', padding: '28px', marginBottom: '28px' }}>
+<div data-tour="roi-chart" style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '14px', padding: '28px', marginBottom: '28px' }}>
   <div style={{ marginBottom: '20px' }}>
     <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '17px', marginBottom: '4px' }}>
       Return Growth Over Time <span style={{ color: '#4a6a9a', fontWeight: 400 }}>— Stacked Monthly View</span>
