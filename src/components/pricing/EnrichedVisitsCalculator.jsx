@@ -178,9 +178,8 @@ export default function EnrichedVisitsCalculator() {
 
   const handleRateBlur = () => {
     const parsed = parseRate(rateRaw);
-    if (isNaN(parsed) || parsed < 35) { setRateRaw('35'); setRateError('Minimum enrichment rate is 35%.'); }
-    else if (parsed > 70) { setRateRaw('70'); setRateError('Maximum enrichment rate is 70%.'); }
-    else setRateError('');
+    if (isNaN(parsed) || parsed < 0) { setRateRaw('0'); }
+    setRateError('');
   };
 
   const handleRateChange = (e) => { setRateRaw(e.target.value.replace('%', '')); setRateError(''); };
