@@ -34,7 +34,7 @@ export default function Pricing() {
         <div className="sc" style={{ maxWidth: '720px', position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.35)', borderRadius: '100px', padding: '5px 14px', marginBottom: '20px' }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
-            <span style={{ color: '#ff8a99', fontSize: '12px', fontWeight: 600 }}>Usage-Based Pricing</span>
+            <span style={{ color: '#86efac', fontSize: '12px', fontWeight: 600 }}>Usage-Based Pricing</span>
           </div>
           <h1 style={{ fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px', lineHeight: 1.15 }}>
             <span style={{ display: 'block', fontSize: 'clamp(36px, 5vw, 62px)', color: '#D9ECFF' }}>
