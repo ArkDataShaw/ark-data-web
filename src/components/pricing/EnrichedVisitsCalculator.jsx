@@ -315,8 +315,8 @@ export default function EnrichedVisitsCalculator() {
 
         {/* Total cost */}
         <div style={{
-          background: 'linear-gradient(135deg, rgba(177,0,26,0.15) 0%, rgba(10,33,66,0.6) 60%, rgba(4,32,22,0.4) 100%)',
-          border: '1px solid rgba(177,0,26,0.4)', borderRadius: '12px', padding: '28px 28px',
+          background: 'linear-gradient(135deg, rgba(10,33,66,0.8) 0%, rgba(4,14,26,0.9) 100%)',
+          border: '1px solid rgba(26,92,168,0.5)', borderRadius: '12px', padding: '28px 28px',
           display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '20px',
         }}>
           <div>
