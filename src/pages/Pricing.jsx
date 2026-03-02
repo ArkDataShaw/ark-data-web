@@ -37,13 +37,11 @@ export default function Pricing() {
             <span style={{ color: '#ff8a99', fontSize: '12px', fontWeight: 600 }}>Usage-Based Pricing</span>
           </div>
           <h1 style={{ fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px', lineHeight: 1.15 }}>
-            <span style={{ display: 'block', fontSize: 'clamp(28px, 3.5vw, 44px)', color: '#D9ECFF' }}>
+            <span style={{ display: 'block', fontSize: 'clamp(36px, 5vw, 62px)', color: '#D9ECFF' }}>
               <TypewriterText text="Pricing That" delay={0} speed={65} />
             </span>
-            <span style={{ display: 'block', fontSize: 'clamp(48px, 7vw, 88px)', color: '#22c55e', textShadow: '0 0 40px rgba(34,197,94,0.5)', letterSpacing: '-3px' }}>
-              <TypewriterText text="Scales" delay={900} speed={80} />
-            </span>
-            <span style={{ display: 'block', fontSize: 'clamp(28px, 3.5vw, 44px)', color: '#D9ECFF' }}>
+...
+            <span style={{ display: 'block', fontSize: 'clamp(36px, 5vw, 62px)', color: '#D9ECFF' }}>
               <TypewriterText text="With You." delay={1600} speed={65} />
             </span>
           </h1>
