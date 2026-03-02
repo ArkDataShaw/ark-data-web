@@ -1,623 +1,385 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { RefreshCw, X, HelpCircle } from 'lucide-react';
-import {
-  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, Legend
-} from 'recharts';
-import PricingCalculatorTour from './PricingCalculatorTour';
+import React, { useState, useMemo } from 'react';
+import { X, HelpCircle } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, ReferenceDot } from 'recharts';
 
-const RETURN_PER_ENRICHMENT = 0.75;
-
-const S = { muted: '#D9ECFF', mutedGreen: '#DFFFEF' };
-
-const TIER_COLORS = ['#22c55e','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#ec4899','#f97316'];
-
-const TIERS = [
-  { label: 'Starter',     range: '0 – 5,000',         min: 0,      rate: 0.17, rateLabel: '$0.17 / enriched visit', cap: 5000,    color: TIER_COLORS[0] },
-  { label: 'Growth',      range: '5,001 – 15,000',    min: 5000,   rate: 0.15, rateLabel: '$0.15 / enriched visit', cap: 10000,   color: TIER_COLORS[1] },
-  { label: 'Scale',       range: '15,001 – 30,000',   min: 15000,  rate: 0.13, rateLabel: '$0.13 / enriched visit', cap: 15000,   color: TIER_COLORS[2] },
-  { label: 'Business',    range: '30,001 – 50,000',   min: 30000,  rate: 0.11, rateLabel: '$0.11 / enriched visit', cap: 20000,   color: TIER_COLORS[3] },
-  { label: 'Pro',         range: '50,001 – 100,000',  min: 50000,  rate: 0.10, rateLabel: '$0.10 / enriched visit', cap: 50000,   color: TIER_COLORS[4] },
-  { label: 'Enterprise',  range: '100,001 – 250,000', min: 100000, rate: 0.09, rateLabel: '$0.09 / enriched visit', cap: 150000,  color: TIER_COLORS[5] },
-  { label: 'Elite',       range: '250,001+',          min: 250000, rate: 0.08, rateLabel: '$0.08 / enriched visit', cap: Infinity,color: TIER_COLORS[6] },
+// ── Rate tables ──────────────────────────────────────────────────────────────
+const SELF_SERVE_TIERS = [
+  { name: 'Starter',    min: 0,      max: 2500,    rate: 0.18,  color: '#22c55e' },
+  { name: 'Growth',     min: 2501,   max: 10000,   rate: 0.15,  color: '#3b82f6' },
+  { name: 'Scale',      min: 10001,  max: 25000,   rate: 0.12,  color: '#8b5cf6' },
+  { name: 'Business',   min: 25001,  max: 50000,   rate: 0.10,  color: '#f59e0b' },
+  { name: 'Pro',        min: 50001,  max: 100000,  rate: 0.09,  color: '#ef4444' },
+  { name: 'Enterprise', min: 100001, max: Infinity, rate: 0.08, color: '#06b6d4' },
 ];
 
-function clamp(x, lo, hi) { return Math.min(Math.max(x, lo), hi); }
+const COMMITTED_TIERS = [
+  { name: 'Starter',    min: 0,      max: 2500,    rate: 0.153, color: '#22c55e' },
+  { name: 'Growth',     min: 2501,   max: 10000,   rate: 0.128, color: '#3b82f6' },
+  { name: 'Scale',      min: 10001,  max: 25000,   rate: 0.102, color: '#8b5cf6' },
+  { name: 'Business',   min: 25001,  max: 50000,   rate: 0.085, color: '#f59e0b' },
+  { name: 'Pro',        min: 50001,  max: 100000,  rate: 0.077, color: '#ef4444' },
+  { name: 'Enterprise', min: 100001, max: Infinity, rate: 0.068, color: '#06b6d4' },
+];
 
-function calcTiers(v) {
-  return TIERS.map(t => {
-    const charged = t.cap === Infinity ? Math.max(0, v - t.min) : clamp(v - t.min, 0, t.cap);
-    return { ...t, charged, subtotal: charged * t.rate };
-  });
+// ── Competitor reference data ─────────────────────────────────────────────
+const COMPETITOR_POINTS = [
+  { ev: 500,   rb2b: 129,   opensend: null },
+  { ev: 1000,  rb2b: 249,   opensend: 500  },
+  { ev: 2500,  rb2b: 524,   opensend: 500  },
+  { ev: 5000,  rb2b: 1024,  opensend: 1000 },
+  { ev: 10000, rb2b: 2274,  opensend: 2000 },
+  { ev: 15000, rb2b: 3500,  opensend: 2500 },
+  { ev: 25000, rb2b: 5949,  opensend: 5000 },
+  { ev: 50000, rb2b: 10000, opensend: 10000},
+];
+
+function interpolate(ev, field) {
+  if (ev > 50000) return null;
+  const pts = COMPETITOR_POINTS.filter(p => p[field] != null);
+  if (ev <= pts[0].ev) return pts[0][field];
+  if (ev >= pts[pts.length-1].ev) return pts[pts.length-1][field];
+  for (let i = 0; i < pts.length - 1; i++) {
+    if (ev >= pts[i].ev && ev <= pts[i+1].ev) {
+      const t = (ev - pts[i].ev) / (pts[i+1].ev - pts[i].ev);
+      return pts[i][field] + t * (pts[i+1][field] - pts[i][field]);
+    }
+  }
+  return null;
 }
 
-function calcCost(v) {
-  return calcTiers(v).reduce((s, t) => s + t.subtotal, 0);
+// ── Calculation engine ────────────────────────────────────────────────────
+function calculateCost(enrichedVisits, tiers) {
+  let remaining = enrichedVisits;
+  let totalCost = 0;
+  const breakdown = [];
+  for (const tier of tiers) {
+    if (remaining <= 0) break;
+    const capacity = tier.max === Infinity ? remaining : (tier.max - tier.min + 1);
+    const used = Math.min(remaining, capacity);
+    const cost = used * tier.rate;
+    breakdown.push({ ...tier, used, cost });
+    totalCost += cost;
+    remaining -= used;
+  }
+  const effectiveRate = enrichedVisits > 0 ? totalCost / enrichedVisits : 0;
+  return { totalCost, effectiveRate, breakdown };
 }
 
+// ── Formatters ────────────────────────────────────────────────────────────
 function fmt(n) { return Math.floor(n).toLocaleString('en-US'); }
-function fmtUSD(n) {
-  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function fmtUSD(n) { return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function fmtRate(r) { return r < 0.10 ? `$${r.toFixed(4)}` : `$${r.toFixed(2)}`; }
+function fmtK(v) {
+  if (v >= 1000000) return `${(v/1000000).toFixed(0)}M`;
+  if (v >= 1000) return `${(v/1000).toFixed(0)}k`;
+  return String(v);
 }
 
-const CHART_POINTS = [1000, 5000, 15000, 30000, 50000, 100000, 250000];
-
-function buildChartData(ratePercent) {
-  return CHART_POINTS.map(enriched => {
-    const cost = calcCost(enriched);
-    const cpe = enriched > 0 ? cost / enriched : 0;
-    const visits = Math.round(enriched / (ratePercent / 100));
-    const returnVal = RETURN_PER_ENRICHMENT;
-    return { enriched, visits, cost, cpe: parseFloat(cpe.toFixed(4)), returnPerEnrichment: returnVal };
+// ── Staircase chart data ──────────────────────────────────────────────────
+function buildStaircaseData(tiers) {
+  const pts = [];
+  const boundaries = [0, 2500, 10000, 25000, 50000, 100000, 250000];
+  boundaries.forEach(x => {
+    const tier = [...tiers].reverse().find(t => x >= t.min) || tiers[0];
+    pts.push({ x, rate: tier.rate, color: tier.color });
   });
+  return pts;
 }
 
-function CpeTooltip({ active, payload, ratePercent }) {
-  if (!active || !payload || !payload.length) return null;
+// ── Tooltip ───────────────────────────────────────────────────────────────
+function ChartTooltip({ active, payload }) {
+  if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
-  if (!d) return null;
   return (
-    <div style={{ background: '#06162A', border: '1px solid rgba(26,92,168,0.6)', borderRadius: '8px', padding: '12px 16px', fontSize: '12px' }}>
-      <p style={{ color: '#D9ECFF', fontWeight: 700, marginBottom: '6px' }}>{fmt(d.enriched)} enriched visits</p>
-      <p style={{ color: '#4a6a9a', marginBottom: '3px' }}>~{fmt(d.visits)} website visits @ {ratePercent}%</p>
-      <p style={{ color: '#22c55e', fontWeight: 700, marginBottom: '3px' }}>Cost / enriched visit: ${d.cpe.toFixed(4)}</p>
-      <p style={{ color: '#fff', fontWeight: 800 }}>Monthly cost: {fmtUSD(d.cost)}</p>
+    <div style={{ background: '#06162A', border: '1px solid rgba(26,92,168,0.6)', borderRadius: '8px', padding: '10px 14px', fontSize: '12px' }}>
+      <p style={{ color: '#D9ECFF', fontWeight: 700 }}>{fmtK(d.x)} enriched visits</p>
+      <p style={{ color: '#22c55e', fontWeight: 700, marginTop: '4px' }}>Rate: {fmtRate(d.rate)} / visit</p>
     </div>
   );
 }
 
-function ReturnTooltip({ active, payload }) {
-  if (!active || !payload || !payload.length) return null;
-  const d = payload[0]?.payload;
-  if (!d) return null;
-  const totalReturn = d.enriched * RETURN_PER_ENRICHMENT;
-  const totalCost = d.cost;
-  const profit = totalReturn - totalCost;
-  return (
-    <div style={{ background: '#06162A', border: '1px solid rgba(26,92,168,0.6)', borderRadius: '8px', padding: '12px 16px', fontSize: '12px' }}>
-      <p style={{ color: '#D9ECFF', fontWeight: 700, marginBottom: '6px' }}>{fmt(d.enriched)} enriched visits</p>
-      <p style={{ color: '#f59e0b', fontWeight: 700, marginBottom: '3px' }}>Return / enriched visit: ${RETURN_PER_ENRICHMENT.toFixed(2)}</p>
-      <p style={{ color: '#fff', fontWeight: 800, marginBottom: '3px' }}>Total return: {fmtUSD(totalReturn)}</p>
-      <p style={{ color: profit >= 0 ? '#22c55e' : '#ef4444', fontWeight: 800 }}>Net: {fmtUSD(profit)}</p>
-    </div>
-  );
-}
-
-function CombinedTooltip({ active, payload }) {
-  if (!active || !payload || !payload.length) return null;
-  const d = payload[0]?.payload;
-  if (!d) return null;
-  const totalReturn = d.enriched * RETURN_PER_ENRICHMENT;
-  const profit = totalReturn - d.cost;
-  return (
-    <div style={{ background: '#06162A', border: '1px solid rgba(26,92,168,0.6)', borderRadius: '8px', padding: '12px 16px', fontSize: '12px' }}>
-      <p style={{ color: '#D9ECFF', fontWeight: 700, marginBottom: '8px' }}>{fmt(d.enriched)} enriched visits</p>
-      <p style={{ color: '#3b82f6', fontWeight: 700, marginBottom: '3px' }}>Cost / visit: ${d.cpe.toFixed(4)}</p>
-      <p style={{ color: '#f59e0b', fontWeight: 700, marginBottom: '3px' }}>Return / visit: ${RETURN_PER_ENRICHMENT.toFixed(2)}</p>
-      <p style={{ color: profit >= 0 ? '#22c55e' : '#ef4444', fontWeight: 800, marginTop: '6px', borderTop: '1px solid rgba(26,92,168,0.3)', paddingTop: '6px' }}>
-        Net per visit: ${(RETURN_PER_ENRICHMENT - d.cpe).toFixed(4)}
-      </p>
-    </div>
-  );
-}
-
+// ── Main component ────────────────────────────────────────────────────────
 export default function EnrichedVisitsCalculator() {
-    const [visitsRaw, setVisitsRaw] = useState('');
-    const [rateRaw, setRateRaw] = useState('40');
-    const [rateError, setRateError] = useState('');
-    const [showPrompt, setShowPrompt] = useState(true);
-    const [promptInput, setPromptInput] = useState('');
-    const [modalStep, setModalStep] = useState(0); // 0=closed, 1=form, 2=confirmation
-    const [formData, setFormData] = useState({ email: '', phone: '', company: '', url: '', monthlyVisits: '' });
-    const [showTour, setShowTour] = useState(false);
+  const [visitsRaw, setVisitsRaw] = useState('');
+  const [rateRaw, setRateRaw] = useState('55');
+  const [committed, setCommitted] = useState(false);
+  const [modalStep, setModalStep] = useState(0);
+  const [formData, setFormData] = useState({ email: '', phone: '', company: '', url: '', monthlyVisits: '' });
 
-    useEffect(() => {
-      // Check if user has seen the tour before
-      const hasSeenTour = localStorage.getItem('pricingCalcTourSeen');
-      if (!hasSeenTour && visitsRaw === '') {
-        // Show tour on first load (optional - set to false if you want manual trigger only)
-        // setShowTour(true);
-      }
-    }, []);
-
-   const handlePromptSubmit = () => {
-     if (promptInput.trim()) {
-       setVisitsRaw(promptInput.replace(/[^0-9]/g, ''));
-       setShowPrompt(false);
-       setPromptInput('');
-     }
-   };
-
-   const handlePromptClose = () => {
-     setShowPrompt(false);
-   };
-
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    setModalStep(2);
-  };
-
+  const tiers = committed ? COMMITTED_TIERS : SELF_SERVE_TIERS;
   const visitsInt = Math.max(0, Math.floor(parseFloat(visitsRaw.replace(/,/g, '')) || 0));
-
-  const parseRate = (raw) => {
-    const cleaned = String(raw).replace('%', '').trim();
-    const num = parseFloat(cleaned);
-    if (isNaN(num)) return 55;
-    if (num > 0 && num <= 1) return num * 100;
-    return num;
-  };
-
-  const rateParsed = parseRate(rateRaw);
-  const ratePercent = isNaN(rateParsed) ? 40 : Math.max(0, rateParsed);
+  const ratePercent = Math.min(80, Math.max(20, parseFloat(rateRaw) || 55));
   const enrichedVisits = Math.floor(visitsInt * (ratePercent / 100));
+  const { totalCost, effectiveRate, breakdown } = useMemo(() => calculateCost(enrichedVisits, tiers), [enrichedVisits, tiers]);
 
-  const tierRows = useMemo(() => calcTiers(enrichedVisits), [enrichedVisits]);
-  const totalCost = tierRows.reduce((sum, t) => sum + t.subtotal, 0);
-  const cpeAvg = enrichedVisits > 0 ? totalCost / enrichedVisits : 0;
-  const isRare = ratePercent < 30 || ratePercent > 55;
+  // Self-serve cost for savings comparison
+  const selfServeCost = useMemo(() => calculateCost(enrichedVisits, SELF_SERVE_TIERS).totalCost, [enrichedVisits]);
+  const monthlySavings = committed ? selfServeCost - totalCost : 0;
 
-  const chartData = useMemo(() => {
-    const base = buildChartData(ratePercent);
-    if (enrichedVisits > 0 && !CHART_POINTS.includes(enrichedVisits)) {
-      const cost = calcCost(enrichedVisits);
-      const cpe = enrichedVisits > 0 ? cost / enrichedVisits : 0;
-      const visits = Math.round(enrichedVisits / (ratePercent / 100));
-      const point = { enriched: enrichedVisits, visits, cost, cpe: parseFloat(cpe.toFixed(4)), returnPerEnrichment: RETURN_PER_ENRICHMENT };
-      return [...base, point].sort((a, b) => a.enriched - b.enriched);
-    }
-    return base;
-  }, [ratePercent, enrichedVisits]);
+  // Competitor estimates
+  const rb2bEst = interpolate(enrichedVisits, 'rb2b');
+  const opensendEst = interpolate(enrichedVisits, 'opensend');
 
-  const refX = enrichedVisits > 0 ? enrichedVisits : null;
+  // Chart data
+  const chartData = useMemo(() => buildStaircaseData(tiers), [tiers]);
 
-  const activeTierIdx = useMemo(() => {
-    for (let i = TIERS.length - 1; i >= 0; i--) {
-      if (enrichedVisits > TIERS[i].min) return i;
-    }
-    return 0;
-  }, [enrichedVisits]);
+  // Active tier
+  const activeTier = useMemo(() => {
+    return [...tiers].reverse().find(t => enrichedVisits >= t.min) || tiers[0];
+  }, [enrichedVisits, tiers]);
 
-  const handleRateBlur = () => {
-    const parsed = parseRate(rateRaw);
-    if (isNaN(parsed) || parsed < 0) { setRateRaw('0'); }
-    setRateError('');
-  };
-
-  const handleRateChange = (e) => { setRateRaw(e.target.value.replace('%', '')); setRateError(''); };
-  const handleVisitsChange = (e) => { setVisitsRaw(e.target.value.replace(/[^0-9]/g, '')); };
-  const handleReset = () => { setVisitsRaw(''); setRateRaw('55'); setRateError(''); };
+  const handleFormSubmit = (e) => { e.preventDefault(); setModalStep(2); };
 
   return (
     <div>
-      {showPrompt && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 1000, backdropFilter: 'blur(4px)'
-        }}>
-          <div style={{
-            background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)',
-            border: '1px solid rgba(26,92,168,0.6)', borderRadius: '16px', padding: '36px',
-            maxWidth: '400px', width: '90%'
-          }}>
-            <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '20px', marginBottom: '12px' }}>
-              Calculate Your Pricing
-            </h3>
-            <p style={{ color: '#D9ECFF', fontSize: '14px', marginBottom: '24px', lineHeight: 1.6 }}>
-              Enter your estimated monthly website visits to see your personalized pricing and ROI.
-            </p>
-            <input
-              type="text"
-              inputMode="numeric"
-              placeholder="e.g., 12,000"
-              value={promptInput}
-              onChange={(e) => setPromptInput(e.target.value.replace(/[^0-9]/g, ''))}
-              onKeyPress={(e) => e.key === 'Enter' && handlePromptSubmit()}
-              className="ark-input"
-              style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px' }}
-            />
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button
-                onClick={handlePromptSubmit}
-                disabled={!promptInput.trim()}
-                className="ark-btn-green"
-                style={{
-                  flex: 1, padding: '12px 20px', fontSize: '14px', fontWeight: 700,
-                  opacity: promptInput.trim() ? 1 : 0.5, cursor: promptInput.trim() ? 'pointer' : 'not-allowed'
-                }}
-              >
-                Calculate
-              </button>
-              <button
-                onClick={handlePromptClose}
-                style={{
-                  padding: '12px 20px', fontSize: '14px', fontWeight: 700,
-                  background: 'transparent', border: '1px solid rgba(212,212,216,0.3)',
-                  color: '#D9ECFF', borderRadius: '6px', cursor: 'pointer'
-                }}
-              >
-                Skip
-              </button>
-            </div>
-          </div>
+      {/* ── Toggle ── */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px' }}>
+        <div style={{ display: 'inline-flex', background: 'rgba(6,18,42,0.9)', border: '1px solid rgba(26,92,168,0.4)', borderRadius: '10px', padding: '4px', gap: '4px' }}>
+          {[
+            { label: 'Pay As You Go', value: false },
+            { label: 'Annual Commitment (save 15–20%)', value: true },
+          ].map(opt => (
+            <button
+              key={String(opt.value)}
+              onClick={() => setCommitted(opt.value)}
+              style={{
+                padding: '10px 20px', borderRadius: '7px', border: 'none', cursor: 'pointer',
+                fontWeight: 700, fontSize: '13px', transition: 'all 0.2s',
+                background: committed === opt.value ? (opt.value ? 'linear-gradient(135deg,#064e2a,#0a6e3b)' : 'rgba(26,92,168,0.5)') : 'transparent',
+                color: committed === opt.value ? '#fff' : '#4a6a9a',
+                boxShadow: committed === opt.value ? '0 2px 10px rgba(0,0,0,0.3)' : 'none',
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {committed && (
+        <div style={{ background: 'rgba(6,53,36,0.3)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '10px', padding: '14px 20px', marginBottom: '24px', textAlign: 'center' }}>
+          <p style={{ color: '#86efac', fontSize: '13px', fontWeight: 600 }}>
+            Annual commitments include a monthly minimum spend. Talk to our team to set up your commitment.
+          </p>
         </div>
       )}
-      {/* CALCULATOR CARD */}
-      <div style={{
-        background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)',
-        border: '1px solid rgba(26,92,168,0.5)',
-        borderRadius: '16px', padding: '36px', marginBottom: '28px',
-        boxShadow: '0 0 60px rgba(26,92,168,0.1)',
-      }}>
-        {/* Color accent bar */}
+
+      {/* ── Calculator Card ── */}
+      <div style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(26,92,168,0.5)', borderRadius: '16px', padding: '36px', marginBottom: '28px', boxShadow: '0 0 60px rgba(26,92,168,0.1)' }}>
         <div style={{ height: '3px', background: 'linear-gradient(90deg, #B1001A 0%, #1a5ca8 100%)', borderRadius: '2px', marginBottom: '28px' }} />
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
-          <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '18px', letterSpacing: '-0.3px' }}>
-            Enter Your Estimated Monthly Website Visits
-          </h2>
-          <button
-            onClick={() => {
-              setShowTour(true);
-              localStorage.removeItem('pricingCalcTourSeen');
-            }}
-            style={{
-              background: 'rgba(34,197,94,0.15)',
-              border: '1px solid rgba(34,197,94,0.3)',
-              color: '#22c55e',
-              borderRadius: '6px',
-              padding: '8px 14px',
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.25)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.5)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.15)'; e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)'; }}
-          >
-            <HelpCircle size={16} /> Tour
-          </button>
-        </div>
+        <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '18px', marginBottom: '24px' }}>Enter Your Estimated Monthly Website Visits</h2>
 
         {/* Inputs */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '24px', marginBottom: '28px' }}>
-          <div data-tour="visits-input">
-            <label style={{ color: '#7eb8ff', fontSize: '11px', fontWeight: 700, display: 'block', marginBottom: '7px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              Monthly Website Visits
-            </label>
-            <input type="text" inputMode="numeric" value={visitsRaw} onChange={handleVisitsChange}
-              placeholder="e.g., 12,000" className="ark-input"
-              style={{ fontSize: '17px', fontWeight: 700, borderColor: 'rgba(26,92,168,0.6)' }} />
-            <p style={{ color: '#4a6a9a', fontSize: '11px', marginTop: '6px', lineHeight: 1.55 }}>
-              Total website traffic. Billing is based on Enriched Visits.
-            </p>
-          </div>
-          <div data-tour="enrichment-rate">
-            <label style={{ color: '#7eb8ff', fontSize: '11px', fontWeight: 700, display: 'block', marginBottom: '7px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              Enrichment Rate
-            </label>
-            <div style={{ position: 'relative' }}>
-              <input type="text" inputMode="decimal" value={rateRaw} onChange={handleRateChange} onBlur={handleRateBlur}
-                className="ark-input" style={{ fontSize: '17px', fontWeight: 700, paddingRight: '34px', borderColor: 'rgba(26,92,168,0.6)' }} />
-              <span style={{ position: 'absolute', right: '13px', top: '50%', transform: 'translateY(-50%)', color: '#4a6a9a', fontSize: '16px', fontWeight: 700, pointerEvents: 'none' }}>%</span>
-            </div>
-            <p style={{ color: '#4a6a9a', fontSize: '11px', marginTop: '6px', lineHeight: 1.55 }}>
-              Percent of visits that become billable Enriched Visits.
-            </p>
-            {rateError && <p style={{ color: '#ef4444', fontSize: '11px', marginTop: '5px', fontWeight: 600 }}>⚠ {rateError}</p>}
-            {!rateError && isRare && <p style={{ color: '#f59e0b', fontSize: '11px', marginTop: '5px', fontWeight: 600, lineHeight: 1.5 }}>Note: Enrichment rates below 30% or above 55% are rare.</p>}
-          </div>
-        </div>
-
-
-        {/* Total cost */}
-        <div style={{
-          background: 'linear-gradient(135deg, rgba(10,33,66,0.8) 0%, rgba(4,14,26,0.9) 100%)',
-          border: '1px solid rgba(26,92,168,0.5)', borderRadius: '12px', padding: '28px 28px',
-          display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '20px',
-        }}>
           <div>
-            <p style={{ color: '#7eb8ff', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '8px' }}>Estimated Monthly Cost After Free Trial</p>
+            <label style={{ color: '#7eb8ff', fontSize: '11px', fontWeight: 700, display: 'block', marginBottom: '7px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Monthly Website Visitors</label>
+            <input type="text" inputMode="numeric" value={visitsRaw} onChange={e => setVisitsRaw(e.target.value.replace(/[^0-9]/g, ''))}
+              placeholder="e.g., 50,000" className="ark-input" style={{ fontSize: '17px', fontWeight: 700 }} />
+            <p style={{ color: '#4a6a9a', fontSize: '11px', marginTop: '6px' }}>Total monthly website traffic.</p>
+          </div>
+          <div>
+            <label style={{ color: '#7eb8ff', fontSize: '11px', fontWeight: 700, display: 'block', marginBottom: '7px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              Enrichment Rate: <span style={{ color: '#22c55e' }}>{ratePercent}%</span>
+            </label>
+            <input type="range" min="20" max="80" value={ratePercent}
+              onChange={e => setRateRaw(e.target.value)}
+              style={{ width: '100%', accentColor: '#22c55e', marginBottom: '6px' }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: '#4a6a9a', fontSize: '10px' }}>20%</span>
+              <span style={{ color: '#4a6a9a', fontSize: '10px' }}>80%</span>
+            </div>
+            <p style={{ color: '#4a6a9a', fontSize: '11px', marginTop: '2px' }}>% of visits that become billable enriched visits.</p>
+          </div>
+        </div>
+
+        {/* Cost output */}
+        <div style={{ background: 'linear-gradient(135deg, rgba(10,33,66,0.8) 0%, rgba(4,14,26,0.9) 100%)', border: '1px solid rgba(26,92,168,0.5)', borderRadius: '12px', padding: '24px 28px', marginBottom: '20px' }}>
+          <p style={{ color: '#7eb8ff', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '8px' }}>Your Estimated Monthly Cost</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px' }}>
             <p style={{ color: '#fff', fontWeight: 900, fontSize: 'clamp(36px, 5vw, 54px)', letterSpacing: '-2.5px', lineHeight: 1 }}>{fmtUSD(totalCost)}</p>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ color: '#4a6a9a', fontSize: '11px' }}>Effective rate</p>
+              <p style={{ color: '#22c55e', fontWeight: 800, fontSize: '20px' }}>{fmtRate(effectiveRate)} / enriched visit</p>
+              <p style={{ color: '#4a6a9a', fontSize: '11px', marginTop: '3px' }}>{fmt(enrichedVisits)} enriched visits</p>
+            </div>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <p style={{ color: '#4a6a9a', fontSize: '11px', marginBottom: '6px' }}>Avg. cost per enriched visit</p>
-            <p style={{ color: '#22c55e', fontWeight: 800, fontSize: '22px', letterSpacing: '-0.5px' }}>${cpeAvg.toFixed(4)}</p>
-            <p style={{ color: '#4a6a9a', fontSize: '11px', marginTop: '4px' }}>{fmt(enrichedVisits)} enriched visits</p>
-          </div>
+
+          {committed && monthlySavings > 0 && (
+            <div style={{ marginTop: '14px', padding: '10px 14px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '8px' }}>
+              <p style={{ color: '#86efac', fontSize: '13px', fontWeight: 700 }}>
+                You save {fmtUSD(monthlySavings)}/mo ({fmtUSD(monthlySavings * 12)}/year) with an annual commitment
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Free Trial CTA */}
-        <div data-tour="trial-cta" style={{ marginTop: '20px', textAlign: 'center' }}>
-          <button onClick={() => setModalStep(1)} style={{
-              width: '100%',
-              background: 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)',
-              border: '1px solid rgba(34,197,94,0.45)',
-              borderRadius: '10px',
-              padding: '18px 32px',
-              color: '#fff',
-              fontSize: '14px',
-              fontWeight: 800,
-              cursor: 'pointer',
-              letterSpacing: '-0.2px',
-              boxShadow: '0 4px 24px rgba(34,197,94,0.2)',
-              transition: 'all 0.25s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #0a6e3b 0%, #0d8f4c 50%, #0a6e3b 100%)'; e.currentTarget.style.boxShadow = '0 6px 32px rgba(34,197,94,0.35)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(34,197,94,0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-            >
-              Start Your Free 30-Day Trial
-            </button>
-          <p style={{ color: '#4a6a9a', fontSize: '14px', marginTop: '8px' }}>No credit card required · Cancel anytime</p>
-        </div>
-
-        {/* Modal */}
-        {modalStep > 0 && (
-          <div style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,15,0.85)', zIndex: 9999,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
-          }} onClick={() => setModalStep(0)}>
-            <div style={{
-              background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)',
-              border: '1px solid rgba(34,197,94,0.35)', borderRadius: '16px',
-              padding: '36px', width: '100%', maxWidth: '480px', position: 'relative',
-            }} onClick={e => e.stopPropagation()}>
-              <button onClick={() => setModalStep(0)} style={{
-                position: 'absolute', top: '16px', right: '16px', background: 'none',
-                border: 'none', color: '#4a6a9a', cursor: 'pointer', padding: '4px',
-              }}>
-                <X size={20} />
-              </button>
-
-              {modalStep === 1 && (
-                <>
-                  <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '22px', marginBottom: '6px', letterSpacing: '-0.5px' }}>Start Your Free Trial</h3>
-                  <p style={{ color: '#4a6a9a', fontSize: '13px', marginBottom: '24px' }}>Tell us a bit about yourself to get started.</p>
-                  <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    {[
-                      { label: 'Email', key: 'email', type: 'email', placeholder: 'you@company.com' },
-                      { label: 'Phone Number', key: 'phone', type: 'tel', placeholder: '+1 (555) 000-0000' },
-                      { label: 'Company Name', key: 'company', type: 'text', placeholder: 'Acme Inc.' },
-                      { label: 'Company URL', key: 'url', type: 'url', placeholder: 'https://yourcompany.com' },
-                      { label: 'Estimated Monthly Website Visits', key: 'monthlyVisits', type: 'text', placeholder: 'e.g. 50,000' },
-                    ].map(({ label, key, type, placeholder }) => (
-                      <div key={key}>
-                        <label style={{ color: '#D9ECFF', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>{label}</label>
-                        <input
-                          required
-                          type={type}
-                          placeholder={placeholder}
-                          value={formData[key]}
-                          onChange={e => setFormData(p => ({ ...p, [key]: e.target.value }))}
-                          className="ark-input"
-                        />
+        {/* Tier breakdown table */}
+        {enrichedVisits > 0 && (
+          <div style={{ background: 'rgba(2,13,31,0.6)', border: '1px solid rgba(10,33,66,0.8)', borderRadius: '10px', overflow: 'hidden', marginBottom: '20px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: 'rgba(10,33,66,0.5)' }}>
+                  {['Tier', 'Range', 'Visits', 'Rate', 'Subtotal'].map((h, i) => (
+                    <th key={h} style={{ padding: '10px 16px', color: '#7eb8ff', fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: i < 2 ? 'left' : 'right' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {breakdown.filter(t => t.used > 0).map((t, i) => (
+                  <tr key={t.name} style={{ borderTop: i > 0 ? '1px solid rgba(10,33,66,0.6)' : 'none', background: `${t.color}0d` }}>
+                    <td style={{ padding: '11px 16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: t.color, display: 'inline-block', flexShrink: 0 }} />
+                        <span style={{ color: '#fff', fontSize: '13px', fontWeight: 700 }}>{t.name}</span>
                       </div>
-                    ))}
-                    <button type="submit" style={{
-                      marginTop: '8px', width: '100%',
-                      background: 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)',
-                      border: '1px solid rgba(34,197,94,0.45)', borderRadius: '8px',
-                      padding: '14px', color: '#fff', fontSize: '15px', fontWeight: 800,
-                      cursor: 'pointer',
-                    }}>Continue →</button>
-                  </form>
-                </>
-              )}
+                    </td>
+                    <td style={{ padding: '11px 16px', color: '#4a6a9a', fontSize: '12px' }}>
+                      {t.max === Infinity ? `${fmtK(t.min)}+` : `${fmtK(t.min)}–${fmtK(t.max)}`}
+                    </td>
+                    <td style={{ padding: '11px 16px', color: '#D9ECFF', fontSize: '13px', fontWeight: 600, textAlign: 'right', fontFamily: 'monospace' }}>{fmt(t.used)}</td>
+                    <td style={{ padding: '11px 16px', textAlign: 'right' }}>
+                      <span style={{ color: t.color, fontSize: '12px', fontWeight: 700, background: `${t.color}15`, border: `1px solid ${t.color}33`, borderRadius: '4px', padding: '2px 7px' }}>{fmtRate(t.rate)}</span>
+                    </td>
+                    <td style={{ padding: '11px 16px', color: '#fff', fontSize: '13px', fontWeight: 700, textAlign: 'right', fontFamily: 'monospace' }}>{fmtUSD(t.cost)}</td>
+                  </tr>
+                ))}
+                <tr style={{ borderTop: '2px solid rgba(26,92,168,0.4)', background: 'rgba(10,33,66,0.4)' }}>
+                  <td colSpan={4} style={{ padding: '13px 16px', color: '#7eb8ff', fontSize: '13px', fontWeight: 800 }}>Total Monthly Cost</td>
+                  <td style={{ padding: '13px 16px', color: '#fff', fontSize: '16px', fontWeight: 900, textAlign: 'right', fontFamily: 'monospace' }}>{fmtUSD(totalCost)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
 
-              {modalStep === 2 && (
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '40px', marginBottom: '16px' }}>🎉</div>
-                  <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '22px', marginBottom: '10px' }}>You're all set!</h3>
-                  <p style={{ color: '#4a6a9a', fontSize: '14px', marginBottom: '28px' }}>Click below to access the Ark Data platform and start your free trial.</p>
-                  <a
-                    href="https://app.arkdata.io"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'inline-block', width: '100%',
-                      background: 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)',
-                      border: '1px solid rgba(34,197,94,0.45)', borderRadius: '8px',
-                      padding: '16px', color: '#fff', fontSize: '16px', fontWeight: 800,
-                      textDecoration: 'none', letterSpacing: '-0.2px',
-                      boxShadow: '0 4px 24px rgba(34,197,94,0.2)',
-                    }}
-                  >
-                    Go to app.arkdata.io →
-                  </a>
+        {/* Competitor comparison */}
+        {enrichedVisits > 0 && enrichedVisits <= 50000 && (rb2bEst || opensendEst) && (
+          <div style={{ background: 'rgba(10,33,66,0.3)', border: '1px solid rgba(26,92,168,0.3)', borderRadius: '10px', padding: '18px 22px', marginBottom: '20px' }}>
+            <p style={{ color: '#7eb8ff', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '12px' }}>Compared To</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {rb2bEst && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                  <span style={{ color: '#D9ECFF', fontSize: '13px' }}>RB2B at this volume:</span>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '14px', fontFamily: 'monospace' }}>~{fmtUSD(rb2bEst)}/mo</span>
+                    <span style={{ color: '#22c55e', fontWeight: 700, fontSize: '12px', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '4px', padding: '2px 8px' }}>
+                      You save {Math.round((1 - totalCost / rb2bEst) * 100)}%
+                    </span>
+                  </div>
+                </div>
+              )}
+              {opensendEst && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                  <span style={{ color: '#D9ECFF', fontSize: '13px' }}>OpenSend at this volume:</span>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '14px', fontFamily: 'monospace' }}>~{fmtUSD(opensendEst)}/mo</span>
+                    <span style={{ color: '#22c55e', fontWeight: 700, fontSize: '12px', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '4px', padding: '2px 8px' }}>
+                      You save {Math.round((1 - totalCost / opensendEst) * 100)}%
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
           </div>
         )}
+        {enrichedVisits > 50000 && (
+          <div style={{ background: 'rgba(10,33,66,0.3)', border: '1px solid rgba(26,92,168,0.3)', borderRadius: '10px', padding: '14px 20px', marginBottom: '20px' }}>
+            <p style={{ color: '#4a6a9a', fontSize: '13px', fontStyle: 'italic' }}>Enterprise pricing — competitors don't publish rates at this volume.</p>
+          </div>
+        )}
+
+        {/* CTA */}
+        <button onClick={() => setModalStep(1)} style={{ width: '100%', background: 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)', border: '1px solid rgba(34,197,94,0.45)', borderRadius: '10px', padding: '18px 32px', color: '#fff', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 24px rgba(34,197,94,0.2)', transition: 'all 0.25s' }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #0a6e3b 0%, #0d8f4c 50%, #0a6e3b 100%)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+          Start Your Free 30-Day Trial — No Credit Card Required
+        </button>
+        <p style={{ color: '#4a6a9a', fontSize: '13px', textAlign: 'center', marginTop: '8px' }}>Cancel anytime</p>
       </div>
 
-      {/* CHART 1 — Cost per Enriched Visit */}
-      <div data-tour="cpe-chart" style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(26,92,168,0.4)', borderRadius: '14px', padding: '28px', marginBottom: '28px' }}>
-        <div style={{ marginBottom: '20px' }}>
-          <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '17px', marginBottom: '4px' }}>
-            Cost per Enriched Visit <span style={{ color: '#4a6a9a', fontWeight: 400 }}>vs. Monthly Volume</span>
-          </h2>
-          <p style={{ color: '#4a6a9a', fontSize: '12px' }}>
-            Shows how your effective cost per enriched visit drops as volume increases.
-            {enrichedVisits > 0 && (
-              <span style={{ color: '#22c55e', fontWeight: 600 }}> Your position: {fmt(enrichedVisits)} enriched visits @ ${cpeAvg.toFixed(4)}/visit.</span>
-            )}
-          </p>
+      {/* ── Staircase Chart ── */}
+      <div style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(26,92,168,0.4)', borderRadius: '14px', padding: '28px', marginBottom: '28px' }}>
+        <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '17px', marginBottom: '6px' }}>Rate per Enriched Visit by Volume</h2>
+        <p style={{ color: '#4a6a9a', fontSize: '12px', marginBottom: '20px', lineHeight: 1.6 }}>
+          Your rate drops automatically as your volume increases. Each tier only applies to visits within that range — you never lose your rate on earlier visits.
+        </p>
+        <div style={{ overflowX: 'auto' }}>
+          <div style={{ minWidth: '480px' }}>
+            <ResponsiveContainer width="100%" height={240}>
+              <AreaChart data={chartData} margin={{ top: 10, right: 20, bottom: 8, left: 0 }}>
+                <defs>
+                  <linearGradient id="stairGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#1a5ca8" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#1a5ca8" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(10,33,66,0.9)" />
+                <XAxis dataKey="x" tickFormatter={fmtK} tick={{ fill: '#4a6a9a', fontSize: 10 }} axisLine={{ stroke: '#0A2142' }} tickLine={false} />
+                <YAxis tickFormatter={v => `$${v.toFixed(2)}`} tick={{ fill: '#4a6a9a', fontSize: 10 }} axisLine={{ stroke: '#0A2142' }} tickLine={false} width={52} domain={[0.06, 0.20]} ticks={[0.08, 0.09, 0.10, 0.12, 0.15, 0.18]} />
+                <Tooltip content={<ChartTooltip />} />
+                {enrichedVisits > 0 && (
+                  <ReferenceLine x={enrichedVisits} stroke="#B1001A" strokeDasharray="4 3" strokeWidth={2}
+                    label={{ value: 'You', fill: '#ff8a99', fontSize: 11, fontWeight: 700, position: 'insideTopRight', dy: 30 }} />
+                )}
+                <Area type="stepAfter" dataKey="rate" stroke="#3b82f6" strokeWidth={2.5} fill="url(#stairGrad)" dot={false} activeDot={{ r: 5, fill: '#fff', stroke: '#3b82f6', strokeWidth: 2 }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-
-        <ResponsiveContainer width="100%" height={250}>
-          <AreaChart data={chartData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
-            <defs>
-              <linearGradient id="cpeGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor="#1a5ca8" stopOpacity={0.4} />
-                <stop offset="95%" stopColor="#1a5ca8" stopOpacity={0.02} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(10,33,66,0.9)" />
-            <XAxis
-              dataKey="enriched"
-              tickFormatter={v => v >= 1000000 ? `${v/1000000}M` : v >= 1000 ? `${v/1000}k` : v}
-              tick={{ fill: '#4a6a9a', fontSize: 10 }}
-              axisLine={{ stroke: '#0A2142' }}
-              tickLine={false}
-            />
-            <YAxis
-              tickFormatter={v => `$${v.toFixed(2)}`}
-              tick={{ fill: '#4a6a9a', fontSize: 10 }}
-              axisLine={{ stroke: '#0A2142' }}
-              tickLine={false}
-              width={52}
-              domain={[0.10, 0.20]}
-              ticks={[0.10, 0.12, 0.14, 0.16, 0.18, 0.20]}
-            />
-            <Tooltip content={<CpeTooltip ratePercent={ratePercent} />} />
-            {refX !== null && (
-              <ReferenceLine x={refX} stroke="#B1001A" strokeDasharray="4 3" strokeWidth={2}
-                label={{ value: 'You', fill: '#ff8a99', fontSize: 11, fontWeight: 700, position: 'insideTopRight', dy: 60 }} />
-            )}
-            <Area type="stepAfter" dataKey="cpe" stroke="#3b82f6" strokeWidth={2.5}
-              fill="url(#cpeGradient)" dot={false}
-              activeDot={{ r: 5, fill: '#fff', stroke: '#3b82f6', strokeWidth: 2 }} />
-          </AreaChart>
-        </ResponsiveContainer>
 
         {/* Tier legend */}
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid rgba(10,33,66,0.8)' }}>
-          {TIERS.map((t, i) => {
-            const midpoint = t.cap === Infinity
-              ? t.min + 50000
-              : Math.round(t.min + t.cap * 0.5);
-            const enrichedMid = Math.round(midpoint);
-            const rawVisits = Math.round(enrichedMid / (ratePercent / 100));
-            return (
-              <div
-                key={t.label}
-                onClick={() => setVisitsRaw(String(rawVisits))}
-                title={`Click to see pricing at ~${fmt(enrichedMid)} enriched visits`}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '5px',
-                  background: i === activeTierIdx ? `${t.color}22` : 'rgba(255,255,255,0.03)',
-                  border: `1px solid ${i === activeTierIdx ? t.color + '66' : 'rgba(255,255,255,0.08)'}`,
-                  borderRadius: '5px', padding: '4px 10px', transition: 'all 0.2s',
-                  cursor: 'pointer',
-                }}
-                onMouseEnter={e => { if (i !== activeTierIdx) { e.currentTarget.style.background = `${t.color}15`; e.currentTarget.style.borderColor = `${t.color}44`; }}}
-                onMouseLeave={e => { if (i !== activeTierIdx) { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}}
-              >
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: t.color, flexShrink: 0, display: 'inline-block' }} />
-                <span style={{ color: i === activeTierIdx ? '#fff' : '#4a6a9a', fontSize: '10px', fontWeight: i === activeTierIdx ? 700 : 400 }}>
-                  {t.label} ${t.rate}
-                </span>
-              </div>
-            );
-          })}
-
+          {tiers.map((t, i) => (
+            <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: activeTier.name === t.name ? `${t.color}22` : 'rgba(255,255,255,0.03)', border: `1px solid ${activeTier.name === t.name ? t.color + '66' : 'rgba(255,255,255,0.08)'}`, borderRadius: '5px', padding: '4px 10px' }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: t.color, display: 'inline-block', flexShrink: 0 }} />
+              <span style={{ color: activeTier.name === t.name ? '#fff' : '#4a6a9a', fontSize: '10px', fontWeight: activeTier.name === t.name ? 700 : 400 }}>
+                {t.name} {fmtRate(t.rate)}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* TIER BREAKDOWN TABLE */}
-      <div data-tour="tier-breakdown" style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(26,92,168,0.4)', borderRadius: '14px', overflow: 'hidden', marginBottom: '28px' }}>
-        <div style={{ padding: '22px 28px', borderBottom: '1px solid #0A2142', background: 'rgba(10,33,66,0.3)' }}>
-          <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '17px', marginBottom: '3px' }}>
-            Tier Breakdown <span style={{ color: '#4a6a9a', fontWeight: 400 }}>(Based on Enriched Visits)</span>
-          </h2>
-          <p style={{ color: '#4a6a9a', fontSize: '12px' }}>
-            {fmt(enrichedVisits)} enriched visits · Total: <span style={{ color: '#ff8a99', fontWeight: 700 }}>{fmtUSD(totalCost)}</span>
-          </p>
-          <p style={{ color: '#7eb8ff', fontSize: '11px', marginTop: '8px' }}>
-            <em>Estimate based on historical data from past clients. Actual results may vary.</em>
-          </p>
-        </div>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '520px' }}>
-            <thead>
-              <tr style={{ background: 'rgba(2,13,31,0.8)' }}>
-                {['Tier Range', 'Visits in Tier', 'Rate', 'Subtotal'].map((h, i) => (
-                  <th key={h} style={{ padding: '12px 20px', color: '#7eb8ff', fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: i === 0 ? 'left' : 'right' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {tierRows.map((t, i) => {
-                const isActive = t.charged > 0;
-                return (
-                  <tr key={t.label} style={{ borderBottom: i < tierRows.length - 1 ? '1px solid rgba(10,33,66,0.8)' : 'none', background: isActive ? `${t.color}0d` : 'transparent' }}>
-                    <td style={{ padding: '13px 20px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: isActive ? t.color : '#1e2a3a', flexShrink: 0, display: 'inline-block' }} />
-                        <span style={{ color: isActive ? '#fff' : '#2a3a5a', fontSize: '13px', fontWeight: 700, marginRight: '4px' }}>Tier {t.label}</span>
-                        <span style={{ color: isActive ? '#4a6a9a' : '#1e2a3a', fontSize: '12px' }}>{t.range}</span>
-                      </div>
-                    </td>
-                    <td style={{ padding: '13px 16px', color: isActive ? '#fff' : '#2a3a5a', fontSize: '13px', fontWeight: 600, textAlign: 'right', fontFamily: 'monospace' }}>{fmt(t.charged)}</td>
-                    <td style={{ padding: '13px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                      <span style={{ color: isActive ? t.color : '#2a3a5a', fontSize: '12px', fontWeight: 700, background: isActive ? `${t.color}15` : 'transparent', border: `1px solid ${isActive ? t.color + '33' : 'transparent'}`, borderRadius: '4px', padding: '2px 7px' }}>
-                        {t.rateLabel}
-                      </span>
-                    </td>
-                    <td style={{ padding: '13px 20px', color: isActive ? '#fff' : '#2a3a5a', fontSize: '13px', fontWeight: 700, textAlign: 'right', fontFamily: 'monospace' }}>{fmtUSD(t.subtotal)}</td>
-                  </tr>
-                );
-              })}
-              <tr style={{ background: 'rgba(10,33,66,0.4)', borderTop: '2px solid rgba(26,92,168,0.4)' }}>
-                <td colSpan={3} style={{ padding: '15px 20px', color: '#7eb8ff', fontSize: '13px', fontWeight: 800 }}>Total Monthly Cost</td>
-                <td style={{ padding: '15px 20px', color: '#fff', fontSize: '16px', fontWeight: 900, textAlign: 'right', fontFamily: 'monospace' }}>{fmtUSD(totalCost)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* NOTES + EXAMPLE */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-        <div style={{ background: 'rgba(10,33,66,0.3)', border: '1px solid rgba(26,92,168,0.3)', borderRadius: '12px', padding: '24px 28px' }}>
-          <p style={{ color: '#7eb8ff', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '14px' }}>Important Notes</p>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {[
-              'Billing is based on Enriched Visits, not raw website visits.',
-              'Enriched Visits = floor(Website Visits x Enrichment Rate).',
-              "Pricing is stacked: you only pay each tier's rate for visits inside that tier.",
-              'All enriched visits are billed at the applicable tier rate.',
-            ].map((note, i) => (
-              <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                <span style={{ color: '#7eb8ff', fontWeight: 700, fontSize: '14px', flexShrink: 0, marginTop: '1px' }}>→</span>
-                <span style={{ color: S.muted, fontSize: '13px', lineHeight: 1.6 }}>{note}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div data-tour="example-box" style={{ background: 'rgba(10,33,66,0.3)', border: '1px solid rgba(26,92,168,0.3)', borderRadius: '12px', padding: '24px 28px' }}>
-          <p style={{ color: '#7eb8ff', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '14px' }}>
-            Example with Your Current Inputs
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {[
-              { label: 'Website Visits',             val: fmt(visitsInt),              color: '#D9ECFF', tour: 'visits-example' },
-              { label: 'Enrichment Rate',            val: `${ratePercent}%`,           color: '#D9ECFF', tour: 'enrichment-example' },
-              { label: 'Enriched Visits',            val: fmt(enrichedVisits),         color: '#D9ECFF', tour: 'contacts-row' },
-              { label: 'Avg. Cost / Enriched Visit', val: `$${cpeAvg.toFixed(4)}`,    color: '#D9ECFF' },
-              { label: 'Estimated Monthly Cost',     val: fmtUSD(totalCost),           color: '#fff', large: true, tour: 'cost-row' },
-            ].map((row, i, arr) => (
-              <div key={row.label} data-tour={row.tour} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(26,92,168,0.2)' : 'none' }}>
-                <span style={{ color: '#4a6a9a', fontSize: '13px' }}>{row.label}</span>
-                <span style={{ color: row.color, fontWeight: row.large ? 900 : 700, fontSize: row.large ? '16px' : '13px', fontFamily: 'monospace' }}>{row.val}</span>
+      {/* Modal */}
+      {modalStep > 0 && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,15,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setModalStep(0)}>
+          <div style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(34,197,94,0.35)', borderRadius: '16px', padding: '36px', width: '100%', maxWidth: '480px', position: 'relative' }} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setModalStep(0)} style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', color: '#4a6a9a', cursor: 'pointer', padding: '4px' }}><X size={20} /></button>
+            {modalStep === 1 && (
+              <>
+                <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '22px', marginBottom: '6px' }}>Start Your Free Trial</h3>
+                <p style={{ color: '#4a6a9a', fontSize: '13px', marginBottom: '24px' }}>Tell us a bit about yourself to get started.</p>
+                <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  {[
+                    { label: 'Email', key: 'email', type: 'email', placeholder: 'you@company.com' },
+                    { label: 'Phone Number', key: 'phone', type: 'tel', placeholder: '+1 (555) 000-0000' },
+                    { label: 'Company Name', key: 'company', type: 'text', placeholder: 'Acme Inc.' },
+                    { label: 'Company URL', key: 'url', type: 'url', placeholder: 'https://yourcompany.com' },
+                    { label: 'Estimated Monthly Visitors', key: 'monthlyVisits', type: 'text', placeholder: 'e.g. 50,000' },
+                  ].map(({ label, key, type, placeholder }) => (
+                    <div key={key}>
+                      <label style={{ color: '#D9ECFF', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>{label}</label>
+                      <input required type={type} placeholder={placeholder} value={formData[key]} onChange={e => setFormData(p => ({ ...p, [key]: e.target.value }))} className="ark-input" />
+                    </div>
+                  ))}
+                  <button type="submit" style={{ marginTop: '8px', width: '100%', background: 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)', border: '1px solid rgba(34,197,94,0.45)', borderRadius: '8px', padding: '14px', color: '#fff', fontSize: '15px', fontWeight: 800, cursor: 'pointer' }}>Continue →</button>
+                </form>
+              </>
+            )}
+            {modalStep === 2 && (
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '40px', marginBottom: '16px' }}>🎉</div>
+                <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '22px', marginBottom: '10px' }}>You're all set!</h3>
+                <p style={{ color: '#4a6a9a', fontSize: '14px', marginBottom: '28px' }}>Click below to access the Ark Data platform and start your free trial.</p>
+                <a href="https://app.arkdata.io" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', width: '100%', background: 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)', border: '1px solid rgba(34,197,94,0.45)', borderRadius: '8px', padding: '16px', color: '#fff', fontSize: '16px', fontWeight: 800, textDecoration: 'none' }}>
+                  Go to app.arkdata.io →
+                </a>
               </div>
-            ))}
+            )}
           </div>
-          </div>
-
-          </div>
-
-              <PricingCalculatorTour 
-              isOpen={showTour} 
-              onClose={() => {
-              setShowTour(false);
-              localStorage.setItem('pricingCalcTourSeen', 'true');
-              }} 
-              />
-              </div>
-              );
-          }
+        </div>
+      )}
+    </div>
+  );
+}
