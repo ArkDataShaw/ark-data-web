@@ -550,7 +550,7 @@ export default function EnrichedVisitsCalculator() {
 </div>
 
       {/* TIER BREAKDOWN TABLE */}
-      <div style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(26,92,168,0.4)', borderRadius: '14px', overflow: 'hidden', marginBottom: '28px' }}>
+      <div data-tour="tier-breakdown" style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(26,92,168,0.4)', borderRadius: '14px', overflow: 'hidden', marginBottom: '28px' }}>
         <div style={{ padding: '22px 28px', borderBottom: '1px solid #0A2142', background: 'rgba(10,33,66,0.3)' }}>
           <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '17px', marginBottom: '3px' }}>
             Tier Breakdown <span style={{ color: '#4a6a9a', fontWeight: 400 }}>(Based on Enriched Visits)</span>
