@@ -433,7 +433,7 @@ export default function EnrichedVisitsCalculator() {
       </div>
 
       {/* CHART 1 — Cost per Enriched Visit */}
-      <div style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(26,92,168,0.4)', borderRadius: '14px', padding: '28px', marginBottom: '28px' }}>
+      <div data-tour="cpe-chart" style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(26,92,168,0.4)', borderRadius: '14px', padding: '28px', marginBottom: '28px' }}>
         <div style={{ marginBottom: '20px' }}>
           <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '17px', marginBottom: '4px' }}>
             Cost per Enriched Visit <span style={{ color: '#4a6a9a', fontWeight: 400 }}>vs. Monthly Volume</span>
