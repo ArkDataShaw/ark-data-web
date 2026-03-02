@@ -602,7 +602,7 @@ export default function EnrichedVisitsCalculator() {
               { label: 'Avg. Cost / Enriched Visit', val: `$${cpeAvg.toFixed(4)}`,    color: '#D9ECFF' },
               { label: 'Estimated Monthly Cost',     val: fmtUSD(totalCost),           color: '#fff', large: true, tour: 'cost-row' },
             ].map((row, i, arr) => (
-              <div key={row.label} data-tour={row.tour} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(34,197,94,0.12)' : 'none' }}>
+              <div key={row.label} data-tour={row.tour} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(26,92,168,0.2)' : 'none' }}>
                 <span style={{ color: S.mutedGreen, fontSize: '13px' }}>{row.label}</span>
                 <span style={{ color: row.color, fontWeight: row.large ? 900 : 700, fontSize: row.large ? '16px' : '13px', fontFamily: 'monospace' }}>{row.val}</span>
               </div>
