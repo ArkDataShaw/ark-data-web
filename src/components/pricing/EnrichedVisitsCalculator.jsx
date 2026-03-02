@@ -102,7 +102,7 @@ function CombinedTooltip({ active, payload }) {
 
 export default function EnrichedVisitsCalculator() {
     const [visitsRaw, setVisitsRaw] = useState('');
-    const [rateRaw, setRateRaw] = useState('55');
+    const [rateRaw, setRateRaw] = useState('40');
     const [rateError, setRateError] = useState('');
     const [showPrompt, setShowPrompt] = useState(true);
     const [promptInput, setPromptInput] = useState('');
