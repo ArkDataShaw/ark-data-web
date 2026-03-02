@@ -56,10 +56,10 @@ export default function Pricing() {
             <p style={{ color: '#7eb8ff', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '12px' }}>How it works</p>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {[
-                { text: 'Enter your monthly website visits.', color: '#7eb8ff' },
-                { text: 'Choose an enrichment rate (default 55%).', color: '#a78bfa' },
-                { text: 'We calculate Enriched Visits = floor(visits × rate).', color: '#34d399' },
-                { text: 'Pricing is stacked by tier; you only pay each tier rate for visits within that tier.', color: '#fbbf24' },
+                { text: 'Enter your monthly website visits.', color: '#22c55e' },
+                { text: 'Choose an enrichment rate (default 55%).', color: '#22c55e' },
+                { text: 'We calculate Enriched Visits = floor(visits × rate).', color: '#22c55e' },
+                { text: 'Pricing is stacked by tier; you only pay each tier rate for visits within that tier.', color: '#22c55e' },
               ].map((item, i) => (
                 <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                   <span style={{ color: item.color, fontWeight: 900, fontSize: '13px', flexShrink: 0 }}>{i + 1}.</span>
