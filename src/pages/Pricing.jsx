@@ -33,7 +33,7 @@ export default function Pricing() {
         <div style={{ position: 'absolute', bottom: '-40px', left: '5%', width: '240px', height: '240px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(26,92,168,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div className="sc" style={{ maxWidth: '720px', position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.35)', borderRadius: '100px', padding: '5px 14px', marginBottom: '20px' }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#B1001A', display: 'inline-block' }} />
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
             <span style={{ color: '#ff8a99', fontSize: '12px', fontWeight: 600 }}>Usage-Based Pricing</span>
           </div>
           <h1 style={{ fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px', lineHeight: 1.15 }}>
