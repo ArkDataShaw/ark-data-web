@@ -514,7 +514,7 @@ export default function EnrichedVisitsCalculator() {
               </div>
             );
           })}
-          <span style={{ color: '#2a3a5a', fontSize: '10px', alignSelf: 'center', marginLeft: '4px' }}>← tap to preview</span>
+
         </div>
       </div>
 
