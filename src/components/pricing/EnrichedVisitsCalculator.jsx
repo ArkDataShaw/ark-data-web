@@ -436,12 +436,12 @@ export default function EnrichedVisitsCalculator() {
       <div data-tour="cpe-chart" style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(26,92,168,0.4)', borderRadius: '14px', padding: '28px', marginBottom: '28px' }}>
         <div style={{ marginBottom: '20px' }}>
           <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '17px', marginBottom: '4px' }}>
-            Cost per Enriched Visit <span style={{ color: '#4a6a9a', fontWeight: 400 }}>vs. Monthly Website Visits</span>
+            Cost per Enriched Visit <span style={{ color: '#4a6a9a', fontWeight: 400 }}>vs. Monthly Volume</span>
           </h2>
           <p style={{ color: '#4a6a9a', fontSize: '12px' }}>
-            Shows how your effective cost per enriched visit drops as your total website visits increase.
-            {visitsInt > 0 && (
-              <span style={{ color: '#22c55e', fontWeight: 600 }}> Your position: {fmt(visitsInt)} website visits @ ${cpeAvg.toFixed(4)}/enriched visit.</span>
+            Shows how your effective cost per enriched visit drops as volume increases.
+            {enrichedVisits > 0 && (
+              <span style={{ color: '#22c55e', fontWeight: 600 }}> Your position: {fmt(enrichedVisits)} enriched visits @ ${cpeAvg.toFixed(4)}/visit.</span>
             )}
           </p>
         </div>
@@ -456,7 +456,7 @@ export default function EnrichedVisitsCalculator() {
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(10,33,66,0.9)" />
             <XAxis
-              dataKey="visits"
+              dataKey="enriched"
               tickFormatter={v => v >= 1000000 ? `${v/1000000}M` : v >= 1000 ? `${v/1000}k` : v}
               tick={{ fill: '#4a6a9a', fontSize: 10 }}
               axisLine={{ stroke: '#0A2142' }}
@@ -472,9 +472,8 @@ export default function EnrichedVisitsCalculator() {
               ticks={[0.10, 0.12, 0.14, 0.16, 0.18, 0.20]}
             />
             <Tooltip content={<CpeTooltip ratePercent={ratePercent} />} />
-            {visitsInt > 0 && (
-              <ReferenceLine x={chartData.reduce((prev, curr) => Math.abs(curr.visits - visitsInt) < Math.abs(prev.visits - visitsInt) ? curr : prev).visits}
-                stroke="#B1001A" strokeDasharray="4 3" strokeWidth={2}
+            {refX !== null && (
+              <ReferenceLine x={refX} stroke="#B1001A" strokeDasharray="4 3" strokeWidth={2}
                 label={{ value: 'You', fill: '#ff8a99', fontSize: 11, fontWeight: 700, position: 'insideTopRight', dy: 60 }} />
             )}
             <Area type="stepAfter" dataKey="cpe" stroke="#3b82f6" strokeWidth={2.5}
