@@ -39,7 +39,7 @@ function fmtUSD(n) {
   return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-const CHART_POINTS = [0, 5000, 5001, 15000, 15001, 30000, 30001, 50000, 50001, 100000, 100001, 250000];
+const CHART_POINTS = [1000, 5000, 15000, 30000, 50000, 100000, 250000];
 
 function buildChartData(ratePercent) {
   return CHART_POINTS.map(enriched => {
@@ -155,7 +155,17 @@ export default function EnrichedVisitsCalculator() {
   const cpeAvg = enrichedVisits > 0 ? totalCost / enrichedVisits : 0;
   const isRare = ratePercent < 45 || ratePercent > 60;
 
-  const chartData = useMemo(() => buildChartData(ratePercent), [ratePercent]);
+  const chartData = useMemo(() => {
+    const base = buildChartData(ratePercent);
+    if (enrichedVisits > 0 && !CHART_POINTS.includes(enrichedVisits)) {
+      const cost = calcCost(enrichedVisits);
+      const cpe = enrichedVisits > 0 ? cost / enrichedVisits : 0;
+      const visits = Math.round(enrichedVisits / (ratePercent / 100));
+      const point = { enriched: enrichedVisits, visits, cost, cpe: parseFloat(cpe.toFixed(4)), returnPerEnrichment: RETURN_PER_ENRICHMENT };
+      return [...base, point].sort((a, b) => a.enriched - b.enriched);
+    }
+    return base;
+  }, [ratePercent, enrichedVisits]);
 
   const refX = enrichedVisits > 0 ? enrichedVisits : null;
 
@@ -508,7 +518,54 @@ export default function EnrichedVisitsCalculator() {
         </div>
       </div>
 
+{/* CHART 3 — ROI Growth Over Time */}
+<div data-tour="roi-chart" style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '14px', padding: '28px', marginBottom: '28px' }}>
+  <div style={{ marginBottom: '20px' }}>
+    <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '17px', marginBottom: '4px' }}>
+      Return Growth Over Time <span style={{ color: '#4a6a9a', fontWeight: 400 }}>— Stacked Monthly View</span>
+    </h2>
+    <p style={{ color: '#4a6a9a', fontSize: '12px' }}>
+      Your return per enriched visit grows monthly, while costs remain stable. This compounds your margins as you scale.
+    </p>
+  </div>
 
+  <ResponsiveContainer width="100%" height={280}>
+    <BarChart data={[
+      { month: 'Month 1', cost: 0.17, return: 0.30 },
+      { month: 'Month 2', cost: 0.17, return: 0.45 },
+      { month: 'Month 3', cost: 0.17, return: 0.60 },
+      { month: 'Month 4', cost: 0.17, return: 0.75 },
+      { month: 'Month 5', cost: 0.17, return: 0.80 },
+      { month: 'Month 6', cost: 0.17, return: 0.85 },
+    ]} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+      <CartesianGrid strokeDasharray="3 3" stroke="rgba(10,33,66,0.9)" />
+      <XAxis
+        dataKey="month"
+        tick={{ fill: '#4a6a9a', fontSize: 10 }}
+        axisLine={{ stroke: '#0A2142' }}
+        tickLine={false}
+      />
+      <YAxis
+        tickFormatter={v => `$${v.toFixed(2)}`}
+        tick={{ fill: '#4a6a9a', fontSize: 10 }}
+        axisLine={{ stroke: '#0A2142' }}
+        tickLine={false}
+        width={52}
+      />
+      <Tooltip
+        contentStyle={{ background: 'rgba(2,13,31,0.95)', border: '1px solid rgba(26,92,168,0.6)', borderRadius: '6px', padding: '8px 12px' }}
+        formatter={(value) => `$${value.toFixed(2)}`}
+        labelStyle={{ color: '#D9ECFF', fontSize: '12px' }}
+      />
+      <Legend
+        formatter={(val) => <span style={{ color: '#D9ECFF', fontSize: '11px' }}>{val}</span>}
+        wrapperStyle={{ paddingTop: '12px' }}
+      />
+      <Bar dataKey="cost" name="Cost Per Visit" fill="#ef4444" stackId="a" />
+      <Bar dataKey="return" name="Return Per Enrichment" fill="#22c55e" stackId="a" />
+    </BarChart>
+  </ResponsiveContainer>
+</div>
 
       {/* TIER BREAKDOWN TABLE */}
       <div data-tour="tier-breakdown" style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(26,92,168,0.4)', borderRadius: '14px', overflow: 'hidden', marginBottom: '28px' }}>
