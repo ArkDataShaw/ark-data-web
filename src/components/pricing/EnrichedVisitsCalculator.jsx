@@ -476,7 +476,7 @@ export default function EnrichedVisitsCalculator() {
               <ReferenceLine x={refX} stroke="#B1001A" strokeDasharray="4 3" strokeWidth={2}
                 label={{ value: 'You', fill: '#ff8a99', fontSize: 11, fontWeight: 700, position: 'insideTopRight', dy: 60 }} />
             )}
-            <Area type="monotone" dataKey="cpe" stroke="#3b82f6" strokeWidth={2.5}
+            <Area type="stepAfter" dataKey="cpe" stroke="#3b82f6" strokeWidth={2.5}
               fill="url(#cpeGradient)" dot={false}
               activeDot={{ r: 5, fill: '#fff', stroke: '#3b82f6', strokeWidth: 2 }} />
           </AreaChart>
