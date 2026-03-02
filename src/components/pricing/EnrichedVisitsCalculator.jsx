@@ -596,8 +596,8 @@ export default function EnrichedVisitsCalculator() {
           </p>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {[
-              { label: 'Website Visits',             val: fmt(visitsInt),              color: '#7eb8ff', tour: 'visits-example' },
-              { label: 'Enrichment Rate',            val: `${ratePercent}%`,           color: '#a78bfa', tour: 'enrichment-example' },
+              { label: 'Website Visits',             val: fmt(visitsInt),              color: '#D9ECFF', tour: 'visits-example' },
+              { label: 'Enrichment Rate',            val: `${ratePercent}%`,           color: '#D9ECFF', tour: 'enrichment-example' },
               { label: 'Enriched Visits',            val: fmt(enrichedVisits),         color: '#D9ECFF', tour: 'contacts-row' },
               { label: 'Avg. Cost / Enriched Visit', val: `$${cpeAvg.toFixed(4)}`,    color: '#D9ECFF' },
               { label: 'Estimated Monthly Cost',     val: fmtUSD(totalCost),           color: '#fff', large: true, tour: 'cost-row' },
