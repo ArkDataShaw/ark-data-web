@@ -157,15 +157,7 @@ export default function EnrichedVisitsCalculator() {
 
   const chartData = useMemo(() => buildChartData(ratePercent), [ratePercent]);
 
-  // Find the closest chart point to the user's enriched visits for the reference line
-  const refX = useMemo(() => {
-    if (enrichedVisits === 0) return null;
-    let closest = chartData[0];
-    chartData.forEach(d => {
-      if (Math.abs(d.enriched - enrichedVisits) < Math.abs(closest.enriched - enrichedVisits)) closest = d;
-    });
-    return closest.enriched;
-  }, [enrichedVisits, chartData]);
+  const refX = enrichedVisits > 0 ? enrichedVisits : null;
 
   const activeTierIdx = useMemo(() => {
     for (let i = TIERS.length - 1; i >= 0; i--) {
