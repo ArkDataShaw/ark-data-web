@@ -590,8 +590,8 @@ export default function EnrichedVisitsCalculator() {
           </ul>
         </div>
 
-        <div data-tour="example-box" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '12px', padding: '24px 28px' }}>
-          <p style={{ color: '#22c55e', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '14px' }}>
+        <div data-tour="example-box" style={{ background: 'rgba(10,33,66,0.3)', border: '1px solid rgba(26,92,168,0.3)', borderRadius: '12px', padding: '24px 28px' }}>
+          <p style={{ color: '#7eb8ff', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '14px' }}>
             Example with Your Current Inputs
           </p>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
