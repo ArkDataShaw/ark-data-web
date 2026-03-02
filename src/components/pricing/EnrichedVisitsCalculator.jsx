@@ -308,7 +308,7 @@ export default function EnrichedVisitsCalculator() {
               Percent of visits that become billable Enriched Visits.
             </p>
             {rateError && <p style={{ color: '#ef4444', fontSize: '11px', marginTop: '5px', fontWeight: 600 }}>⚠ {rateError}</p>}
-            {!rateError && isRare && <p style={{ color: '#f59e0b', fontSize: '11px', marginTop: '5px', fontWeight: 600, lineHeight: 1.5 }}>Note: Enrichment rates below 45% or above 60% are rare.</p>}
+            {!rateError && isRare && <p style={{ color: '#f59e0b', fontSize: '11px', marginTop: '5px', fontWeight: 600, lineHeight: 1.5 }}>Note: Enrichment rates below 30% or above 55% are rare.</p>}
           </div>
         </div>
 
