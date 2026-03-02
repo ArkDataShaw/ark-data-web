@@ -155,17 +155,7 @@ export default function EnrichedVisitsCalculator() {
   const cpeAvg = enrichedVisits > 0 ? totalCost / enrichedVisits : 0;
   const isRare = ratePercent < 45 || ratePercent > 60;
 
-  const chartData = useMemo(() => {
-    const base = buildChartData(ratePercent);
-    if (enrichedVisits > 0 && !CHART_POINTS.includes(enrichedVisits)) {
-      const cost = calcCost(enrichedVisits);
-      const cpe = enrichedVisits > 0 ? cost / enrichedVisits : 0;
-      const visits = Math.round(enrichedVisits / (ratePercent / 100));
-      const point = { enriched: enrichedVisits, visits, cost, cpe: parseFloat(cpe.toFixed(4)), returnPerEnrichment: RETURN_PER_ENRICHMENT };
-      return [...base, point].sort((a, b) => a.enriched - b.enriched);
-    }
-    return base;
-  }, [ratePercent, enrichedVisits]);
+  const chartData = useMemo(() => buildChartData(ratePercent), [ratePercent]);
 
   const refX = enrichedVisits > 0 ? enrichedVisits : null;
 
