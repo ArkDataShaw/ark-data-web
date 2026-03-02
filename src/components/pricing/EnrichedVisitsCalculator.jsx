@@ -12,13 +12,12 @@ const S = { muted: '#D9ECFF', mutedGreen: '#DFFFEF' };
 const TIER_COLORS = ['#22c55e','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#ec4899','#f97316'];
 
 const TIERS = [
-  { label: 'Starter',     range: '0 – 5,000',         min: 0,      rate: 0.17, rateLabel: '$0.17 / enriched visit', cap: 5000,    color: TIER_COLORS[0] },
-  { label: 'Growth',      range: '5,001 – 15,000',    min: 5000,   rate: 0.15, rateLabel: '$0.15 / enriched visit', cap: 10000,   color: TIER_COLORS[1] },
-  { label: 'Scale',       range: '15,001 – 30,000',   min: 15000,  rate: 0.13, rateLabel: '$0.13 / enriched visit', cap: 15000,   color: TIER_COLORS[2] },
-  { label: 'Business',    range: '30,001 – 50,000',   min: 30000,  rate: 0.11, rateLabel: '$0.11 / enriched visit', cap: 20000,   color: TIER_COLORS[3] },
-  { label: 'Pro',         range: '50,001 – 100,000',  min: 50000,  rate: 0.10, rateLabel: '$0.10 / enriched visit', cap: 50000,   color: TIER_COLORS[4] },
-  { label: 'Enterprise',  range: '100,001 – 250,000', min: 100000, rate: 0.09, rateLabel: '$0.09 / enriched visit', cap: 150000,  color: TIER_COLORS[5] },
-  { label: 'Elite',       range: '250,001+',          min: 250000, rate: 0.08, rateLabel: '$0.08 / enriched visit', cap: Infinity,color: TIER_COLORS[6] },
+  { label: 'Starter',    range: '0 – 2,500',          min: 0,      rate: 0.18, rateLabel: '$0.18 / enriched visit', cap: 2500,    color: TIER_COLORS[0] },
+  { label: 'Growth',     range: '2,501 – 10,000',     min: 2500,   rate: 0.15, rateLabel: '$0.15 / enriched visit', cap: 7500,    color: TIER_COLORS[1] },
+  { label: 'Scale',      range: '10,001 – 25,000',    min: 10000,  rate: 0.12, rateLabel: '$0.12 / enriched visit', cap: 15000,   color: TIER_COLORS[2] },
+  { label: 'Business',   range: '25,001 – 50,000',    min: 25000,  rate: 0.10, rateLabel: '$0.10 / enriched visit', cap: 25000,   color: TIER_COLORS[3] },
+  { label: 'Pro',        range: '50,001 – 100,000',   min: 50000,  rate: 0.09, rateLabel: '$0.09 / enriched visit', cap: 50000,   color: TIER_COLORS[4] },
+  { label: 'Enterprise', range: '100,001+',           min: 100000, rate: 0.08, rateLabel: '$0.08 / enriched visit', cap: Infinity,color: TIER_COLORS[5] },
 ];
 
 function clamp(x, lo, hi) { return Math.min(Math.max(x, lo), hi); }
