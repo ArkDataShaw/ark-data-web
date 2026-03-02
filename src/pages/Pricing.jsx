@@ -1,5 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import EnrichedVisitsCalculator from '../components/pricing/EnrichedVisitsCalculator';
+
+function TypewriterText({ text, delay = 0, speed = 60 }) {
+  const [displayed, setDisplayed] = useState('');
+  const [started, setStarted] = useState(false);
+
+  useEffect(() => {
+    const startTimer = setTimeout(() => setStarted(true), delay);
+    return () => clearTimeout(startTimer);
+  }, [delay]);
+
+  useEffect(() => {
+    if (!started) return;
+    if (displayed.length >= text.length) return;
+    const t = setTimeout(() => setDisplayed(text.slice(0, displayed.length + 1)), speed);
+    return () => clearTimeout(t);
+  }, [started, displayed, text, speed]);
+
+  return <>{displayed}<span style={{ opacity: displayed.length < text.length ? 1 : 0 }}>|</span></>;
+}
 
 const S = { muted: '#D9ECFF' };
 
