@@ -153,7 +153,7 @@ export default function EnrichedVisitsCalculator() {
   const tierRows = useMemo(() => calcTiers(enrichedVisits), [enrichedVisits]);
   const totalCost = tierRows.reduce((sum, t) => sum + t.subtotal, 0);
   const cpeAvg = enrichedVisits > 0 ? totalCost / enrichedVisits : 0;
-  const isRare = ratePercent < 45 || ratePercent > 60;
+  const isRare = ratePercent < 30 || ratePercent > 55;
 
   const chartData = useMemo(() => {
     const base = buildChartData(ratePercent);
