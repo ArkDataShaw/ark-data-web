@@ -329,7 +329,7 @@ export default function EnrichedVisitsCalculator() {
         </div>
 
         {/* Free Trial CTA */}
-        <div style={{ marginTop: '20px', textAlign: 'center' }}>
+        <div data-tour="trial-cta" style={{ marginTop: '20px', textAlign: 'center' }}>
           <button onClick={() => setModalStep(1)} style={{
               width: '100%',
               background: 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)',
