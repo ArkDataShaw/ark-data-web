@@ -291,7 +291,7 @@ export default function EnrichedVisitsCalculator() {
             <input type="text" inputMode="numeric" value={visitsRaw} onChange={handleVisitsChange}
               placeholder="e.g., 12,000" className="ark-input"
               style={{ fontSize: '17px', fontWeight: 700, borderColor: 'rgba(26,92,168,0.6)' }} />
-            <p style={{ color: '#3ab870', fontSize: '11px', marginTop: '6px', lineHeight: 1.55 }}>
+            <p style={{ color: '#4a6a9a', fontSize: '11px', marginTop: '6px', lineHeight: 1.55 }}>
               Total website traffic. Billing is based on Enriched Visits.
             </p>
           </div>
