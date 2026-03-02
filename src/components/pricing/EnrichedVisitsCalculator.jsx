@@ -562,8 +562,8 @@ export default function EnrichedVisitsCalculator() {
                   </tr>
                 );
               })}
-              <tr style={{ background: 'rgba(177,0,26,0.1)', borderTop: '2px solid rgba(177,0,26,0.4)' }}>
-                <td colSpan={3} style={{ padding: '15px 20px', color: '#ff8a99', fontSize: '13px', fontWeight: 800 }}>Total Monthly Cost</td>
+              <tr style={{ background: 'rgba(10,33,66,0.4)', borderTop: '2px solid rgba(26,92,168,0.4)' }}>
+                <td colSpan={3} style={{ padding: '15px 20px', color: '#7eb8ff', fontSize: '13px', fontWeight: 800 }}>Total Monthly Cost</td>
                 <td style={{ padding: '15px 20px', color: '#fff', fontSize: '16px', fontWeight: 900, textAlign: 'right', fontFamily: 'monospace' }}>{fmtUSD(totalCost)}</td>
               </tr>
             </tbody>
