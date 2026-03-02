@@ -484,19 +484,35 @@ export default function EnrichedVisitsCalculator() {
 
         {/* Tier legend */}
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid rgba(10,33,66,0.8)' }}>
-          {TIERS.map((t, i) => (
-            <div key={t.label} style={{
-              display: 'flex', alignItems: 'center', gap: '5px',
-              background: i === activeTierIdx ? `${t.color}22` : 'transparent',
-              border: `1px solid ${i === activeTierIdx ? t.color + '66' : 'transparent'}`,
-              borderRadius: '5px', padding: '3px 8px', transition: 'all 0.2s',
-            }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: t.color, flexShrink: 0, display: 'inline-block' }} />
-              <span style={{ color: i === activeTierIdx ? '#fff' : '#4a6a9a', fontSize: '10px', fontWeight: i === activeTierIdx ? 700 : 400 }}>
-                {t.label} ${t.rate}
-              </span>
-            </div>
-          ))}
+          {TIERS.map((t, i) => {
+            const midpoint = t.cap === Infinity
+              ? t.min + 50000
+              : Math.round(t.min + t.cap * 0.5);
+            const enrichedMid = Math.round(midpoint);
+            const rawVisits = Math.round(enrichedMid / (ratePercent / 100));
+            return (
+              <div
+                key={t.label}
+                onClick={() => setVisitsRaw(String(rawVisits))}
+                title={`Click to see pricing at ~${fmt(enrichedMid)} enriched visits`}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '5px',
+                  background: i === activeTierIdx ? `${t.color}22` : 'rgba(255,255,255,0.03)',
+                  border: `1px solid ${i === activeTierIdx ? t.color + '66' : 'rgba(255,255,255,0.08)'}`,
+                  borderRadius: '5px', padding: '4px 10px', transition: 'all 0.2s',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={e => { if (i !== activeTierIdx) { e.currentTarget.style.background = `${t.color}15`; e.currentTarget.style.borderColor = `${t.color}44`; }}}
+                onMouseLeave={e => { if (i !== activeTierIdx) { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}}
+              >
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: t.color, flexShrink: 0, display: 'inline-block' }} />
+                <span style={{ color: i === activeTierIdx ? '#fff' : '#4a6a9a', fontSize: '10px', fontWeight: i === activeTierIdx ? 700 : 400 }}>
+                  {t.label} ${t.rate}
+                </span>
+              </div>
+            );
+          })}
+          <span style={{ color: '#2a3a5a', fontSize: '10px', alignSelf: 'center', marginLeft: '4px' }}>← tap to preview</span>
         </div>
       </div>
 
