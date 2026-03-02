@@ -573,8 +573,8 @@ export default function EnrichedVisitsCalculator() {
 
       {/* NOTES + EXAMPLE */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-        <div style={{ background: 'rgba(177,0,26,0.07)', border: '1px solid rgba(177,0,26,0.25)', borderRadius: '12px', padding: '24px 28px' }}>
-          <p style={{ color: '#ff8a99', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '14px' }}>Important Notes</p>
+        <div style={{ background: 'rgba(10,33,66,0.3)', border: '1px solid rgba(26,92,168,0.3)', borderRadius: '12px', padding: '24px 28px' }}>
+          <p style={{ color: '#7eb8ff', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '14px' }}>Important Notes</p>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {[
               'Billing is based on Enriched Visits, not raw website visits.',
@@ -583,7 +583,7 @@ export default function EnrichedVisitsCalculator() {
               'All enriched visits are billed at the applicable tier rate.',
             ].map((note, i) => (
               <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                <span style={{ color: '#ff8a99', fontWeight: 700, fontSize: '14px', flexShrink: 0, marginTop: '1px' }}>→</span>
+                <span style={{ color: '#7eb8ff', fontWeight: 700, fontSize: '14px', flexShrink: 0, marginTop: '1px' }}>→</span>
                 <span style={{ color: S.muted, fontSize: '13px', lineHeight: 1.6 }}>{note}</span>
               </li>
             ))}
