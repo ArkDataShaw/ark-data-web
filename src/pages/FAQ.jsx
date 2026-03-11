@@ -7,49 +7,45 @@ const S = { muted: '#D9ECFF', mutedGreen: '#DFFFEF', red: '#B1001A' };
 
 const faqCategories = [
   {
-    cat: 'Data & Intent',
+    cat: 'Data & Enrichment',
     items: [
-      { q: 'What is high-intent data?', a: 'High-intent data identifies businesses or individuals showing active buying signals — researching solutions, visiting competitor sites, downloading category guides, or engaging with in-category content. It tells you who is in-market right now.' },
-      { q: 'How often is data refreshed?', a: 'Our intent signals are refreshed daily. Firmographic and contact data is verified on a rolling 30-day cycle. Enterprise plans include on-demand refresh capability.' },
-      { q: 'What attributes are included in enrichment?', a: 'Domain, industry, employee count, revenue band, HQ location, technology stack, buyer role signals, buying stage, and contact-level data including verified work email and job title.' },
-      { q: 'What intent categories do you cover?', a: 'We cover 10,000+ intent topics including CRM software, payroll tools, HR platforms, cybersecurity, logistics SaaS, marketing automation, analytics, and hundreds of vertical-specific categories.' },
-      { q: 'Is this company-level or individual-level data?', a: 'Both. We offer account-level (company) firmographic enrichment and individual-level contact resolution for high-intent visitors, depending on the data available and your plan tier.' },
+      { q: 'What does Ark Data do?', a: 'Ark Data is a visitor intelligence platform. You install a lightweight pixel on your site, and we identify your anonymous visitors by cross-referencing sessions against our identity graph — sourced from 40+ licensed data brokers and validated against credit bureau records. Resolved visitors are enriched with 74+ data fields and delivered to your CRM or outreach tools.' },
+      { q: 'What attributes are included in enrichment?', a: 'We provide 74+ enrichment fields across several categories: identity and demographics, contact info (phone and email), professional data (job title, department, seniority level), company data (name, domain, revenue, headcount, industry), social profiles (LinkedIn), and skiptrace-validated fields like credit rating and exact age.' },
+      { q: 'Do you offer intent data?', a: 'High-intent data is available as a separate add-on product powered by IntentCore. It is not part of the standard Ark Data enrichment. Book a call if you want to learn more about adding intent signals to your workflow.' },
+      { q: 'Is this company-level or individual-level data?', a: 'We resolve visitors at the individual level. Of resolved visitors, roughly 72% also include company-level data such as company name, domain, revenue, headcount, and industry.' },
+      { q: 'How do you source your data?', a: 'Our identity graph is aggregated from 40+ licensed data sources and validated against credit bureau records. This gives us broad coverage across consumer and professional data points.' },
     ]
   },
   {
     cat: 'Lost Traffic',
     items: [
-      { q: 'How is lost traffic recovered?', a: 'Our pixel captures anonymous sessions and cross-references against our identity graph. We resolve visitor identity using behavioral signals, IP resolution, device matching, and proprietary data partnerships, then deliver enriched leads to your CRM.' },
-      { q: 'What match rates can I expect?', a: 'Match rates vary by traffic mix and industry. Most clients see 40-60% of traffic resolved to company-level, and 15-30% resolved to individual contact level with verified email.' },
-      { q: 'What sources count as "lost traffic"?', a: 'Website visits, form partial completions, newsletter signups that bounced, chat widget interactions, PDF downloads without form fills, and any session that ended without conversion.' },
-      { q: 'Will this slow down my website?', a: 'No. Our pixel is under 2KB and fully asynchronous. It has zero impact on page load performance or Core Web Vitals.' },
+      { q: 'How is lost traffic recovered?', a: 'Our pixel captures anonymous visitor sessions and cross-references them against our identity graph, which is powered by 40+ licensed data sources. Resolved visitors are enriched with 74+ fields and delivered directly to your CRM or outreach platform.' },
+      { q: 'What match rates can I expect?', a: 'Most clients see a 40–60% visitor resolution rate, meaning 40–60% of your anonymous traffic is identified and enriched. Actual rates vary by traffic mix and industry.' },
+      { q: 'What does the pixel track?', a: 'The pixel captures 11 event types with rich behavioral data: page views, clicks, form submissions, scroll depth, file downloads, video play/pause/complete, text copy, user idle, and exit intent.' },
+      { q: 'Will this slow down my website?', a: 'No. Our pixel is lightweight and fully asynchronous. It has zero impact on page load performance or Core Web Vitals.' },
     ]
   },
   {
     cat: 'Integrations & Delivery',
     items: [
-      { q: 'What CRMs do you integrate with?', a: 'We integrate natively with Salesforce, HubSpot, Pipedrive, Marketo, ActiveCampaign, Mailchimp, Klaviyo, and any platform supporting webhook or REST API delivery.' },
-      { q: 'How is data delivered?', a: 'Real-time API push, batch CSV export, direct CRM/ESP integration via OAuth, or custom webhook delivery. Delivery format is configurable per integration.' },
-      { q: 'Can I do custom field mapping?', a: 'Yes. We support fully custom field mapping to match your CRM schema, object structure, and naming conventions. Available on Growth+ plans.' },
-      { q: 'Do you support ad platform activation?', a: 'Yes. We can push enriched audiences directly to Google Ads, Meta, LinkedIn, and Programmatic DSPs for retargeting and lookalike building.' },
+      { q: 'What platforms do you integrate with?', a: 'We integrate with Resend, Instantly, Go High Level, Klaviyo, Clay, HubSpot, and HeyReach. We also support custom HTTP webhooks, so you can connect to virtually any platform that accepts inbound data.' },
+      { q: 'How is data delivered?', a: 'Data can be delivered via direct platform integrations, batch CSV export, or custom webhook. Delivery format is configurable per integration.' },
+      { q: 'Can I do custom field mapping?', a: 'Yes. We support custom field mapping to match your CRM schema and naming conventions.' },
     ]
   },
   {
-    cat: 'Compliance & Security',
+    cat: 'Privacy & Data Handling',
     items: [
-      { q: 'How do you handle compliance?', a: 'Ark Data is designed to support GDPR, CCPA, and major privacy frameworks. We operate with privacy-first data handling, offer DPAs for enterprise clients, and support vendor security reviews.' },
-      { q: 'Is a DPA available?', a: 'Yes. A Data Processing Agreement is available for all Growth and above plans. Contact our team to request a DPA review.' },
-      { q: 'How do you source your data?', a: 'We aggregate from first-party consent networks, public business records, licensed data partnerships, and proprietary behavioral signal collection. All sources are screened for compliance.' },
-      { q: 'What about data residency?', a: 'Enterprise plans include data residency configuration options. Contact us to discuss your jurisdiction requirements.' },
+      { q: 'How do you handle privacy?', a: 'Ark Data is built with privacy in mind. All data is sourced from licensed, reputable data providers and validated against credit bureau records. We practice privacy-conscious data handling across our entire pipeline.' },
+      { q: 'How do you source your data?', a: 'Our identity graph is aggregated from 40+ licensed data sources and validated against credit bureau records for accuracy. We do not scrape or collect data from unauthorized sources.' },
     ]
   },
   {
     cat: 'Onboarding & Support',
     items: [
-      { q: 'What is the onboarding timeline?', a: 'Most clients are fully live in under 1 week. Pixel installation takes 15 minutes. CRM integration and field mapping typically takes 2–3 hours with our team.' },
-      { q: 'What support is included?', a: 'Starter includes email support. Growth includes a dedicated CSM and Slack channel. Scale and Enterprise include analyst support, priority response SLAs, and quarterly business reviews.' },
+      { q: 'What is the onboarding timeline?', a: 'Most clients are fully live in under a week. Pixel installation takes about 15 minutes. Integration setup is straightforward and we provide hands-on help to get you connected.' },
+      { q: 'What support is included?', a: 'All plans include direct email support with fast response times. We are a hands-on team and will work with you to get the most out of the platform.' },
       { q: 'Do you offer a trial?', a: 'We offer a guided proof-of-concept for qualified teams. Book a call to discuss what a trial would look like for your use case.' },
-      { q: 'Can I do custom segment builds?', a: 'Yes. Custom segment construction (by intent category, firmographic filters, or behavioral criteria) is available on Scale and Enterprise plans, and as an add-on for Growth.' },
     ]
   },
 ];

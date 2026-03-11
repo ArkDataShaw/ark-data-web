@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { CheckCircle, ArrowRight, Zap, Shield, BarChart2, Database, Globe, Cpu } from 'lucide-react';
+import { CheckCircle, ArrowRight, Zap, Shield, Database, Globe, Cpu } from 'lucide-react';
 
 const S = { muted: '#D9ECFF', mutedGreen: '#DFFFEF', red: '#B1001A' };
 
@@ -12,59 +12,50 @@ const features = [
     icon: Globe,
     title: 'Lost Traffic Recovery',
     desc: 'Identify anonymous website visitors and resolve them to real people with verified contact data, company info, and behavioral signals.',
-    bullets: ['Identity resolution at person-level', 'Verified work email + direct dial', 'On-site behavioral signals', 'Real-time CRM routing'],
+    bullets: ['Identity resolution at person-level', 'Verified email + direct dial phone', 'On-site behavioral event capture', 'Real-time CRM routing'],
     color: '#0A2142',
   },
   {
     icon: Zap,
     title: 'High Intent Data',
-    desc: 'Access individuals actively researching your solution across 10,000+ data sources. Know who is in-market before your competitors.',
-    bullets: ['Off-site intent signals', 'Individual-level (not just account)', 'Competitor & vendor research tracking', 'Daily refresh of in-market buyers'],
+    desc: 'A separate add-on product powered by IntentCore. Access individuals actively researching your solution category with verified contact data.',
+    bullets: ['Off-site intent signals (separate product)', 'Individual-level (not just account)', 'Topic-based audience building', 'Pairs with visitor enrichment for full coverage'],
     color: '#063524',
   },
   {
     icon: Database,
     title: 'Enrichment Engine',
-    desc: 'Enrich every record with firmographic and contact data. Keep your CRM clean, complete, and actionable.',
-    bullets: ['Firmographic & demographic data', 'Contact data with email validation', 'Deduplication & normalization', 'Bulk + real-time enrichment modes'],
+    desc: 'Every resolved visitor enriched with 74+ fields across identity, demographics, contact, professional, company, and skiptrace data from 40+ licensed data brokers.',
+    bullets: ['Identity graph from 40+ licensed data brokers', 'Credit bureau skiptrace validation', 'Demographic + professional + company data', '~72% of resolved visitors include company data'],
     color: '#0A2142',
-  },
-  {
-    icon: BarChart2,
-    title: 'Intent Scoring & Segmentation',
-    desc: 'AI-powered scoring models that rank leads by conversion readiness. Build segments by any combination of attributes.',
-    bullets: ['AI conversion likelihood score', 'Custom scoring rules', 'Dynamic audience segments', 'Account-level aggregation'],
-    color: '#063524',
   },
   {
     icon: Cpu,
     title: 'Delivery & Activation',
-    desc: 'Push enriched, scored data to your CRM, ad platforms, ESPs, or custom endpoints. Real-time or batch.',
-    bullets: ['Native CRM & ESP integrations', 'Ad platform audience sync', 'Webhook & REST API delivery', 'Custom field mapping'],
-    color: '#0A2142',
+    desc: 'Push enriched data to your CRM, ESP, outbound tools, or custom endpoints. Real-time or batch.',
+    bullets: ['Native CRM & ESP integrations', 'Meta retargeting audience sync', 'Webhook & REST API delivery', 'Custom field mapping'],
+    color: '#063524',
   },
   {
     icon: Shield,
-    title: 'Compliance & Security',
-    desc: 'Privacy-first architecture designed for GDPR, CCPA, and enterprise security requirements.',
-    bullets: ['GDPR & CCPA compliant', 'DPA available on Growth+', 'SOC 2 Type II (in progress)', 'Data residency options for Enterprise'],
+    title: 'Privacy & Security',
+    desc: 'Built with privacy in mind. Identity graph sourced exclusively from licensed data brokers with opt-out compliance.',
+    bullets: ['CCPA & CAN-SPAM compliant', 'Licensed data sources only', 'Opt-out suppression support', 'Built with privacy in mind'],
     color: '#3d0a0a',
   },
 ];
 
 const techSpecs = [
   { label: 'Identity Resolution', value: 'Person-level (not just company)' },
-  { label: 'Data Refresh', value: 'Real-time to daily, by plan' },
-  { label: 'Match Accuracy', value: '95%+ on verified records' },
-  { label: 'Anonymous Match Rate', value: 'Up to 60% of website traffic' },
-  { label: 'Enrichment Fields', value: '74 firmographic & contact fields' },
-  { label: 'Intent Data Sources', value: '10,000+ publisher network' },
+  { label: 'Data Sources', value: '40+ licensed data brokers' },
+  { label: 'Visitor Resolution Rate', value: 'Up to 60% of website traffic' },
+  { label: 'Company Match Rate', value: '~72% of resolved visitors' },
+  { label: 'Enrichment Fields', value: '74+ across 6 categories' },
+  { label: 'Validation Method', value: 'Credit bureau skiptrace' },
   { label: 'Pixel Install Time', value: 'Under 15 minutes' },
-  { label: 'API Response Time', value: '<200ms (p99)' },
-  { label: 'Uptime SLA', value: '99.9% (Scale+)' },
-  { label: 'Data Retention', value: 'Configurable, up to 24 months' },
-  { label: 'Compliance', value: 'GDPR, CCPA, CAN-SPAM' },
-  { label: 'Delivery Methods', value: 'API, CRM push, Webhook, CSV' },
+  { label: 'Behavioral Events', value: '11 event types captured' },
+  { label: 'Compliance', value: 'CCPA, CAN-SPAM' },
+  { label: 'Delivery Methods', value: 'CRM push, Webhook, CSV' },
 ];
 
 export default function Product() {
@@ -80,7 +71,7 @@ export default function Product() {
             Command-Center Grade<br />Data Infrastructure.
           </h1>
           <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, marginBottom: '32px' }}>
-            Two powerful engines, Lost Traffic Recovery and High Intent Data, unified in a single platform built for revenue operators.
+            Two powerful engines — Lost Traffic Recovery and High Intent Data — unified in a single platform built for revenue operators.
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to={createPageUrl('BookADemo')}>
@@ -119,7 +110,7 @@ export default function Product() {
             <div style={{ marginBottom: '72px' }}>
               <div style={{ textAlign: 'center', marginBottom: '48px' }}>
                 <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '12px' }}>Everything You Need to Activate Revenue.</h2>
-                <p style={{ color: S.muted, fontSize: '16px', maxWidth: '520px', margin: '0 auto' }}>From anonymous visitor to enriched, scored, delivered — all in one platform.</p>
+                <p style={{ color: S.muted, fontSize: '16px', maxWidth: '520px', margin: '0 auto' }}>From anonymous visitor to enriched, identified, and delivered — all in one platform.</p>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
                 {features.map((f, i) => {
@@ -174,10 +165,10 @@ export default function Product() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '40px' }}>
               {[
-                { title: 'Person-Level Identity', desc: 'We resolve sessions to individual people — not just companies. Get name, work email, role, and company.' },
-                { title: 'Behavioral Signals', desc: 'Pages viewed, time on site, scroll depth, and repeated visits — all captured and scored for intent.' },
-                { title: 'Real-Time Routing', desc: 'Identified visitors are pushed to your CRM, ESP, or outbound sequence within minutes of identification.' },
-                { title: 'Match Rate Optimization', desc: 'Continuous improvements to our identity graph improve match rates over time for your specific traffic mix.' },
+                { title: 'Person-Level Identity', desc: 'We resolve sessions to individual people — not just companies. Get name, email, phone, role, company, and 74+ enrichment fields.' },
+                { title: 'Behavioral Event Capture', desc: '11 event types tracked — page views, clicks, form submissions, scroll depth, file downloads, video engagement, copy events, idle time, and exit intent.' },
+                { title: 'Real-Time Routing', desc: 'Identified visitors are pushed to your CRM, ESP, or outbound sequence. Sync to Meta retargeting or trigger CRM workflows automatically.' },
+                { title: 'ICP Matching', desc: 'Define your ideal customer profile during onboarding. Matched visitors are automatically flagged and routed to the right workflows.' },
               ].map((item, i) => (
                 <div key={i} style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '10px', padding: '24px' }}>
                   <h3 style={{ color: '#fff', fontWeight: 700, fontSize: '15px', marginBottom: '8px' }}>{item.title}</h3>
@@ -207,14 +198,14 @@ export default function Product() {
                 <span style={{ color: S.mutedGreen, fontSize: '12px', fontWeight: 600 }}>High Intent Data</span>
               </div>
               <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>Reach In-Market Buyers Before Your Competitors.</h2>
-              <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7 }}>Ark Data monitors 10,000+ data sources to identify individuals actively researching your solution category. Get daily feeds of in-market buyers with verified contact data — ready for outbound sequences.</p>
+              <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7 }}>High Intent Data is a separate add-on product powered by IntentCore. It identifies individuals actively researching your solution category and delivers them with verified contact data — ready for outbound sequences. Pair it with Lost Traffic Recovery for full-funnel coverage.</p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '40px' }}>
               {[
-                { title: 'Off-Site Research Signals', desc: 'We track research activity across content sites, review platforms, comparison tools, and industry publications.' },
+                { title: 'Off-Site Research Signals', desc: 'Track research activity across content sites, review platforms, comparison tools, and industry publications.' },
                 { title: 'Individual-Level Data', desc: 'Intent matched to individuals — not just accounts. Know exactly who on the buying committee is active.' },
-                { title: 'Competitor Tracking', desc: 'See when prospects are researching competitor solutions and get notified before they make a decision.' },
-                { title: 'Daily Refresh', desc: 'Intent feeds updated daily. Your SDR queue always reflects who is in-market right now, not last month.' },
+                { title: 'Topic-Based Audiences', desc: 'Build audiences around specific topics and solution categories relevant to your business.' },
+                { title: 'Separate Add-On', desc: 'High Intent Data is a standalone product that integrates with your Ark Data enrichment pipeline for maximum coverage.' },
               ].map((item, i) => (
                 <div key={i} style={{ background: '#042016', border: '1px solid #063524', borderRadius: '10px', padding: '24px' }}>
                   <h3 style={{ color: '#fff', fontWeight: 700, fontSize: '15px', marginBottom: '8px' }}>{item.title}</h3>
@@ -227,14 +218,14 @@ export default function Product() {
 
         {activeTab === 'Enrichment Engine' && (
           <div style={{ maxWidth: '820px', margin: '0 auto' }}>
-            <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>74 Fields. Always Clean. Always Current.</h2>
-            <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>Every record enriched with firmographic and contact data. Deduplication, validation, and normalization built in — so your CRM stays clean without manual work.</p>
+            <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>74+ Fields. Six Categories. Credit Bureau Validated.</h2>
+            <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>Every resolved visitor enriched with data from 40+ licensed data brokers, validated via credit bureau skiptrace. Identity, demographics, contact, professional, company, and social data — all in one record.</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
               {[
-                { category: 'Company Data', fields: ['Company name & domain', 'Industry & sub-industry', 'Headcount band', 'Revenue range', 'HQ location & region', 'Funding stage & investors'] },
-                { category: 'Contact Data', fields: ['Full name & job title', 'Work email (validated)', 'Direct phone number', 'LinkedIn profile URL', 'Seniority & department', 'Decision-maker flag'] },
-                { category: 'Data Quality', fields: ['Email validation & bounce suppression', 'Record deduplication', 'Company name normalization', 'Field standardization', 'Missing data flagging', 'Confidence scoring'] },
-                { category: 'Intent & Behavior', fields: ['In-market intent score', 'Research topics', 'Competitor activity', 'Content engagement', 'On-site behavior', 'Historical signals'] },
+                { category: 'Identity & Demographics', fields: ['Full name & exact age', 'Gender & marital status', 'Home address & region', 'Homeowner status', 'Net worth & income range', 'Credit rating band'] },
+                { category: 'Contact Data', fields: ['Email address (personal + work)', 'Direct phone number', 'Mobile phone', 'LinkedIn profile URL'] },
+                { category: 'Professional Data', fields: ['Job title', 'Department', 'Seniority level', 'Decision-maker identification'] },
+                { category: 'Company Data', fields: ['Company name & domain', 'Industry (SIC & NAICS)', 'Headcount band', 'Revenue range', 'HQ location'] },
               ].map((cat, i) => (
                 <div key={i} style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '10px', padding: '24px' }}>
                   <p style={{ color: '#4a6a9a', fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '14px' }}>{cat.category}</p>
@@ -255,20 +246,17 @@ export default function Product() {
         {activeTab === 'Delivery & Integrations' && (
           <div style={{ maxWidth: '820px', margin: '0 auto' }}>
             <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>Deliver Data Where Your Team Works.</h2>
-            <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>Enriched, scored leads delivered directly to your CRM, ESP, ad platforms, or custom endpoints. Real-time or batch — you choose.</p>
+            <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>Enriched visitor data delivered directly to your CRM, ESP, outbound tools, or custom endpoints. Real-time or batch — you choose.</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '40px' }}>
               {[
-                { name: 'Salesforce', type: 'CRM' },
                 { name: 'HubSpot', type: 'CRM' },
-                { name: 'Pipedrive', type: 'CRM' },
+                { name: 'Go High Level', type: 'CRM' },
+                { name: 'Clay', type: 'Enrichment' },
                 { name: 'Klaviyo', type: 'ESP' },
-                { name: 'ActiveCampaign', type: 'ESP' },
-                { name: 'Mailchimp', type: 'ESP' },
-                { name: 'Marketo', type: 'Marketing' },
-                { name: 'Google Ads', type: 'Ad Platform' },
-                { name: 'Meta Ads', type: 'Ad Platform' },
-                { name: 'Zapier', type: 'Automation' },
-                { name: 'Webhook / API', type: 'Custom' },
+                { name: 'Resend', type: 'ESP' },
+                { name: 'Instantly', type: 'Outbound' },
+                { name: 'HeyReach', type: 'Outbound' },
+                { name: 'Custom HTTP (Webhook)', type: 'Custom' },
                 { name: 'CSV Export', type: 'Manual' },
               ].map((int, i) => (
                 <div key={i} style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '8px', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

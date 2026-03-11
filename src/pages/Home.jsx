@@ -58,7 +58,7 @@ function TwoPillarsSection({ S }) {
             <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '22px', marginBottom: '12px', letterSpacing: '-0.5px' }}>Lost Traffic Recovery</h3>
             <p style={{ color: S.muted, fontSize: '14px', lineHeight: 1.7, marginBottom: '24px' }}>Convert anonymous website visitors into verified identities with company data, contact info, and behavioral signals. Route them to your CRM before they go dark.</p>
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px 0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {['Real person identification (not just company)', 'Verified contact data + work email', 'Intent signals from on-site behavior', 'Real-time CRM + ESP routing'].map(item => (
+              {['Real person identification (not just company)', 'Verified contact data + work email', '11 behavioral event types captured per session', 'Real-time CRM + ESP routing'].map(item => (
                 <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                   <CheckCircle size={15} style={{ color: '#22c55e', flexShrink: 0, marginTop: '1px' }} />
                   <span style={{ color: S.muted, fontSize: '13px' }}>{item}</span>
@@ -93,27 +93,27 @@ function TwoPillarsSection({ S }) {
 const painPoints = [
   { title: 'Anonymous Traffic', desc: 'Up to 97% of visitors never fill a form. Their intent disappears without a trace.' },
   { title: 'Incomplete CRM Records', desc: 'Missing firmographics, wrong contacts, stale data. Your reps are flying blind.' },
-  { title: 'Wasted Ad Spend', desc: 'Retargeting anonymous audiences with no context kills ROAS and CPL efficiency.' },
-  { title: 'SDR Burnout', desc: "When reps can't prioritize by intent, they work harder with diminishing results." },
+  { title: 'Wasted Outreach', desc: 'Blasting cold lists with no context kills reply rates and burns your sending reputation.' },
+  { title: 'SDR Burnout', desc: "When reps don't know who visited or what they looked at, they work harder with diminishing results." },
 ];
 
 const features = [
   { title: 'Real-Time Enrichment', desc: 'Enrich visitor sessions and CRM records with firmographic and contact data as signals emerge.' },
-  { title: 'Intent Signals & Scoring', desc: 'AI-scored intent across 10,000+ data points. Know who is in-market before your competitors do.' },
+  { title: 'Behavioral Event Capture', desc: 'Track 11 on-site event types — page views, clicks, form fills, scroll depth, video engagement, exit intent, and more — to understand exactly how visitors interact with your site.' },
   { title: 'Deduplication + Normalization', desc: 'Every record cleaned, standardized, and deduplicated before it hits your stack. No manual data hygiene.' },
-  { title: 'CRM & Platform Delivery', desc: 'Push enriched, scored data directly to Salesforce, HubSpot, Klaviyo, ad platforms, or custom webhooks.' },
+  { title: 'CRM & Platform Delivery', desc: 'Push enriched data directly to HubSpot, Klaviyo, Go High Level, and more — or use custom webhooks to connect any platform.' },
   { title: 'Data Quality Controls', desc: 'Validation, deduplication, bounce suppression, and normalization on every record before delivery.' },
-  { title: 'Compliance & Governance', desc: 'Designed to support GDPR, CCPA, and enterprise data governance requirements. DPA available.' },
-  { title: 'Custom Segments', desc: 'Build audience segments by industry, intent category, or any combination of attributes.' },
+  { title: 'Compliance & Governance', desc: 'Built with privacy in mind. Designed to support CCPA and major privacy frameworks with responsible data handling practices.' },
+  { title: 'ICP Matching', desc: 'Your ideal customer profile is configured during onboarding, then runs automatically — only qualified visitors matching your criteria get delivered.' },
   { title: 'API + Batch Delivery', desc: 'Flexible delivery: real-time API, batch CSV export, or direct CRM/ESP integration.' },
 ];
 
 const faqs = [
   { q: 'What is high-intent data?', a: 'High-intent data identifies businesses or individuals showing active buying signals: researching solutions, visiting competitor sites, downloading guides, or engaging with in-category content. It tells you who is ready to buy now.' },
-  { q: 'How is Lost Traffic recovered?', a: 'Our pixel captures anonymous sessions and cross-references them against our identity graph. We resolve visitor identity, enrich with firmographic and contact data, and deliver actionable leads to your CRM in real time.' },
-  { q: 'What CRMs do you integrate with?', a: 'We integrate natively with Salesforce, HubSpot, Pipedrive, Klaviyo, ActiveCampaign, Mailchimp, Marketo, and any platform supporting webhook or API delivery.' },
-  { q: 'What match rates can I expect?', a: 'Match rates vary by traffic mix and industry, but most clients see 40-60% of anonymous traffic resolved to company-level, with 15-30% resolved to individual contact level.' },
-  { q: 'How do you handle compliance?', a: 'Ark Data is designed to support GDPR, CCPA, and major privacy frameworks. We operate with privacy-first data handling, offer DPAs, and support vendor security reviews.' },
+  { q: 'How is Lost Traffic recovered?', a: 'Our pixel captures anonymous sessions and cross-references them against our identity graph — sourced from 40+ licensed data brokers and validated via credit bureau skiptrace. We resolve visitor identity, enrich with 74+ fields of contact and demographic data, and deliver actionable leads to your CRM in real time.' },
+  { q: 'What platforms do you integrate with?', a: 'We integrate with Resend, Instantly, Go High Level, Klaviyo, Clay, HubSpot, and HeyReach. Plus any platform via custom HTTP webhook.' },
+  { q: 'What match rates can I expect?', a: 'Match rates vary by traffic mix and industry, but most clients see 40–60% of anonymous visitors resolved to verified identities. Roughly 72% of resolved visitors also include company data.' },
+  { q: 'How do you handle compliance?', a: 'Ark Data is built with privacy in mind. We follow responsible data handling practices aligned with CCPA and major privacy frameworks.' },
   { q: 'What is the onboarding timeline?', a: 'Most clients are fully live in under 1 week. Pixel installation takes 15 minutes. CRM integration and field mapping typically takes 2–3 hours with our team.' },
 ];
 
@@ -138,7 +138,7 @@ export default function Home() {
                 High-Intent Data<br />That <span style={{ color: '#B1001A' }}>Converts.</span>
               </h1>
               <p style={{ color: S.muted, fontSize: 'clamp(15px, 1.5vw, 18px)', lineHeight: 1.7, marginBottom: '32px', maxWidth: '480px' }}>
-                Ark Data turns unknown traffic into actionable identities and delivers intent-rich data to your CRM, sales team, and ad platforms. Compliance-first, always.
+                Ark Data turns unknown traffic into actionable identities and delivers enriched data to your CRM, sales team, and outbound tools. Built with privacy in mind, always.
               </p>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '28px' }}>
                 <Link to={createPageUrl('BookADemo')}>
@@ -186,8 +186,8 @@ export default function Home() {
                     ['Industry', 'Financial Services'],
                     ['Headcount', '150–250'],
                     ['Email', 'j.thornton@m*****n.com'],
-                    ['Intent', 'Evaluating CRM enrichment tools'],
-                    ['Score', '87 / 100'],
+                    ['Net Worth', '$500k – $749k'],
+                    ['Income Range', '$100k – $149k'],
                   ].map(([k, v], i) => (
                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: i < 7 ? '1px solid rgba(10,33,66,0.6)' : 'none' }}>
                       <span style={{ color: '#4a6a9a', fontSize: '12px' }}>{k}</span>
@@ -228,7 +228,7 @@ export default function Home() {
             <p style={{ color: '#B1001A', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>The Problem</p>
             <h2 style={{ fontSize: 'clamp(28px, 3.5vw, 44px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>Your Best Leads Are Invisible.</h2>
             <p style={{ color: S.muted, fontSize: '17px', maxWidth: '560px', margin: '0 auto', lineHeight: 1.65 }}>
-              95–98% of visitors never identify themselves. Most data tools show you what happened. Ark Data shows you <em>who</em> and <em>why</em>.
+              95–98% of visitors never identify themselves. Most data tools show you what happened. Ark Data shows you <em>who</em> they are and <em>how to reach them</em>.
             </p>
           </div>
           <div style={{ background: 'linear-gradient(145deg, #03200F 0%, #011508 100%)', border: '1px solid rgba(15,80,45,0.6)', borderRadius: '16px', padding: '40px' }}>
@@ -252,7 +252,7 @@ export default function Home() {
         <div className="sc">
           <div style={{ textAlign: 'center', marginBottom: '56px' }}>
             <p style={{ color: '#B1001A', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>Platform Capabilities</p>
-            <h2 style={{ fontSize: 'clamp(28px, 3.5vw, 44px)', fontWeight: 900, letterSpacing: '-1px' }}>Command-Center Grade Data Infrastructure</h2>
+            <h2 style={{ fontSize: 'clamp(28px, 3.5vw, 44px)', fontWeight: 900, letterSpacing: '-1px' }}>Everything You Need to Activate Your Data</h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
             {features.map((f, i) => (
@@ -280,7 +280,7 @@ export default function Home() {
               { num: '01', title: 'Install Pixel', desc: 'Drop our lightweight script on your site. Under 2KB, zero performance impact.', time: '15 min' },
               { num: '02', title: 'Identify & Enrich', desc: 'Anonymous sessions resolved to real people. 74 fields appended per record.', time: 'Real-time' },
               { num: '03', title: 'ICP Match', desc: 'Visitors filtered against your ideal customer profile. Only qualified matches move forward.', time: 'Automatic' },
-              { num: '04', title: 'Activate', desc: 'Matched visitors sync to Meta retargeting, CRM workflows, or outbound sequences.', time: 'Always on' },
+              { num: '04', title: 'Activate', desc: 'Matched visitors sync to your CRM, email sequences, or outbound workflows automatically.', time: 'Always on' },
             ].map((step, i) => (
               <div key={i} style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '10px', padding: '32px' }}>
                 <div style={{ color: '#1a4a8a', fontSize: '36px', fontWeight: 900, marginBottom: '16px', letterSpacing: '-1px' }}>{step.num}</div>
@@ -298,10 +298,11 @@ export default function Home() {
         <div className="sc" style={{ textAlign: 'center' }}>
           <p style={{ color: S.muted, fontSize: '12px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '20px' }}>Integrates with your entire stack</p>
           <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '24px' }}>
-            {['Salesforce', 'HubSpot', 'Klaviyo', 'Marketo', 'Pipedrive', 'ActiveCampaign', 'Zapier', 'Segment', 'Slack', 'Webhooks API'].map(name => (
+            {['Resend', 'Instantly', 'Go High Level', 'Klaviyo', 'Clay', 'HubSpot', 'HeyReach', 'Custom HTTP'].map(name => (
               <span key={name} style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '6px', padding: '8px 16px', color: S.muted, fontSize: '13px', fontWeight: 600 }}>{name}</span>
             ))}
           </div>
+          <p style={{ color: '#4a6a9a', fontSize: '12px', marginBottom: '16px' }}>Plus any platform via custom webhook</p>
           <Link to={createPageUrl('Integrations')}><button className="ark-btn-blue" style={{ padding: '10px 24px', fontSize: '13px' }}>View all integrations →</button></Link>
         </div>
       </section>
