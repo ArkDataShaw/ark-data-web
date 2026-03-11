@@ -25,8 +25,8 @@ const features = [
   {
     icon: Database,
     title: 'Enrichment Engine',
-    desc: 'Enrich every record with firmographic, technographic, and contact data. Keep your CRM clean, complete, and actionable.',
-    bullets: ['Firmographic & technographic data', 'Contact data with email validation', 'Deduplication & normalization', 'Bulk + real-time enrichment modes'],
+    desc: 'Enrich every record with firmographic and contact data. Keep your CRM clean, complete, and actionable.',
+    bullets: ['Firmographic & demographic data', 'Contact data with email validation', 'Deduplication & normalization', 'Bulk + real-time enrichment modes'],
     color: '#0A2142',
   },
   {
@@ -56,8 +56,8 @@ const techSpecs = [
   { label: 'Identity Resolution', value: 'Person-level (not just company)' },
   { label: 'Data Refresh', value: 'Real-time to daily, by plan' },
   { label: 'Match Accuracy', value: '95%+ on verified records' },
-  { label: 'Anonymous Match Rate', value: '20–40% of website traffic' },
-  { label: 'Enrichment Fields', value: '120+ firmographic & contact fields' },
+  { label: 'Anonymous Match Rate', value: 'Up to 60% of website traffic' },
+  { label: 'Enrichment Fields', value: '74 firmographic & contact fields' },
   { label: 'Intent Data Sources', value: '10,000+ publisher network' },
   { label: 'Pixel Install Time', value: 'Under 15 minutes' },
   { label: 'API Response Time', value: '<200ms (p99)' },
@@ -188,7 +188,7 @@ export default function Product() {
             <div style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '10px', padding: '28px', marginBottom: '40px' }}>
               <p style={{ color: '#4a6a9a', fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '16px' }}>Typical Results</p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-                {[['20–40%', 'of anonymous traffic identified'], ['&lt;15min', 'pixel install time'], ['Real-time', 'CRM delivery']].map(([val, label], i) => (
+                {[['Up to 60%', 'of anonymous traffic identified'], ['&lt;15min', 'pixel install time'], ['Real-time', 'CRM delivery']].map(([val, label], i) => (
                   <div key={i} style={{ textAlign: 'center' }}>
                     <p style={{ color: '#B1001A', fontWeight: 900, fontSize: '28px', letterSpacing: '-1px', marginBottom: '4px' }} dangerouslySetInnerHTML={{ __html: val }} />
                     <p style={{ color: S.muted, fontSize: '12px' }}>{label}</p>
@@ -227,13 +227,13 @@ export default function Product() {
 
         {activeTab === 'Enrichment Engine' && (
           <div style={{ maxWidth: '820px', margin: '0 auto' }}>
-            <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>120+ Fields. Always Clean. Always Current.</h2>
-            <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>Every record enriched with firmographic, technographic, and contact data. Deduplication, validation, and normalization built in — so your CRM stays clean without manual work.</p>
+            <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>74 Fields. Always Clean. Always Current.</h2>
+            <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>Every record enriched with firmographic and contact data. Deduplication, validation, and normalization built in — so your CRM stays clean without manual work.</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
               {[
                 { category: 'Company Data', fields: ['Company name & domain', 'Industry & sub-industry', 'Headcount band', 'Revenue range', 'HQ location & region', 'Funding stage & investors'] },
                 { category: 'Contact Data', fields: ['Full name & job title', 'Work email (validated)', 'Direct phone number', 'LinkedIn profile URL', 'Seniority & department', 'Decision-maker flag'] },
-                { category: 'Technology', fields: ['CRM & marketing stack', 'Analytics & ad platforms', 'Ecommerce platform', 'Infrastructure & cloud', 'Security tools', 'Communication tools'] },
+                { category: 'Data Quality', fields: ['Email validation & bounce suppression', 'Record deduplication', 'Company name normalization', 'Field standardization', 'Missing data flagging', 'Confidence scoring'] },
                 { category: 'Intent & Behavior', fields: ['In-market intent score', 'Research topics', 'Competitor activity', 'Content engagement', 'On-site behavior', 'Historical signals'] },
               ].map((cat, i) => (
                 <div key={i} style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '10px', padding: '24px' }}>

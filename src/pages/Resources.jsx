@@ -76,8 +76,8 @@ const resources = [
   },
   {
     type: 'Guide',
-    title: "Technographic Data 101: How to Use Your Prospect's Tech Stack as a Buying Signal",
-    excerpt: 'Understanding technographic data, how it\'s collected, and how sales and marketing teams can use it to prioritize accounts and personalize outreach.',
+    title: "Firmographic Data 101: How to Use Company Intelligence as a Buying Signal",
+    excerpt: 'Understanding firmographic data, how it\'s collected, and how sales and marketing teams can use it to prioritize accounts and personalize outreach.',
     readTime: '8 min read',
     tag: 'Data',
     tagColor: '#0A2142',

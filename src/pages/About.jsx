@@ -37,9 +37,9 @@ export default function About() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               {[
-                { n: '10M+', l: 'Records enriched/mo' },
+                { n: '1M+', l: 'Records enriched/mo' },
                 { n: '95%', l: 'Match accuracy' },
-                { n: '500+', l: 'Revenue teams served' },
+                { n: '50+', l: 'Revenue teams served' },
                 { n: '<1wk', l: 'Average go-live' },
               ].map((s, i) => (
                 <div key={i} style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '10px', padding: '24px', textAlign: 'center' }}>

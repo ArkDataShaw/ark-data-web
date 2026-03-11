@@ -2,23 +2,14 @@ import React, { useState, useMemo } from 'react';
 import { X, HelpCircle } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, ReferenceDot } from 'recharts';
 
-// ── Rate tables ──────────────────────────────────────────────────────────────
-const SELF_SERVE_TIERS = [
-  { name: 'Starter',    min: 0,      max: 2500,    rate: 0.18,  color: '#22c55e' },
-  { name: 'Growth',     min: 2501,   max: 10000,   rate: 0.15,  color: '#3b82f6' },
-  { name: 'Scale',      min: 10001,  max: 25000,   rate: 0.12,  color: '#8b5cf6' },
+// ── Rate table ───────────────────────────────────────────────────────────────
+const TIERS = [
+  { name: 'Starter',    min: 0,      max: 2500,    rate: 0.17,  color: '#22c55e' },
+  { name: 'Growth',     min: 2501,   max: 10000,   rate: 0.14,  color: '#3b82f6' },
+  { name: 'Scale',      min: 10001,  max: 25000,   rate: 0.11,  color: '#8b5cf6' },
   { name: 'Business',   min: 25001,  max: 50000,   rate: 0.10,  color: '#f59e0b' },
-  { name: 'Pro',        min: 50001,  max: 100000,  rate: 0.09,  color: '#ef4444' },
-  { name: 'Enterprise', min: 100001, max: Infinity, rate: 0.08, color: '#06b6d4' },
-];
-
-const COMMITTED_TIERS = [
-  { name: 'Starter',    min: 0,      max: 2500,    rate: 0.153, color: '#22c55e' },
-  { name: 'Growth',     min: 2501,   max: 10000,   rate: 0.128, color: '#3b82f6' },
-  { name: 'Scale',      min: 10001,  max: 25000,   rate: 0.102, color: '#8b5cf6' },
-  { name: 'Business',   min: 25001,  max: 50000,   rate: 0.085, color: '#f59e0b' },
-  { name: 'Pro',        min: 50001,  max: 100000,  rate: 0.077, color: '#ef4444' },
-  { name: 'Enterprise', min: 100001, max: Infinity, rate: 0.068, color: '#06b6d4' },
+  { name: 'Pro',        min: 50001,  max: 100000,  rate: 0.10,  color: '#ef4444' },
+  { name: 'Enterprise', min: 100001, max: Infinity, rate: 0.10, color: '#06b6d4' },
 ];
 
 // ── Competitor reference data ─────────────────────────────────────────────
@@ -102,68 +93,30 @@ function ChartTooltip({ active, payload }) {
 export default function EnrichedVisitsCalculator() {
   const [visitsRaw, setVisitsRaw] = useState('');
   const [rateRaw, setRateRaw] = useState('55');
-  const [committed, setCommitted] = useState(false);
   const [modalStep, setModalStep] = useState(0);
   const [formData, setFormData] = useState({ email: '', phone: '', company: '', url: '', monthlyVisits: '' });
 
-  const tiers = committed ? COMMITTED_TIERS : SELF_SERVE_TIERS;
   const visitsInt = Math.max(0, Math.floor(parseFloat(visitsRaw.replace(/,/g, '')) || 0));
   const ratePercent = Math.min(80, Math.max(20, parseFloat(rateRaw) || 55));
   const enrichedVisits = Math.floor(visitsInt * (ratePercent / 100));
-  const { totalCost, effectiveRate, breakdown } = useMemo(() => calculateCost(enrichedVisits, tiers), [enrichedVisits, tiers]);
-
-  // Self-serve cost for savings comparison
-  const selfServeCost = useMemo(() => calculateCost(enrichedVisits, SELF_SERVE_TIERS).totalCost, [enrichedVisits]);
-  const monthlySavings = committed ? selfServeCost - totalCost : 0;
+  const { totalCost, effectiveRate, breakdown } = useMemo(() => calculateCost(enrichedVisits, TIERS), [enrichedVisits]);
 
   // Competitor estimates
   const rb2bEst = interpolate(enrichedVisits, 'rb2b');
   const opensendEst = interpolate(enrichedVisits, 'opensend');
 
   // Chart data
-  const chartData = useMemo(() => buildStaircaseData(tiers), [tiers]);
+  const chartData = useMemo(() => buildStaircaseData(TIERS), []);
 
   // Active tier
   const activeTier = useMemo(() => {
-    return [...tiers].reverse().find(t => enrichedVisits >= t.min) || tiers[0];
-  }, [enrichedVisits, tiers]);
+    return [...TIERS].reverse().find(t => enrichedVisits >= t.min) || TIERS[0];
+  }, [enrichedVisits]);
 
   const handleFormSubmit = (e) => { e.preventDefault(); setModalStep(2); };
 
   return (
     <div>
-      {/* ── Toggle ── */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px' }}>
-        <div style={{ display: 'inline-flex', background: 'rgba(6,18,42,0.9)', border: '1px solid rgba(26,92,168,0.4)', borderRadius: '10px', padding: '4px', gap: '4px' }}>
-          {[
-            { label: 'Pay As You Go', value: false },
-            { label: 'Annual Commitment (save 15–20%)', value: true },
-          ].map(opt => (
-            <button
-              key={String(opt.value)}
-              onClick={() => setCommitted(opt.value)}
-              style={{
-                padding: '10px 20px', borderRadius: '7px', border: 'none', cursor: 'pointer',
-                fontWeight: 700, fontSize: '13px', transition: 'all 0.2s',
-                background: committed === opt.value ? (opt.value ? 'linear-gradient(135deg,#064e2a,#0a6e3b)' : 'rgba(26,92,168,0.5)') : 'transparent',
-                color: committed === opt.value ? '#fff' : '#4a6a9a',
-                boxShadow: committed === opt.value ? '0 2px 10px rgba(0,0,0,0.3)' : 'none',
-              }}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {committed && (
-        <div style={{ background: 'rgba(6,53,36,0.3)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '10px', padding: '14px 20px', marginBottom: '24px', textAlign: 'center' }}>
-          <p style={{ color: '#86efac', fontSize: '13px', fontWeight: 600 }}>
-            Annual commitments include a monthly minimum spend. Talk to our team to set up your commitment.
-          </p>
-        </div>
-      )}
-
       {/* ── Calculator Card ── */}
       <div style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(26,92,168,0.5)', borderRadius: '16px', padding: '36px', marginBottom: '28px', boxShadow: '0 0 60px rgba(26,92,168,0.1)' }}>
         <div style={{ height: '3px', background: 'linear-gradient(90deg, #B1001A 0%, #1a5ca8 100%)', borderRadius: '2px', marginBottom: '28px' }} />
@@ -205,13 +158,6 @@ export default function EnrichedVisitsCalculator() {
             </div>
           </div>
 
-          {committed && monthlySavings > 0 && (
-            <div style={{ marginTop: '14px', padding: '10px 14px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '8px' }}>
-              <p style={{ color: '#86efac', fontSize: '13px', fontWeight: 700 }}>
-                You save {fmtUSD(monthlySavings)}/mo ({fmtUSD(monthlySavings * 12)}/year) with an annual commitment
-              </p>
-            </div>
-          )}
         </div>
 
         {/* Tier breakdown table */}
@@ -316,7 +262,7 @@ export default function EnrichedVisitsCalculator() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(10,33,66,0.9)" />
                 <XAxis dataKey="x" tickFormatter={fmtK} tick={{ fill: '#4a6a9a', fontSize: 10 }} axisLine={{ stroke: '#0A2142' }} tickLine={false} />
-                <YAxis tickFormatter={v => `$${v.toFixed(2)}`} tick={{ fill: '#4a6a9a', fontSize: 10 }} axisLine={{ stroke: '#0A2142' }} tickLine={false} width={52} domain={[0.06, 0.20]} ticks={[0.08, 0.09, 0.10, 0.12, 0.15, 0.18]} />
+                <YAxis tickFormatter={v => `$${v.toFixed(2)}`} tick={{ fill: '#4a6a9a', fontSize: 10 }} axisLine={{ stroke: '#0A2142' }} tickLine={false} width={52} domain={[0.08, 0.20]} ticks={[0.10, 0.11, 0.14, 0.17]} />
                 <Tooltip content={<ChartTooltip />} />
                 {enrichedVisits > 0 && (
                   <ReferenceLine x={enrichedVisits} stroke="#B1001A" strokeDasharray="4 3" strokeWidth={2}
@@ -330,7 +276,7 @@ export default function EnrichedVisitsCalculator() {
 
         {/* Tier legend */}
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid rgba(10,33,66,0.8)' }}>
-          {tiers.map((t, i) => (
+          {TIERS.map((t, i) => (
             <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: activeTier.name === t.name ? `${t.color}22` : 'rgba(255,255,255,0.03)', border: `1px solid ${activeTier.name === t.name ? t.color + '66' : 'rgba(255,255,255,0.08)'}`, borderRadius: '5px', padding: '4px 10px' }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: t.color, display: 'inline-block', flexShrink: 0 }} />
               <span style={{ color: activeTier.name === t.name ? '#fff' : '#4a6a9a', fontSize: '10px', fontWeight: activeTier.name === t.name ? 700 : 400 }}>

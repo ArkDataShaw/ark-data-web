@@ -109,7 +109,7 @@ export default function BookADemo() {
               <div style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '10px', padding: '24px' }}>
                 <p style={{ color: '#fff', fontWeight: 700, fontSize: '13px', marginBottom: '14px' }}>Why teams choose Ark Data</p>
                 {[
-                  { metric: '10M+', label: 'Records enriched/mo' },
+                  { metric: '1M+', label: 'Records enriched/mo' },
                   { metric: '95%', label: 'Match accuracy' },
                   { metric: '<15min', label: 'Pixel install time' },
                   { metric: '1 week', label: 'Average go-live time' },

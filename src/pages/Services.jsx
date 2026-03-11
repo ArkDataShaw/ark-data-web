@@ -16,9 +16,9 @@ const coreServices = [
     features: [
       { title: 'Anonymous Session Capture', desc: 'Track every session with our lightweight async pixel.' },
       { title: 'Identity Resolution', desc: 'Match sessions to real companies and individuals via our identity graph.' },
-      { title: 'Firmographic Enrichment', desc: 'Industry, size, revenue, location, tech stack auto-appended.' },
+      { title: 'Firmographic Enrichment', desc: 'Industry, size, revenue, location auto-appended.' },
       { title: 'Partial Record Completion', desc: 'Fill gaps in existing CRM records automatically.' },
-      { title: 'Improved Match Rates', desc: 'Industry-leading 20–40% session resolution rates.' },
+      { title: 'Improved Match Rates', desc: 'Industry-leading up to 60% session resolution rates.' },
       { title: 'Real-Time CRM Routing', desc: 'Leads flow to your stack in under 60 seconds.' },
     ],
     useCases: ['SDR outbound prioritization', 'Form abandonment recovery', 'Re-engagement campaigns', 'Territory enrichment'],
@@ -44,7 +44,7 @@ const coreServices = [
 
 const supportingServices = [
   { name: 'Data Hygiene & Normalization', icon: '🧹', desc: 'Clean, deduplicate, and standardize your entire CRM. We validate emails, normalize company names, and fill missing fields at scale.', available: 'Growth+' },
-  { name: 'Custom Segment Creation', icon: '🎛️', desc: 'Build bespoke audience segments by industry, intent topic, tech stack, headcount, or behavioral criteria. Delivered to your CRM or ad platform.', available: 'Scale+' },
+  { name: 'Custom Segment Creation', icon: '🎛️', desc: 'Build bespoke audience segments by industry, intent topic, headcount, or behavioral criteria. Delivered to your CRM or ad platform.', available: 'Scale+' },
   { name: 'CRM Enrichment Workflows', icon: '⚙️', desc: 'Automated, recurring enrichment of your existing CRM records — keeping data fresh and complete without manual effort.', available: 'Growth+' },
   { name: 'Audience Building for Ads', icon: '🎯', desc: 'Push enriched, intent-scored audiences directly to Google Ads, Meta, LinkedIn, and programmatic DSPs for precision targeting.', available: 'Growth+' },
   { name: 'List Quality Audit', icon: '📋', desc: 'Submit your existing outreach list and we\'ll score it, flag bad records, enrich missing fields, and return a cleaned, prioritized version.', available: 'All plans' },

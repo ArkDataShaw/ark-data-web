@@ -20,7 +20,7 @@ const faqCategories = [
     cat: 'Lost Traffic',
     items: [
       { q: 'How is lost traffic recovered?', a: 'Our pixel captures anonymous sessions and cross-references against our identity graph. We resolve visitor identity using behavioral signals, IP resolution, device matching, and proprietary data partnerships, then deliver enriched leads to your CRM.' },
-      { q: 'What match rates can I expect?', a: 'Match rates vary by traffic mix and industry. Most clients see 20-40% of traffic resolved to company-level, and 10-20% resolved to individual contact level with verified email.' },
+      { q: 'What match rates can I expect?', a: 'Match rates vary by traffic mix and industry. Most clients see 40-60% of traffic resolved to company-level, and 15-30% resolved to individual contact level with verified email.' },
       { q: 'What sources count as "lost traffic"?', a: 'Website visits, form partial completions, newsletter signups that bounced, chat widget interactions, PDF downloads without form fills, and any session that ended without conversion.' },
       { q: 'Will this slow down my website?', a: 'No. Our pixel is under 2KB and fully asynchronous. It has zero impact on page load performance or Core Web Vitals.' },
     ]
@@ -49,7 +49,7 @@ const faqCategories = [
       { q: 'What is the onboarding timeline?', a: 'Most clients are fully live in under 1 week. Pixel installation takes 15 minutes. CRM integration and field mapping typically takes 2–3 hours with our team.' },
       { q: 'What support is included?', a: 'Starter includes email support. Growth includes a dedicated CSM and Slack channel. Scale and Enterprise include analyst support, priority response SLAs, and quarterly business reviews.' },
       { q: 'Do you offer a trial?', a: 'We offer a guided proof-of-concept for qualified teams. Book a call to discuss what a trial would look like for your use case.' },
-      { q: 'Can I do custom segment builds?', a: 'Yes. Custom segment construction (by intent category, firmographic filters, tech stack, or behavioral criteria) is available on Scale and Enterprise plans, and as an add-on for Growth.' },
+      { q: 'Can I do custom segment builds?', a: 'Yes. Custom segment construction (by intent category, firmographic filters, or behavioral criteria) is available on Scale and Enterprise plans, and as an add-on for Growth.' },
     ]
   },
 ];
