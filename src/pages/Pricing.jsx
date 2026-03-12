@@ -18,8 +18,8 @@ function TypewriterText({ text, delay = 0, speed = 60 }) {
 const S = { muted: '#D9ECFF' };
 
 const FEATURE_ROWS = [
-  { label: 'Person-level identification', free: '250/mo', paid: 'Unlimited (usage-based)' },
-  { label: 'Company-level identification', free: '500/mo', paid: 'Unlimited' },
+  { label: 'Person-level identification', free: '200/mo', paid: 'Unlimited (usage-based)' },
+  { label: 'Company-level identification', free: '200/mo', paid: 'Unlimited' },
   { label: 'Email addresses', free: false, paid: true },
   { label: 'LinkedIn profile URLs', free: false, paid: true },
   { label: 'Dashboard & visitor feed', free: 'View only', paid: 'Full access' },
@@ -34,11 +34,18 @@ const FEATURE_ROWS = [
 ];
 
 const COMPETITOR_TABLE = [
-  { ev: '1,000',  arkdata: '$170',    rb2b: '$249+',       opensend: '$500',       warmly: '$833+*' },
-  { ev: '5,000',  arkdata: '$790',    rb2b: '$1,024+',     opensend: '$1,000',     warmly: '$833+*' },
-  { ev: '10,000', arkdata: '$1,490',  rb2b: '$2,274+',     opensend: '$2,000',     warmly: '$833+*' },
-  { ev: '25,000', arkdata: '$3,140',  rb2b: 'Enterprise',  opensend: 'Enterprise', warmly: 'Enterprise' },
-  { ev: '50,000', arkdata: '$5,640',  rb2b: 'Enterprise',  opensend: 'Enterprise', warmly: 'Enterprise' },
+  { ev: '150',    arkdata: 'FREE',    rb2b: 'FREE',        opensend: '$500',       warmly: '$833+*' },
+  { ev: '300',    arkdata: '$37',     rb2b: '$79',         opensend: '$500',       warmly: '$833+*' },
+  { ev: '500',    arkdata: '$60',     rb2b: '$149',        opensend: '$500',       warmly: '$833+*' },
+  { ev: '1,000',  arkdata: '$117',    rb2b: '$249',        opensend: '$500',       warmly: '$833+*' },
+  { ev: '1,500',  arkdata: '$169',    rb2b: '$349',        opensend: '$500',       warmly: '$833+*' },
+  { ev: '2,000',  arkdata: '$218',    rb2b: '$349',        opensend: '$500',       warmly: '$833+*' },
+  { ev: '2,500',  arkdata: '$264',    rb2b: '$349',        opensend: '$1,000',     warmly: '$833+*' },
+  { ev: '3,000',  arkdata: '$306',    rb2b: '$499',        opensend: '$1,000',     warmly: '$833+*' },
+  { ev: '5,000',  arkdata: '$450',    rb2b: '$499',        opensend: '$2,000',     warmly: '$833+*' },
+  { ev: '7,500',  arkdata: '$582',    rb2b: '$649',        opensend: 'Enterprise', warmly: 'Enterprise' },
+  { ev: '10,000', arkdata: '$675',    rb2b: '$799',        opensend: 'Enterprise', warmly: 'Enterprise' },
+  { ev: '12,500', arkdata: '$741',    rb2b: '$849',        opensend: 'Enterprise', warmly: 'Enterprise' },
 ];
 
 function CellVal({ val }) {
@@ -92,7 +99,7 @@ export default function Pricing() {
                 'Enter your monthly website visitors.',
                 'Choose an enrichment rate (default 55%).',
                 'We calculate Enriched Visits = floor(visitors × rate).',
-                'Pricing is stacked by tier - you only pay each tier\'s rate for visits within that tier.',
+                'Your cost follows a smooth curve that drops automatically as you grow. Free through 200 enriched visits, never more than $900/mo.',
               ].map((text, i) => (
                 <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                   <span style={{ color: '#22c55e', fontWeight: 900, fontSize: '13px', flexShrink: 0 }}>{i + 1}.</span>
