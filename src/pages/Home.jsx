@@ -99,18 +99,18 @@ const painPoints = [
 
 const features = [
   { title: 'Real-Time Enrichment', desc: 'Enrich visitor sessions and CRM records with firmographic and contact data as signals emerge.' },
-  { title: 'Behavioral Event Capture', desc: 'Track 11 on-site event types — page views, clicks, form fills, scroll depth, video engagement, exit intent, and more — to understand exactly how visitors interact with your site.' },
+  { title: 'Behavioral Event Capture', desc: 'Track 11 on-site event types - page views, clicks, form fills, scroll depth, video engagement, exit intent, and more - to understand exactly how visitors interact with your site.' },
   { title: 'Deduplication + Normalization', desc: 'Every record cleaned, standardized, and deduplicated before it hits your stack. No manual data hygiene.' },
-  { title: 'CRM & Platform Delivery', desc: 'Push enriched data directly to HubSpot, Klaviyo, Go High Level, and more — or use custom webhooks to connect any platform.' },
+  { title: 'CRM & Platform Delivery', desc: 'Push enriched data directly to HubSpot, Klaviyo, Go High Level, and more - or use custom webhooks to connect any platform.' },
   { title: 'Data Quality Controls', desc: 'Validation, deduplication, bounce suppression, and normalization on every record before delivery.' },
   { title: 'Compliance & Governance', desc: 'Built with privacy in mind. Designed to support CCPA and major privacy frameworks with responsible data handling practices.' },
-  { title: 'ICP Matching', desc: 'Your ideal customer profile is configured during onboarding, then runs automatically — only qualified visitors matching your criteria get delivered.' },
+  { title: 'ICP Matching', desc: 'Your ideal customer profile is configured during onboarding, then runs automatically - only qualified visitors matching your criteria get delivered.' },
   { title: 'API + Batch Delivery', desc: 'Flexible delivery: real-time API, batch CSV export, or direct CRM/ESP integration.' },
 ];
 
 const faqs = [
   { q: 'What is high-intent data?', a: 'High-intent data identifies businesses or individuals showing active buying signals: researching solutions, visiting competitor sites, downloading guides, or engaging with in-category content. It tells you who is ready to buy now.' },
-  { q: 'How is Lost Traffic recovered?', a: 'Our pixel captures anonymous sessions and cross-references them against our identity graph — sourced from 40+ licensed data brokers and validated via credit bureau skiptrace. We resolve visitor identity, enrich with 74+ fields of contact and demographic data, and deliver actionable leads to your CRM in real time.' },
+  { q: 'How is Lost Traffic recovered?', a: 'Our pixel captures anonymous sessions and cross-references them against our identity graph - sourced from 40+ licensed data brokers and validated via credit bureau skiptrace. We resolve visitor identity, enrich with 74+ fields of contact and demographic data, and deliver actionable leads to your CRM in real time.' },
   { q: 'What platforms do you integrate with?', a: 'We integrate with Resend, Instantly, Go High Level, Klaviyo, Clay, HubSpot, and HeyReach. Plus any platform via custom HTTP webhook.' },
   { q: 'What match rates can I expect?', a: 'Match rates vary by traffic mix and industry, but most clients see 40–60% of anonymous visitors resolved to verified identities. Roughly 72% of resolved visitors also include company data.' },
   { q: 'How do you handle compliance?', a: 'Ark Data is built with privacy in mind. We follow responsible data handling practices aligned with CCPA and major privacy frameworks.' },
@@ -146,7 +146,7 @@ export default function Home() {
                     Book a Call <ArrowRight size={16} />
                   </button>
                 </Link>
-                <Link to={createPageUrl('Pricing')}>
+                <Link to={createPageUrl('Pricing') + '#pricing-calculator'}>
                   <button className="ark-btn-blue" style={{ padding: '14px 28px', fontSize: '16px' }}>View Pricing</button>
                 </Link>
               </div>
@@ -164,7 +164,7 @@ export default function Home() {
                 <div><p style={{ color: '#fff', fontWeight: 800, fontSize: '22px' }}>&lt;15min</p><p style={{ color: S.muted, fontSize: '12px' }}>Pixel install</p></div>
               </div>
             </div>
-            {/* Right side — sample enrichment output */}
+            {/* Right side - sample enrichment output */}
             <div style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 0 40px rgba(10,33,66,0.6)' }}>
               <div style={{ background: '#020D1F', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #0A2142' }}>
                 <span style={{ color: S.muted, fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Enrichment Output</span>
@@ -175,7 +175,7 @@ export default function Home() {
               <div style={{ padding: '20px' }}>
                 <div style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #0A2142' }}>
                   <p style={{ color: '#4a6a9a', fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '4px' }}>Before</p>
-                  <p style={{ color: '#4a6a9a', fontSize: '14px', fontStyle: 'italic' }}>Anonymous session from Dallas, TX — 3 pages viewed, 4m 12s on site</p>
+                  <p style={{ color: '#4a6a9a', fontSize: '14px', fontStyle: 'italic' }}>Anonymous session from Dallas, TX - 3 pages viewed, 4m 12s on site</p>
                 </div>
                 <div style={{ marginBottom: '14px' }}>
                   <p style={{ color: '#22c55e', fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '10px' }}>After Ark Data</p>
@@ -265,7 +265,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* DATA PIPELINE — scroll animation */}
+      {/* DATA PIPELINE - scroll animation */}
       <DataPipeline />
 
       {/* HOW IT WORKS */}
@@ -297,10 +297,22 @@ export default function Home() {
       <section style={{ background: '#000002', borderTop: '1px solid #0A2142', padding: '60px 0' }}>
         <div className="sc" style={{ textAlign: 'center' }}>
           <p style={{ color: S.muted, fontSize: '12px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '20px' }}>Integrates with your entire stack</p>
-          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '24px' }}>
-            {['Resend', 'Instantly', 'Go High Level', 'Klaviyo', 'Clay', 'HubSpot', 'HeyReach', 'Custom HTTP'].map(name => (
-              <span key={name} style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '6px', padding: '8px 16px', color: S.muted, fontSize: '13px', fontWeight: 600 }}>{name}</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '40px', flexWrap: 'wrap', margin: '0 auto 24px', maxWidth: '900px' }}>
+            {[
+              { name: 'HubSpot', logo: '/logos/hubspot-color.svg', h: 28, invert: false },
+              { name: 'Klaviyo', logo: '/logos/klaviyo.svg', h: 22, invert: false },
+              { name: 'HighLevel', logo: '/logos/ghl-color.png', h: 26, invert: false },
+              { name: 'Instantly', logo: '/logos/instantly.svg', h: 22, invert: false },
+              { name: 'Clay', logo: '/logos/clay-dark.png', h: 26, invert: false },
+              { name: 'Resend', logo: '/logos/resend.svg', h: 20, invert: false },
+              { name: 'HeyReach', logo: '/logos/heyreach.svg', h: 22, invert: false },
+            ].map(({ name, logo, h, invert }) => (
+              <img key={name} src={logo} alt={name} style={{ height: `${h}px`, objectFit: 'contain', opacity: 0.5, transition: 'opacity 0.2s', ...(invert ? { filter: 'brightness(0) invert(1)' } : {}) }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}
+              />
             ))}
+            <span style={{ color: '#4a6a9a', fontSize: '13px', fontWeight: 600, opacity: 0.6 }}>+ Webhooks</span>
           </div>
           <p style={{ color: '#4a6a9a', fontSize: '12px', marginBottom: '16px' }}>Plus any platform via custom webhook</p>
           <Link to={createPageUrl('Integrations')}><button className="ark-btn-blue" style={{ padding: '10px 24px', fontSize: '13px' }}>View all integrations →</button></Link>
@@ -332,7 +344,7 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            <Link to={createPageUrl('Pricing')}>
+            <Link to={createPageUrl('Pricing') + '#pricing-calculator'}>
               <button className="ark-btn-green" style={{ padding: '14px 32px', fontSize: '15px' }}>See Full Pricing Calculator →</button>
             </Link>
           </div>
@@ -379,7 +391,7 @@ export default function Home() {
             <Link to={createPageUrl('BookADemo')}>
               <button className="ark-btn-red" style={{ padding: '16px 36px', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>Book a Call <ArrowRight size={16} /></button>
             </Link>
-            <Link to={createPageUrl('Pricing')}>
+            <Link to={createPageUrl('Pricing') + '#pricing-calculator'}>
               <button className="ark-btn-green" style={{ padding: '16px 36px', fontSize: '16px' }}>Get a Package Recommendation</button>
             </Link>
           </div>

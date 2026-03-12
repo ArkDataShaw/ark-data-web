@@ -80,28 +80,28 @@ const STEPS = [
   {
     id: 'visitor',
     title: 'Anonymous Visitor',
-    description: 'Someone lands on your site. No form fill, no login — just another session about to vanish.',
+    description: 'Someone lands on your site. No form fill, no login - just another session about to vanish.',
     detail: '97% of traffic leaves without identifying themselves.',
     icon: icons.visitor,
   },
   {
     id: 'identified',
     title: 'Identity Resolved',
-    description: 'Our pixel matches the session against our identity graph. Name, company, role, verified email — resolved in under 60 seconds.',
+    description: 'Our pixel matches the session against our identity graph. Name, company, role, verified email - resolved in under 60 seconds.',
     detail: 'Up to 60% resolution rate.',
     icon: icons.identified,
   },
   {
     id: 'enriched',
     title: 'Record Enriched',
-    description: '74 fields appended: company data, contact info, demographics, and household attributes — all validated and deduplicated.',
+    description: '74 fields appended: company data, contact info, demographics, and household attributes - all validated and deduplicated.',
     detail: '74 enrichment fields per record.',
     icon: icons.enriched,
   },
   {
     id: 'matched',
     title: 'ICP Matched',
-    description: 'Your visitor is checked against your ideal customer profile — industry, title, company size, geography, household attributes. Only qualified matches move forward.',
+    description: 'Your visitor is checked against your ideal customer profile - industry, title, company size, geography, household attributes. Only qualified matches move forward.',
     detail: 'Only qualified visitors activate your campaigns.',
     icon: icons.filter,
   },
@@ -209,7 +209,7 @@ export default function DataPipeline() {
             From Anonymous to Actionable.
           </h2>
           <p style={{ color: '#D9ECFF', fontSize: '16px', maxWidth: '480px', margin: '0 auto', lineHeight: 1.65 }}>
-            Every visitor that lands on your site goes through this pipeline — automatically.
+            Every visitor that lands on your site goes through this pipeline - automatically.
           </p>
         </div>
 

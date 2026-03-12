@@ -4,8 +4,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, R
 
 // ── Rate table ───────────────────────────────────────────────────────────────
 const TIERS = [
-  { name: 'Starter',    min: 0,      max: 2500,    rate: 0.17,  color: '#22c55e' },
-  { name: 'Growth',     min: 2501,   max: 10000,   rate: 0.14,  color: '#3b82f6' },
+  { name: 'Starter',    min: 0,      max: 3000,    rate: 0.17,  color: '#22c55e' },
+  { name: 'Growth',     min: 3001,   max: 10000,   rate: 0.14,  color: '#3b82f6' },
   { name: 'Scale',      min: 10001,  max: 25000,   rate: 0.11,  color: '#8b5cf6' },
   { name: 'Business',   min: 25001,  max: 50000,   rate: 0.10,  color: '#f59e0b' },
   { name: 'Pro',        min: 50001,  max: 100000,  rate: 0.10,  color: '#ef4444' },
@@ -69,7 +69,7 @@ function fmtK(v) {
 // ── Staircase chart data ──────────────────────────────────────────────────
 function buildStaircaseData(tiers) {
   const pts = [];
-  const boundaries = [0, 2500, 10000, 25000, 50000, 100000, 250000];
+  const boundaries = [0, 3000, 10000, 25000, 50000, 100000, 250000];
   boundaries.forEach(x => {
     const tier = [...tiers].reverse().find(t => x >= t.min) || tiers[0];
     pts.push({ x, rate: tier.rate, color: tier.color });
@@ -116,7 +116,7 @@ export default function EnrichedVisitsCalculator() {
   const handleFormSubmit = (e) => { e.preventDefault(); setModalStep(2); };
 
   return (
-    <div>
+    <div id="pricing-calculator" style={{ scrollMarginTop: '80px' }}>
       {/* ── Calculator Card ── */}
       <div style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(26,92,168,0.5)', borderRadius: '16px', padding: '36px', marginBottom: '28px', boxShadow: '0 0 60px rgba(26,92,168,0.1)' }}>
         <div style={{ height: '3px', background: 'linear-gradient(90deg, #B1001A 0%, #1a5ca8 100%)', borderRadius: '2px', marginBottom: '28px' }} />
@@ -231,7 +231,7 @@ export default function EnrichedVisitsCalculator() {
         )}
         {enrichedVisits > 50000 && (
           <div style={{ background: 'rgba(10,33,66,0.3)', border: '1px solid rgba(26,92,168,0.3)', borderRadius: '10px', padding: '14px 20px', marginBottom: '20px' }}>
-            <p style={{ color: '#4a6a9a', fontSize: '13px', fontStyle: 'italic' }}>Enterprise pricing — competitors don't publish rates at this volume.</p>
+            <p style={{ color: '#4a6a9a', fontSize: '13px', fontStyle: 'italic' }}>Enterprise pricing - competitors don't publish rates at this volume.</p>
           </div>
         )}
 
@@ -239,7 +239,7 @@ export default function EnrichedVisitsCalculator() {
         <button onClick={() => setModalStep(1)} style={{ width: '100%', background: 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)', border: '1px solid rgba(34,197,94,0.45)', borderRadius: '10px', padding: '18px 32px', color: '#fff', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 24px rgba(34,197,94,0.2)', transition: 'all 0.25s' }}
           onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #0a6e3b 0%, #0d8f4c 50%, #0a6e3b 100%)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
           onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
-          Start Your Free 30-Day Trial — No Credit Card Required
+          Start Your Free 30-Day Trial - No Credit Card Required
         </button>
         <p style={{ color: '#4a6a9a', fontSize: '13px', textAlign: 'center', marginTop: '8px' }}>Cancel anytime</p>
       </div>
@@ -248,7 +248,7 @@ export default function EnrichedVisitsCalculator() {
       <div style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(26,92,168,0.4)', borderRadius: '14px', padding: '28px', marginBottom: '28px' }}>
         <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '17px', marginBottom: '6px' }}>Rate per Enriched Visit by Volume</h2>
         <p style={{ color: '#4a6a9a', fontSize: '12px', marginBottom: '20px', lineHeight: 1.6 }}>
-          Your rate drops automatically as your volume increases. Each tier only applies to visits within that range — you never lose your rate on earlier visits.
+          Your rate drops automatically as your volume increases. Each tier only applies to visits within that range - you never lose your rate on earlier visits.
         </p>
         <div style={{ overflowX: 'auto' }}>
           <div style={{ minWidth: '480px' }}>

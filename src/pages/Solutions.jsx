@@ -14,7 +14,7 @@ const bySize = [
 
 const byRole = [
   { role: 'Growth Marketing', icon: '📈', desc: 'Improve retargeting audiences, reduce CPL, and build higher-converting segments using real intent signals.', tactics: ['Build lookalike audiences from high-intent visitors', 'Reduce ad waste with firmographic filters', 'Trigger nurture sequences from intent signals'] },
-  { role: 'Demand Gen', icon: '🎯', desc: 'Fill pipeline with buyers who are in-market now — not just anyone who ever visited your site.', tactics: ['Identify in-market accounts by category', 'Enrich form fills in real time', 'Score MQL → SQL handoffs accurately'] },
+  { role: 'Demand Gen', icon: '🎯', desc: 'Fill pipeline with buyers who are in-market now - not just anyone who ever visited your site.', tactics: ['Identify in-market accounts by category', 'Enrich form fills in real time', 'Score MQL → SQL handoffs accurately'] },
   { role: 'RevOps', icon: '⚙️', desc: 'Clean routing, consistent enrichment, and audit trails for every record in your CRM.', tactics: ['Automate lead routing rules', 'Normalize and deduplicate CRM records', 'Build unified data pipeline from traffic to close'] },
   { role: 'SDR / BDR', icon: '📞', desc: 'Prioritize outreach by intent score so reps spend time on accounts most likely to respond.', tactics: ['Get daily digest of high-intent accounts', 'Real-time alerts on target account visits', 'Trigger sequences from site activity signals'] },
   { role: 'Sales Ops', icon: '🗂️', desc: 'Improve forecast accuracy and territory planning with enriched, consistently scored data.', tactics: ['Enrich and score all inbound leads', 'Standardize data entry with auto-fill', 'Build territory segmentation with firmographics'] },

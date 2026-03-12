@@ -13,7 +13,7 @@ const STEPS = [
   {
     id: 'visits-input',
     title: '1. Enter Your Monthly Website Visits',
-    description: "Start by entering your total monthly website traffic. This is the raw number of visits your site receives each month — not unique visitors. Don't worry about being exact; a rough estimate works perfectly.",
+    description: "Start by entering your total monthly website traffic. This is the raw number of visits your site receives each month - not unique visitors. Don't worry about being exact; a rough estimate works perfectly.",
     target: '[data-tour="visits-input"]',
     position: 'bottom',
     tip: '💡 Try entering 20,000 to see a typical mid-market estimate.',
@@ -29,7 +29,7 @@ const STEPS = [
   {
     id: 'total-cost',
     title: '3. Your Estimated Monthly Cost',
-    description: "This is your bottom line — the estimated monthly cost after your free trial ends. It updates in real time as you adjust your inputs. The average cost per enriched visit also shows you your effective rate.",
+    description: "This is your bottom line - the estimated monthly cost after your free trial ends. It updates in real time as you adjust your inputs. The average cost per enriched visit also shows you your effective rate.",
     target: '[data-tour="cost-row"]',
     position: 'top',
     tip: '💡 The cost drops significantly as your volume increases due to stacked tier pricing.',
@@ -37,7 +37,7 @@ const STEPS = [
   {
     id: 'cpe-chart',
     title: '4. Cost Per Enriched Visit Chart',
-    description: "This chart shows how your effective cost per enriched visit decreases as your monthly volume grows. The red vertical line marks your current position on the curve — the further right, the better your rate.",
+    description: "This chart shows how your effective cost per enriched visit decreases as your monthly volume grows. The red vertical line marks your current position on the curve - the further right, the better your rate.",
     target: '[data-tour="cpe-chart"]',
     position: 'top',
     tip: '💡 Volume discounts kick in at 5k, 15k, 30k, 50k, 100k, and 250k enriched visits.',
@@ -53,7 +53,7 @@ const STEPS = [
   {
     id: 'tier-breakdown',
     title: '6. Stacked Tier Breakdown',
-    description: "This table shows exactly how pricing is calculated. It\'s stacked — just like income tax brackets. You only pay the higher tier rate for visits within that tier, not on your entire volume. Active tiers are highlighted.",
+    description: "This table shows exactly how pricing is calculated. It\'s stacked - just like income tax brackets. You only pay the higher tier rate for visits within that tier, not on your entire volume. Active tiers are highlighted.",
     target: '[data-tour="tier-breakdown"]',
     position: 'top',
     tip: '💡 Example: at 20,000 enriched visits you pay $0.17 on the first 5k, $0.15 on the next 10k, and $0.13 on the remaining 5k.',
@@ -61,14 +61,14 @@ const STEPS = [
   {
     id: 'example-box',
     title: '7. Your Numbers at a Glance',
-    description: "This summary box reflects your current inputs — visits, enrichment rate, enriched visits, average cost per visit, and total monthly cost. It updates live as you type.",
+    description: "This summary box reflects your current inputs - visits, enrichment rate, enriched visits, average cost per visit, and total monthly cost. It updates live as you type.",
     target: '[data-tour="example-box"]',
     position: 'top',
     tip: '💡 Screenshot or bookmark this page after entering your numbers for easy reference.',
   },
   {
     id: 'trial-cta',
-    title: '8. Start Free — No Credit Card',
+    title: '8. Start Free - No Credit Card',
     description: "Ready to see the data in action? Click the button below the calculator to start your free 30-day trial. You\'ll be asked for basic contact info and then redirected to the Ark Data platform.",
     target: '[data-tour="trial-cta"]',
     position: 'top',

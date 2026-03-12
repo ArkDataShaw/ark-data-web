@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import EnrichedVisitsCalculator from '../components/pricing/EnrichedVisitsCalculator';
 import { Check, X as XIcon } from 'lucide-react';
 
@@ -33,11 +34,11 @@ const FEATURE_ROWS = [
 ];
 
 const COMPETITOR_TABLE = [
-  { ev: '1,000',  arkdata: '$180',    rb2b: '$249+',       opensend: '$500',       warmly: '$833+*' },
-  { ev: '5,000',  arkdata: '$825',    rb2b: '$1,024+',     opensend: '$1,000',     warmly: '$833+*' },
-  { ev: '10,000', arkdata: '$1,575',  rb2b: '$2,274+',     opensend: '$2,000',     warmly: '$833+*' },
-  { ev: '25,000', arkdata: '$3,375',  rb2b: 'Enterprise',  opensend: 'Enterprise', warmly: 'Enterprise' },
-  { ev: '50,000', arkdata: '$5,875',  rb2b: 'Enterprise',  opensend: 'Enterprise', warmly: 'Enterprise' },
+  { ev: '1,000',  arkdata: '$170',    rb2b: '$249+',       opensend: '$500',       warmly: '$833+*' },
+  { ev: '5,000',  arkdata: '$790',    rb2b: '$1,024+',     opensend: '$1,000',     warmly: '$833+*' },
+  { ev: '10,000', arkdata: '$1,490',  rb2b: '$2,274+',     opensend: '$2,000',     warmly: '$833+*' },
+  { ev: '25,000', arkdata: '$3,140',  rb2b: 'Enterprise',  opensend: 'Enterprise', warmly: 'Enterprise' },
+  { ev: '50,000', arkdata: '$5,640',  rb2b: 'Enterprise',  opensend: 'Enterprise', warmly: 'Enterprise' },
 ];
 
 function CellVal({ val }) {
@@ -47,6 +48,16 @@ function CellVal({ val }) {
 }
 
 export default function Pricing() {
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (hash === '#pricing-calculator') {
+      setTimeout(() => {
+        const el = document.getElementById('pricing-calculator');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }, [hash]);
+
   return (
     <div style={{ background: '#000002', minHeight: '100vh', color: '#fff' }}>
 
@@ -71,7 +82,7 @@ export default function Pricing() {
             </span>
           </h1>
           <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, marginBottom: '32px', maxWidth: '560px', margin: '0 auto 32px' }}>
-            No plans to choose. No seats. No hidden fees. Pay only for what you identify — and your rate drops automatically as your volume grows.
+            No plans to choose. No seats. No hidden fees. Pay only for what you identify - and your rate drops automatically as your volume grows.
           </p>
 
           <div style={{ background: 'rgba(10,33,66,0.5)', border: '1px solid rgba(26,92,168,0.3)', borderRadius: '12px', padding: '20px 24px', textAlign: 'left' }}>
@@ -81,7 +92,7 @@ export default function Pricing() {
                 'Enter your monthly website visitors.',
                 'Choose an enrichment rate (default 55%).',
                 'We calculate Enriched Visits = floor(visitors × rate).',
-                'Pricing is stacked by tier — you only pay each tier\'s rate for visits within that tier.',
+                'Pricing is stacked by tier - you only pay each tier\'s rate for visits within that tier.',
               ].map((text, i) => (
                 <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                   <span style={{ color: '#22c55e', fontWeight: 900, fontSize: '13px', flexShrink: 0 }}>{i + 1}.</span>
@@ -204,7 +215,7 @@ export default function Pricing() {
           <div style={{ background: 'linear-gradient(145deg, #06162A 0%, #040E1A 100%)', border: '1px solid rgba(26,92,168,0.4)', borderRadius: '16px', padding: '56px 40px' }}>
             <h2 style={{ color: '#fff', fontWeight: 900, fontSize: 'clamp(26px, 4vw, 40px)', letterSpacing: '-1px', marginBottom: '12px' }}>Need Custom Terms?</h2>
             <p style={{ color: '#D9ECFF', fontSize: '16px', lineHeight: 1.7, marginBottom: '32px', maxWidth: '480px', margin: '0 auto 32px' }}>
-              SLAs, data residency, custom integrations, dedicated support — we'll build a plan around your requirements.
+              SLAs, data residency, custom integrations, dedicated support - we'll build a plan around your requirements.
             </p>
             <a href="https://app.arkdata.io" target="_blank" rel="noopener noreferrer">
               <button style={{ background: 'linear-gradient(135deg, #C8001E 0%, #8B0015 100%)', border: 'none', borderRadius: '8px', padding: '16px 40px', color: '#fff', fontSize: '15px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 20px rgba(177,0,26,0.4)' }}>

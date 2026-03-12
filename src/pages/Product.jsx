@@ -71,7 +71,7 @@ export default function Product() {
             Command-Center Grade<br />Data Infrastructure.
           </h1>
           <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, marginBottom: '32px' }}>
-            Two powerful engines — Lost Traffic Recovery and High Intent Data — unified in a single platform built for revenue operators.
+            Two powerful engines - Lost Traffic Recovery and High Intent Data - unified in a single platform built for revenue operators.
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to={createPageUrl('BookADemo')}>
@@ -79,7 +79,7 @@ export default function Product() {
                 Book a Call <ArrowRight size={15} />
               </button>
             </Link>
-            <Link to={createPageUrl('Pricing')}>
+            <Link to={createPageUrl('Pricing') + '#pricing-calculator'}>
               <button className="ark-btn-blue" style={{ padding: '13px 28px', fontSize: '15px' }}>View Pricing</button>
             </Link>
           </div>
@@ -110,7 +110,7 @@ export default function Product() {
             <div style={{ marginBottom: '72px' }}>
               <div style={{ textAlign: 'center', marginBottom: '48px' }}>
                 <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '12px' }}>Everything You Need to Activate Revenue.</h2>
-                <p style={{ color: S.muted, fontSize: '16px', maxWidth: '520px', margin: '0 auto' }}>From anonymous visitor to enriched, identified, and delivered — all in one platform.</p>
+                <p style={{ color: S.muted, fontSize: '16px', maxWidth: '520px', margin: '0 auto' }}>From anonymous visitor to enriched, identified, and delivered - all in one platform.</p>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
                 {features.map((f, i) => {
@@ -161,12 +161,12 @@ export default function Product() {
                 <span style={{ color: S.muted, fontSize: '12px', fontWeight: 600 }}>Lost Traffic Recovery</span>
               </div>
               <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>Turn Anonymous Traffic Into Pipeline.</h2>
-              <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7 }}>Up to 97% of website visitors leave without identifying themselves. Ark Data's pixel captures these sessions and resolves them to real people — with verified contact data and company intelligence — before they go dark.</p>
+              <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7 }}>Up to 97% of website visitors leave without identifying themselves. Ark Data's pixel captures these sessions and resolves them to real people - with verified contact data and company intelligence - before they go dark.</p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '40px' }}>
               {[
-                { title: 'Person-Level Identity', desc: 'We resolve sessions to individual people — not just companies. Get name, email, phone, role, company, and 74+ enrichment fields.' },
-                { title: 'Behavioral Event Capture', desc: '11 event types tracked — page views, clicks, form submissions, scroll depth, file downloads, video engagement, copy events, idle time, and exit intent.' },
+                { title: 'Person-Level Identity', desc: 'We resolve sessions to individual people - not just companies. Get name, email, phone, role, company, and 74+ enrichment fields.' },
+                { title: 'Behavioral Event Capture', desc: '11 event types tracked - page views, clicks, form submissions, scroll depth, file downloads, video engagement, copy events, idle time, and exit intent.' },
                 { title: 'Real-Time Routing', desc: 'Identified visitors are pushed to your CRM, ESP, or outbound sequence. Sync to Meta retargeting or trigger CRM workflows automatically.' },
                 { title: 'ICP Matching', desc: 'Define your ideal customer profile during onboarding. Matched visitors are automatically flagged and routed to the right workflows.' },
               ].map((item, i) => (
@@ -198,12 +198,12 @@ export default function Product() {
                 <span style={{ color: S.mutedGreen, fontSize: '12px', fontWeight: 600 }}>High Intent Data</span>
               </div>
               <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>Reach In-Market Buyers Before Your Competitors.</h2>
-              <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7 }}>High Intent Data is a separate add-on product powered by IntentCore. It identifies individuals actively researching your solution category and delivers them with verified contact data — ready for outbound sequences. Pair it with Lost Traffic Recovery for full-funnel coverage.</p>
+              <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7 }}>High Intent Data is a separate add-on product powered by IntentCore. It identifies individuals actively researching your solution category and delivers them with verified contact data - ready for outbound sequences. Pair it with Lost Traffic Recovery for full-funnel coverage.</p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '40px' }}>
               {[
                 { title: 'Off-Site Research Signals', desc: 'Track research activity across content sites, review platforms, comparison tools, and industry publications.' },
-                { title: 'Individual-Level Data', desc: 'Intent matched to individuals — not just accounts. Know exactly who on the buying committee is active.' },
+                { title: 'Individual-Level Data', desc: 'Intent matched to individuals - not just accounts. Know exactly who on the buying committee is active.' },
                 { title: 'Topic-Based Audiences', desc: 'Build audiences around specific topics and solution categories relevant to your business.' },
                 { title: 'Separate Add-On', desc: 'High Intent Data is a standalone product that integrates with your Ark Data enrichment pipeline for maximum coverage.' },
               ].map((item, i) => (
@@ -219,7 +219,7 @@ export default function Product() {
         {activeTab === 'Enrichment Engine' && (
           <div style={{ maxWidth: '820px', margin: '0 auto' }}>
             <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>74+ Fields. Six Categories. Credit Bureau Validated.</h2>
-            <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>Every resolved visitor enriched with data from 40+ licensed data brokers, validated via credit bureau skiptrace. Identity, demographics, contact, professional, company, and social data — all in one record.</p>
+            <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>Every resolved visitor enriched with data from 40+ licensed data brokers, validated via credit bureau skiptrace. Identity, demographics, contact, professional, company, and social data - all in one record.</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
               {[
                 { category: 'Identity & Demographics', fields: ['Full name & exact age', 'Gender & marital status', 'Home address & region', 'Homeowner status', 'Net worth & income range', 'Credit rating band'] },
@@ -246,7 +246,7 @@ export default function Product() {
         {activeTab === 'Delivery & Integrations' && (
           <div style={{ maxWidth: '820px', margin: '0 auto' }}>
             <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>Deliver Data Where Your Team Works.</h2>
-            <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>Enriched visitor data delivered directly to your CRM, ESP, outbound tools, or custom endpoints. Real-time or batch — you choose.</p>
+            <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>Enriched visitor data delivered directly to your CRM, ESP, outbound tools, or custom endpoints. Real-time or batch - you choose.</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '40px' }}>
               {[
                 { name: 'HubSpot', type: 'CRM' },
@@ -283,7 +283,7 @@ export default function Product() {
                 Book a Call <ArrowRight size={15} />
               </button>
             </Link>
-            <Link to={createPageUrl('Pricing')}>
+            <Link to={createPageUrl('Pricing') + '#pricing-calculator'}>
               <button className="ark-btn-blue" style={{ padding: '14px 32px', fontSize: '15px' }}>View Pricing</button>
             </Link>
           </div>

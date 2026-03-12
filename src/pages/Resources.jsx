@@ -50,7 +50,7 @@ const resources = [
   {
     type: 'Guide',
     title: 'GDPR & CCPA Compliance for Intent Data: What Revenue Teams Need to Know',
-    excerpt: 'A practical compliance guide covering what you can and can\'t do with intent data under major privacy frameworks — written for operators, not lawyers.',
+    excerpt: 'A practical compliance guide covering what you can and can\'t do with intent data under major privacy frameworks - written for operators, not lawyers.',
     readTime: '10 min read',
     tag: 'Compliance',
     tagColor: '#3d0a0a',
@@ -187,7 +187,7 @@ export default function Resources() {
         <div style={{ marginTop: '64px', background: '#042016', border: '1px solid #063524', borderRadius: '12px', padding: '48px', textAlign: 'center' }}>
           <p style={{ color: '#DFFFEF', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '12px' }}>Stay Ahead</p>
           <h2 style={{ color: '#fff', fontWeight: 900, fontSize: '26px', letterSpacing: '-0.8px', marginBottom: '10px' }}>Intelligence in Your Inbox</h2>
-          <p style={{ color: '#DFFFEF', fontSize: '14px', marginBottom: '28px', maxWidth: '400px', margin: '0 auto 28px' }}>Intent data insights, enrichment playbooks, RevOps strategies — delivered weekly.</p>
+          <p style={{ color: '#DFFFEF', fontSize: '14px', marginBottom: '28px', maxWidth: '400px', margin: '0 auto 28px' }}>Intent data insights, enrichment playbooks, RevOps strategies - delivered weekly.</p>
           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', maxWidth: '440px', margin: '0 auto' }}>
             <input className="ark-input" placeholder="your@email.com" style={{ flex: 1, minWidth: '200px' }} />
             <button className="ark-btn-red" style={{ padding: '12px 24px', fontSize: '14px', whiteSpace: 'nowrap' }}>Subscribe</button>

@@ -83,7 +83,7 @@ const caseStudies = [
     outcomes: [
       'Compliant identification of 2,800+ enterprise visitors in Q1',
       '14 enterprise deals sourced from identified traffic within 90 days',
-      'Full compliance posture maintained — no regulatory friction',
+      'Full compliance posture maintained - no regulatory friction',
       'Average deal size of identified leads: 2.4× higher than inbound',
     ],
     metrics: [
@@ -225,7 +225,7 @@ export default function CaseStudies() {
                 Book a Call <ArrowRight size={16} />
               </button>
             </Link>
-            <Link to={createPageUrl('Pricing')}>
+            <Link to={createPageUrl('Pricing') + '#pricing-calculator'}>
               <button className="ark-btn-blue" style={{ padding: '14px 32px', fontSize: '15px' }}>View Pricing</button>
             </Link>
           </div>

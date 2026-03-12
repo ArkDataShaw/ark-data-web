@@ -10,14 +10,14 @@ const coreServices = [
     id: 'lost-traffic',
     name: 'Lost Traffic Recovery',
     tagline: 'Recover anonymous visitors before they disappear.',
-    desc: 'Up to 97% of your website visitors leave without identifying themselves. Ark Data\'s pixel captures every session across 11 event types, resolves identity using our identity graph sourced from 40+ licensed data brokers, and enriches each visitor with 74+ fields — spanning contact, demographic, professional, company, and social data.',
+    desc: 'Up to 97% of your website visitors leave without identifying themselves. Ark Data\'s pixel captures every session across 11 event types, resolves identity using our identity graph sourced from 40+ licensed data brokers, and enriches each visitor with 74+ fields - spanning contact, demographic, professional, company, and social data.',
     color: 'blue',
     icon: '🔍',
     features: [
-      { title: 'Anonymous Session Capture', desc: 'Track every session with our lightweight async pixel across 11 event types — page views, clicks, form submissions, scroll depth, and more.' },
+      { title: 'Anonymous Session Capture', desc: 'Track every session with our lightweight async pixel across 11 event types - page views, clicks, form submissions, scroll depth, and more.' },
       { title: 'Identity Resolution', desc: 'Match sessions to real individuals and companies via our identity graph, validated through credit bureau skiptrace.' },
       { title: '74+ Field Enrichment', desc: 'Identity, demographics, contact, professional, company, and social data auto-appended to every resolved visitor.' },
-      { title: 'ICP Matching', desc: 'We configure your ideal customer profile during onboarding — then it runs automatically on every new visitor.' },
+      { title: 'ICP Matching', desc: 'We configure your ideal customer profile during onboarding - then it runs automatically on every new visitor.' },
       { title: '40–60% Resolution Rate', desc: 'Resolve 40–60% of anonymous sessions to real identities. ~72% of resolved visitors also include company data.' },
       { title: 'Real-Time CRM Routing', desc: 'Leads flow to your stack via Resend, Instantly, Go High Level, Klaviyo, Clay, HubSpot, HeyReach, or custom webhook.' },
     ],
@@ -26,7 +26,7 @@ const coreServices = [
   {
     id: 'high-intent',
     name: 'High Intent Data',
-    tagline: 'Find buyers actively in-market — before your competition.',
+    tagline: 'Find buyers actively in-market - before your competition.',
     desc: 'High Intent Data is a separate product that surfaces individuals and companies showing active buying signals. Layer intent data on top of your visitor intelligence to prioritize outreach toward prospects already researching your category.',
     color: 'green',
     icon: '⚡',
@@ -44,11 +44,11 @@ const coreServices = [
 
 const supportingServices = [
   { name: 'List Quality Audit', icon: '📋', desc: 'Submit your existing outreach list and we\'ll flag bad records, enrich missing fields, and return a cleaned version ready for outreach.', available: 'All plans' },
-  { name: 'ICP Segment Configuration', icon: '🎛️', desc: 'We define your ideal customer profile during onboarding — by industry, title, geography, company size, and more. Once set, it runs automatically on every new visitor.', available: 'All plans' },
-  { name: 'CRM Enrichment', icon: '⚙️', desc: 'Enrich your existing CRM records with 74+ fields from our identity graph — filling gaps in contact, company, and demographic data.', available: 'Growth+' },
+  { name: 'ICP Segment Configuration', icon: '🎛️', desc: 'We define your ideal customer profile during onboarding - by industry, title, geography, company size, and more. Once set, it runs automatically on every new visitor.', available: 'All plans' },
+  { name: 'CRM Enrichment', icon: '⚙️', desc: 'Enrich your existing CRM records with 74+ fields from our identity graph - filling gaps in contact, company, and demographic data.', available: 'Growth+' },
   { name: 'Audience Building for Ads', icon: '🎯', desc: 'Push enriched audiences to Meta for ad targeting, or route to any platform via Go High Level, Klaviyo, Clay, HubSpot, or custom webhook.', available: 'Growth+' },
-  { name: 'Intent Category Research', icon: '🔬', desc: 'We identify the right intent categories for your ICP — so you know which buying signals matter most for your pipeline.', available: 'Growth+' },
-  { name: 'Custom Integration Setup', icon: '🔗', desc: 'We connect your enriched data to Resend, Instantly, Go High Level, Klaviyo, Clay, HubSpot, HeyReach — plus any platform via custom webhook.', available: 'All plans' },
+  { name: 'Intent Category Research', icon: '🔬', desc: 'We identify the right intent categories for your ICP - so you know which buying signals matter most for your pipeline.', available: 'Growth+' },
+  { name: 'Custom Integration Setup', icon: '🔗', desc: 'We connect your enriched data to Resend, Instantly, Go High Level, Klaviyo, Clay, HubSpot, HeyReach - plus any platform via custom webhook.', available: 'All plans' },
 ];
 
 export default function Services() {

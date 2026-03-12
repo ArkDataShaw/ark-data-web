@@ -16,7 +16,7 @@ export default function About() {
             Built for Operators.<br />Obsessed with Data Quality.
           </h1>
           <p style={{ color: S.muted, fontSize: '18px', lineHeight: 1.75, maxWidth: '620px' }}>
-            Ark Data was built by a revenue operator who was tired of data that was outdated, incomplete, and unactionable. I built the platform I always wanted — and now I'm making it available to teams like yours.
+            Ark Data was built by a revenue operator who was tired of data that was outdated, incomplete, and unactionable. I built the platform I always wanted - and now I'm making it available to teams like yours.
           </p>
         </div>
       </section>
@@ -32,7 +32,7 @@ export default function About() {
                 We believe revenue teams deserve data that actually works: enriched with 74-column depth and delivered directly to their stack. No more guesswork. No more manual research. No more wasted pipeline.
               </p>
               <p style={{ color: S.muted, fontSize: '15px', lineHeight: 1.75 }}>
-                Ark Data exists to close the gap between anonymous traffic and qualified opportunity — at scale, with compliance, and without friction.
+                Ark Data exists to close the gap between anonymous traffic and qualified opportunity - at scale, with compliance, and without friction.
               </p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -64,7 +64,7 @@ export default function About() {
               { icon: '🎯', title: 'Accuracy', desc: 'Every record is validated, deduplicated, and normalized. We never sacrifice quality for volume.' },
               { icon: '🔒', title: 'Compliance', desc: 'Privacy is not an afterthought. Ark Data is built with privacy in mind and designed to respect user data at every step.' },
               { icon: '⚡', title: 'Speed', desc: 'From pixel install to live enrichment in under an hour. From contract to full deployment in under a week.' },
-              { icon: '🤝', title: 'Partnership', desc: 'I don\'t just deliver data. I work directly with you to optimize for outcomes — not just deliverables.' },
+              { icon: '🤝', title: 'Partnership', desc: 'I don\'t just deliver data. I work directly with you to optimize for outcomes - not just deliverables.' },
             ].map((v, i) => (
               <div key={i} style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '10px', padding: '32px' }}>
                 <div style={{ fontSize: '28px', marginBottom: '16px' }}>{v.icon}</div>

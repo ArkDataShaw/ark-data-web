@@ -47,7 +47,7 @@ export default function Contact() {
         <div className="sc" style={{ textAlign: 'center', maxWidth: '600px' }}>
           <p style={{ color: S.red, fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>Contact Us</p>
           <h1 style={{ fontSize: 'clamp(32px, 4vw, 50px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px' }}>Let's Talk Data.</h1>
-          <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7 }}>Questions about the platform, pricing, or your specific use case — we're here to help.</p>
+          <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7 }}>Questions about the platform, pricing, or your specific use case - we're here to help.</p>
         </div>
       </section>
 

@@ -82,7 +82,7 @@ export default function BookADemo() {
           </div>
           <h1 style={{ fontSize: 'clamp(28px, 4vw, 46px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '14px' }}>Book a Call with Ark Data</h1>
           <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7 }}>
-            Tell us about your use case and we'll walk you through how Ark Data fits your stack — live, with real data.
+            Tell us about your use case and we'll walk you through how Ark Data fits your stack - live, with real data.
           </p>
         </div>
       </section>

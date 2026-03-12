@@ -68,7 +68,7 @@ export default function Apply() {
           <p style={{ color: '#B1001A', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>Apply</p>
           <h1 style={{ fontSize: 'clamp(32px, 4vw, 50px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px' }}>Partner With Ark Data</h1>
           <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, maxWidth: '520px', margin: '0 auto' }}>
-            Whether you're a reseller, data provider, technology partner, or looking to join our team — we'd love to hear from you.
+            Whether you're a reseller, data provider, technology partner, or looking to join our team - we'd love to hear from you.
           </p>
         </div>
       </section>
