@@ -23,10 +23,10 @@ const FEATURE_ROWS = [
   { label: 'Email addresses', free: false, paid: true },
   { label: 'LinkedIn profile URLs', free: false, paid: true },
   { label: 'Dashboard & visitor feed', free: 'View only', paid: 'Full access' },
-  { label: 'Slack integration', free: false, paid: true },
   { label: 'HubSpot integration', free: false, paid: true },
-  { label: 'Salesforce integration', free: false, paid: true },
-  { label: 'Clay, Zapier, webhook', free: false, paid: true },
+  { label: 'GHL integration', free: false, paid: true },
+  { label: 'Outreach tools (Instantly, Klaviyo, HeyReach)', free: false, paid: true },
+  { label: 'Clay, webhooks, custom HTTP', free: false, paid: true },
   { label: 'CSV export', free: false, paid: true },
   { label: 'Hot Pages & Hot Leads', free: false, paid: true },
   { label: 'Reporting & analytics', free: false, paid: true },
@@ -34,18 +34,18 @@ const FEATURE_ROWS = [
 ];
 
 const COMPETITOR_TABLE = [
-  { ev: '150',    arkdata: 'FREE',    rb2b: 'FREE',        opensend: '$500',       warmly: '$833+*' },
-  { ev: '300',    arkdata: '$37',     rb2b: '$79',         opensend: '$500',       warmly: '$833+*' },
-  { ev: '500',    arkdata: '$60',     rb2b: '$149',        opensend: '$500',       warmly: '$833+*' },
-  { ev: '1,000',  arkdata: '$117',    rb2b: '$249',        opensend: '$500',       warmly: '$833+*' },
-  { ev: '1,500',  arkdata: '$169',    rb2b: '$349',        opensend: '$500',       warmly: '$833+*' },
-  { ev: '2,000',  arkdata: '$218',    rb2b: '$349',        opensend: '$500',       warmly: '$833+*' },
-  { ev: '2,500',  arkdata: '$264',    rb2b: '$349',        opensend: '$1,000',     warmly: '$833+*' },
-  { ev: '3,000',  arkdata: '$306',    rb2b: '$499',        opensend: '$1,000',     warmly: '$833+*' },
-  { ev: '5,000',  arkdata: '$450',    rb2b: '$499',        opensend: '$2,000',     warmly: '$833+*' },
-  { ev: '7,500',  arkdata: '$582',    rb2b: '$649',        opensend: 'Enterprise', warmly: 'Enterprise' },
-  { ev: '10,000', arkdata: '$675',    rb2b: '$799',        opensend: 'Enterprise', warmly: 'Enterprise' },
-  { ev: '12,500', arkdata: '$741',    rb2b: '$849',        opensend: 'Enterprise', warmly: 'Enterprise' },
+  { ev: '150',    arkdata: 'FREE',    rb2b: 'FREE',        opensend: '$500' },
+  { ev: '300',    arkdata: '$37',     rb2b: '$79',         opensend: '$500' },
+  { ev: '500',    arkdata: '$60',     rb2b: '$149',        opensend: '$500' },
+  { ev: '1,000',  arkdata: '$117',    rb2b: '$249',        opensend: '$500' },
+  { ev: '1,500',  arkdata: '$169',    rb2b: '$349',        opensend: '$500' },
+  { ev: '2,000',  arkdata: '$218',    rb2b: '$349',        opensend: '$500' },
+  { ev: '2,500',  arkdata: '$264',    rb2b: '$349',        opensend: '$1,000' },
+  { ev: '3,000',  arkdata: '$306',    rb2b: '$499',        opensend: '$1,000' },
+  { ev: '5,000',  arkdata: '$450',    rb2b: '$499',        opensend: '$2,000' },
+  { ev: '7,500',  arkdata: '$582',    rb2b: '$649',        opensend: 'Enterprise' },
+  { ev: '10,000', arkdata: '$675',    rb2b: '$799',        opensend: 'Enterprise' },
+  { ev: '12,500', arkdata: '$741',    rb2b: '$849',        opensend: 'Enterprise' },
 ];
 
 function CellVal({ val }) {
@@ -99,7 +99,7 @@ export default function Pricing() {
                 'Enter your monthly website visitors.',
                 'Choose an enrichment rate (default 55%).',
                 'We calculate Enriched Visits = floor(visitors × rate).',
-                'Your cost follows a smooth curve that drops automatically as you grow. Free through 200 enriched visits, never more than $900/mo.',
+                'Your cost follows a smooth curve that drops automatically as you grow. Free through 200 enriched visits.',
               ].map((text, i) => (
                 <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                   <span style={{ color: '#22c55e', fontWeight: 900, fontSize: '13px', flexShrink: 0 }}>{i + 1}.</span>
@@ -191,7 +191,7 @@ export default function Pricing() {
               <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '520px' }}>
                 <thead>
                   <tr style={{ background: 'rgba(10,33,66,0.5)' }}>
-                    {['Monthly Enrichments', 'ArkData', 'RB2B', 'OpenSend', 'Warmly'].map((h, i) => (
+                    {['Monthly Enrichments', 'ArkData', 'RB2B', 'OpenSend'].map((h, i) => (
                       <th key={h} style={{ padding: '14px 16px', textAlign: i === 0 ? 'left' : 'center', color: i === 1 ? '#86efac' : '#7eb8ff', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{h}</th>
                     ))}
                   </tr>
@@ -203,7 +203,6 @@ export default function Pricing() {
                       <td style={{ padding: '13px 16px', textAlign: 'center', color: '#22c55e', fontWeight: 800, fontSize: '14px', fontFamily: 'monospace' }}>{row.arkdata}</td>
                       <td style={{ padding: '13px 16px', textAlign: 'center', color: row.rb2b === 'Enterprise' ? '#4a6a9a' : '#D9ECFF', fontSize: '13px', fontFamily: 'monospace' }}>{row.rb2b}</td>
                       <td style={{ padding: '13px 16px', textAlign: 'center', color: row.opensend === 'Enterprise' ? '#4a6a9a' : '#D9ECFF', fontSize: '13px', fontFamily: 'monospace' }}>{row.opensend}</td>
-                      <td style={{ padding: '13px 16px', textAlign: 'center', color: row.warmly === 'Enterprise' ? '#4a6a9a' : '#D9ECFF', fontSize: '13px', fontFamily: 'monospace' }}>{row.warmly}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -211,7 +210,7 @@ export default function Pricing() {
             </div>
           </div>
           <p style={{ color: '#4a6a9a', fontSize: '12px', textAlign: 'center' }}>
-            *Warmly requires $10,000/yr minimum for person-level identification. Competitor pricing estimated from publicly available information as of March 2026. RB2B and OpenSend prices include base plan cost plus overage charges at published rates.
+            Competitor pricing from publicly available information as of March 2026. RB2B prices include base plan cost plus overage charges at published rates. OpenSend prices reflect published tier pricing.
           </p>
         </div>
       </section>

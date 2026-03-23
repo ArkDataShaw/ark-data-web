@@ -52,7 +52,7 @@ import Apply from './pages/Apply';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import BookADemo from './pages/BookADemo';
-import CaseStudies from './pages/CaseStudies';
+
 import Contact from './pages/Contact';
 import Cookies from './pages/Cookies';
 import FAQ from './pages/FAQ';
@@ -77,7 +77,7 @@ export const PAGES = {
     "Blog": Blog,
     "BlogPost": BlogPost,
     "BookADemo": BookADemo,
-    "CaseStudies": CaseStudies,
+
     "Contact": Contact,
     "Cookies": Cookies,
     "FAQ": FAQ,

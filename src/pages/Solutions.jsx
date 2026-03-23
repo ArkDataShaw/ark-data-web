@@ -60,7 +60,7 @@ export default function Solutions() {
         {activeTab === 'size' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
             {bySize.map((s, i) => (
-              <div key={i} style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '10px', padding: '32px' }}>
+              <div key={i} style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '10px', padding: '32px', display: 'flex', flexDirection: 'column' }}>
                 <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '20px', marginBottom: '8px' }}>{s.name}</h3>
                 <p style={{ color: S.muted, fontSize: '13px', lineHeight: 1.65, marginBottom: '20px' }}>{s.desc}</p>
                 <div style={{ background: '#042016', border: '1px solid #063524', borderRadius: '8px', padding: '16px', marginBottom: '20px' }}>
@@ -75,7 +75,7 @@ export default function Solutions() {
                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px 0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {s.features.map(f => <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', color: S.muted, fontSize: '13px' }}><CheckCircle size={13} style={{ color: '#22c55e', flexShrink: 0, marginTop: '1px' }} />{f}</li>)}
                 </ul>
-                <Link to={createPageUrl('BookADemo')}>
+                <Link to={createPageUrl('BookADemo')} style={{ marginTop: 'auto' }}>
                   <button className="ark-btn-red" style={{ width: '100%', padding: '11px', fontSize: '13px' }}>Get Started</button>
                 </Link>
               </div>

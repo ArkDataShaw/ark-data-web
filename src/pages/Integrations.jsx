@@ -5,23 +5,17 @@ import { CheckCircle, ArrowRight } from 'lucide-react';
 
 const S = { muted: '#D9ECFF', mutedGreen: '#DFFFEF', red: '#B1001A' };
 
-const categories = ['All', 'CRM', 'Email & Marketing', 'Automation', 'Ad Platforms', 'Notifications'];
+const categories = ['All', 'CRM', 'Email & Outreach', 'Enrichment', 'Automation'];
 
 const integrations = [
-  { name: 'Salesforce', category: 'CRM', desc: 'Sync enriched leads and contacts in real-time. Auto-create records, map custom fields, and trigger sequences.', syncs: ['Leads', 'Contacts', 'Accounts'], auth: 'OAuth 2.0', popular: true },
   { name: 'HubSpot', category: 'CRM', desc: 'Push identified visitors and enriched records directly into HubSpot CRM with full field mapping support.', syncs: ['Contacts', 'Companies', 'Deals'], auth: 'OAuth 2.0', popular: true },
-  { name: 'Pipedrive', category: 'CRM', desc: 'Automated lead creation and routing into Pipedrive. Map intent scores to deal stages.', syncs: ['Leads', 'Persons', 'Organizations'], auth: 'API Key' },
-  { name: 'Klaviyo', category: 'Email & Marketing', desc: 'Sync identified profiles and trigger flows based on intent signals and behavioral data.', syncs: ['Profiles', 'Events', 'Lists'], auth: 'API Key', popular: true },
-  { name: 'ActiveCampaign', category: 'Email & Marketing', desc: 'Add enriched contacts to lists, trigger automations, and tag by intent category.', syncs: ['Contacts', 'Lists', 'Tags'], auth: 'API Key' },
-  { name: 'Mailchimp', category: 'Email & Marketing', desc: 'Subscriber sync and audience building from identified visitor data.', syncs: ['Contacts', 'Audiences'], auth: 'OAuth 2.0' },
-  { name: 'Marketo', category: 'Email & Marketing', desc: 'Enterprise-grade Marketo integration. Push leads, update records, and trigger smart campaigns.', syncs: ['Leads', 'Programs', 'Smart Lists'], auth: 'API Key' },
-  { name: 'Google Ads', category: 'Ad Platforms', desc: 'Upload high-intent audiences to Google Ads for targeted campaigns and bid adjustments.', syncs: ['Customer Match Lists', 'Audiences'], auth: 'OAuth 2.0' },
-  { name: 'Meta Ads', category: 'Ad Platforms', desc: 'Push intent-rich custom audiences to Meta for retargeting and lookalike expansion.', syncs: ['Custom Audiences', 'Lookalikes'], auth: 'OAuth 2.0' },
-  { name: 'LinkedIn Ads', category: 'Ad Platforms', desc: 'Sync matched audiences to LinkedIn for account-based advertising campaigns.', syncs: ['Matched Audiences'], auth: 'OAuth 2.0' },
-  { name: 'Zapier', category: 'Automation', desc: 'Connect Ark Data to 5,000+ apps with no-code Zapier workflows. Trigger on any data event.', syncs: ['Webhooks', 'Events'], auth: 'Webhooks' },
-  { name: 'Make (Integromat)', category: 'Automation', desc: 'Advanced multi-step automation workflows triggered by Ark Data events.', syncs: ['Webhooks', 'Data Sync'], auth: 'Webhooks' },
-  { name: 'Slack', category: 'Notifications', desc: 'Real-time alerts in your Slack workspace when high-intent leads are identified.', syncs: ['Alerts', 'Notifications'], auth: 'OAuth 2.0' },
-  { name: 'Webhooks / REST API', category: 'Automation', desc: 'Full REST API and signed webhook delivery for custom integrations and internal tooling.', syncs: ['All Events', 'Custom Fields'], auth: 'API Key + HMAC' },
+  { name: 'GoHighLevel (GHL)', category: 'CRM', desc: 'Sync enriched leads into GHL contacts, trigger workflows, and build audiences for outbound campaigns.', syncs: ['Contacts', 'Opportunities', 'Workflows'], auth: 'API Key', popular: true },
+  { name: 'Klaviyo', category: 'Email & Outreach', desc: 'Sync identified profiles and trigger flows based on visitor behavior and enrichment data.', syncs: ['Profiles', 'Events', 'Lists'], auth: 'API Key', popular: true },
+  { name: 'Instantly', category: 'Email & Outreach', desc: 'Push enriched leads with verified emails directly into Instantly campaigns for cold outreach at scale.', syncs: ['Leads', 'Campaigns'], auth: 'API Key', popular: true },
+  { name: 'Resend', category: 'Email & Outreach', desc: 'Trigger transactional and marketing emails via Resend when high-value visitors are identified.', syncs: ['Contacts', 'Emails'], auth: 'API Key' },
+  { name: 'HeyReach', category: 'Email & Outreach', desc: 'Feed enriched LinkedIn profile URLs into HeyReach for automated multi-channel outreach sequences.', syncs: ['Leads', 'Sequences'], auth: 'API Key' },
+  { name: 'Clay', category: 'Enrichment', desc: 'Send identified visitors into Clay tables for waterfall enrichment, scoring, and automated research workflows.', syncs: ['Contacts', 'Tables', 'Enrichments'], auth: 'Webhooks' },
+  { name: 'Custom HTTP / Webhooks', category: 'Automation', desc: 'Send enriched visitor data to any endpoint via signed webhooks. Build custom integrations with your internal tools.', syncs: ['All Events', 'Custom Fields'], auth: 'API Key + HMAC' },
 ];
 
 export default function Integrations() {
@@ -40,7 +34,7 @@ export default function Integrations() {
         <div className="sc" style={{ textAlign: 'center', maxWidth: '680px' }}>
           <p style={{ color: S.red, fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>Integrations</p>
           <h1 style={{ fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px' }}>Your Entire Stack, Connected.</h1>
-          <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, marginBottom: '32px' }}>Native integrations with your CRM, ESP, ad platforms, and automation tools. Real-time, bi-directional data delivery.</p>
+          <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, marginBottom: '32px' }}>Native integrations with your CRM, outreach tools, and enrichment platforms. Real-time data delivery into the tools you already use.</p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to={createPageUrl('BookADemo')}>
               <button className="ark-btn-red" style={{ padding: '13px 28px', fontSize: '15px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
@@ -141,7 +135,7 @@ export default function Integrations() {
             <div>
               <h3 style={{ color: '#fff', fontWeight: 700, fontSize: '15px', marginBottom: '14px' }}>Enterprise Security</h3>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {['OAuth 2.0 & API key encryption', 'All data transmitted over TLS 1.2+', 'Webhook payloads signed with HMAC', 'SOC 2 Type II (in progress)'].map(item => (
+                {['OAuth 2.0 & API key encryption', 'All data transmitted over TLS 1.2+', 'Webhook payloads signed with HMAC'].map(item => (
                   <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <CheckCircle size={13} style={{ color: '#22c55e', flexShrink: 0 }} />
                     <span style={{ color: S.muted, fontSize: '13px' }}>{item}</span>
