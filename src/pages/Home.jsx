@@ -128,8 +128,7 @@ export default function Home() {
         <ParticleCanvas />
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 30% 50%, rgba(10,33,66,0.25) 0%, transparent 60%)' }} />
         <div className="sc sp" style={{ position: 'relative', zIndex: 2, width: '100%' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '60px', alignItems: 'center' }}>
-            <div>
+          <div style={{ maxWidth: '640px', margin: '0 auto', textAlign: 'center' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#042016', border: '1px solid #063524', borderRadius: '100px', padding: '6px 14px', marginBottom: '28px' }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
                 <span style={{ color: '#DFFFEF', fontSize: '12px', fontWeight: 600 }}>High-Intent Data & Lost Traffic Recovery</span>
@@ -137,10 +136,10 @@ export default function Home() {
               <h1 style={{ fontSize: 'clamp(36px, 4.5vw, 58px)', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-1.5px', marginBottom: '24px', color: '#fff' }}>
                 High-Intent Data<br />That <span style={{ color: '#B1001A' }}>Converts.</span>
               </h1>
-              <p style={{ color: S.muted, fontSize: 'clamp(15px, 1.5vw, 18px)', lineHeight: 1.7, marginBottom: '32px', maxWidth: '480px' }}>
+              <p style={{ color: S.muted, fontSize: 'clamp(15px, 1.5vw, 18px)', lineHeight: 1.7, marginBottom: '32px', maxWidth: '480px', margin: '0 auto 32px' }}>
                 Ark Data turns unknown traffic into actionable identities and delivers enriched data to your CRM, sales team, and outbound tools. Built with privacy in mind, always.
               </p>
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '28px' }}>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '28px', justifyContent: 'center' }}>
                 <Link to={createPageUrl('BookADemo')}>
                   <button className="ark-btn-red" style={{ padding: '14px 28px', fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     Book a Call <ArrowRight size={16} />
@@ -150,7 +149,7 @@ export default function Home() {
                   <button className="ark-btn-blue" style={{ padding: '14px 28px', fontSize: '16px' }}>View Pricing</button>
                 </Link>
               </div>
-              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginBottom: '32px' }}>
+              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginBottom: '32px', justifyContent: 'center' }}>
                 {['Fast onboarding', 'Compliance-first', 'Built for RevOps + Growth'].map(t => (
                   <div key={t} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <CheckCircle size={14} style={{ color: '#22c55e', flexShrink: 0 }} />
@@ -158,48 +157,11 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', paddingTop: '20px', borderTop: '1px solid #0A2142' }}>
+              <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', paddingTop: '20px', borderTop: '1px solid #0A2142', justifyContent: 'center' }}>
                 <div><p style={{ color: '#fff', fontWeight: 800, fontSize: '22px' }}>Up to 60%</p><p style={{ color: S.muted, fontSize: '12px' }}>Match rate</p></div>
                 <div><p style={{ color: '#fff', fontWeight: 800, fontSize: '22px' }}>74</p><p style={{ color: S.muted, fontSize: '12px' }}>Enrichment fields</p></div>
                 <div><p style={{ color: '#fff', fontWeight: 800, fontSize: '22px' }}>&lt;15min</p><p style={{ color: S.muted, fontSize: '12px' }}>Pixel install</p></div>
               </div>
-            </div>
-            {/* Right side - sample enrichment output */}
-            <div style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 0 40px rgba(10,33,66,0.6)' }}>
-              <div style={{ background: '#020D1F', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #0A2142' }}>
-                <span style={{ color: S.muted, fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Enrichment Output</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#22c55e', fontSize: '11px', fontWeight: 600 }}>
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />SAMPLE
-                </span>
-              </div>
-              <div style={{ padding: '20px' }}>
-                <div style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #0A2142' }}>
-                  <p style={{ color: '#4a6a9a', fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '4px' }}>Before</p>
-                  <p style={{ color: '#4a6a9a', fontSize: '14px', fontStyle: 'italic' }}>Anonymous session from Dallas, TX - 3 pages viewed, 4m 12s on site</p>
-                </div>
-                <div style={{ marginBottom: '14px' }}>
-                  <p style={{ color: '#22c55e', fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '10px' }}>After Ark Data</p>
-                  {[
-                    ['Name', 'James Thornton'],
-                    ['Title', 'VP of Revenue Operations'],
-                    ['Company', 'Meridian Growth Partners'],
-                    ['Industry', 'Financial Services'],
-                    ['Headcount', '150–250'],
-                    ['Email', 'j.thornton@m*****n.com'],
-                    ['Net Worth', '$500k – $749k'],
-                    ['Income Range', '$100k – $149k'],
-                  ].map(([k, v], i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: i < 7 ? '1px solid rgba(10,33,66,0.6)' : 'none' }}>
-                      <span style={{ color: '#4a6a9a', fontSize: '12px' }}>{k}</span>
-                      <span style={{ color: '#fff', fontSize: '12px', fontWeight: 600, fontFamily: 'monospace' }}>{v}</span>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '6px', padding: '8px 12px', textAlign: 'center' }}>
-                  <p style={{ color: '#86efac', fontSize: '11px', fontWeight: 600 }}>74 fields enriched in &lt;60 seconds</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
         <div style={{ position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '24px', zIndex: 2 }}>
@@ -347,6 +309,47 @@ export default function Home() {
             <Link to={createPageUrl('Pricing') + '#pricing-calculator'}>
               <button className="ark-btn-green" style={{ padding: '14px 32px', fontSize: '15px' }}>See Full Pricing Calculator →</button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ENRICHMENT OUTPUT - sample card */}
+      <section style={{ background: '#020D1F', paddingBottom: '80px' }}>
+        <div className="sc" style={{ maxWidth: '520px' }}>
+          <div style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 0 40px rgba(10,33,66,0.6)' }}>
+            <div style={{ background: '#020D1F', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #0A2142' }}>
+              <span style={{ color: S.muted, fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Enrichment Output</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#22c55e', fontSize: '11px', fontWeight: 600 }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />SAMPLE
+              </span>
+            </div>
+            <div style={{ padding: '20px' }}>
+              <div style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #0A2142' }}>
+                <p style={{ color: '#4a6a9a', fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '4px' }}>Before</p>
+                <p style={{ color: '#4a6a9a', fontSize: '14px', fontStyle: 'italic' }}>Anonymous session from Dallas, TX - 3 pages viewed, 4m 12s on site</p>
+              </div>
+              <div style={{ marginBottom: '14px' }}>
+                <p style={{ color: '#22c55e', fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '10px' }}>After Ark Data</p>
+                {[
+                  ['Name', 'James Thornton'],
+                  ['Title', 'VP of Revenue Operations'],
+                  ['Company', 'Meridian Growth Partners'],
+                  ['Industry', 'Financial Services'],
+                  ['Headcount', '150–250'],
+                  ['Email', 'j.thornton@m*****n.com'],
+                  ['Net Worth', '$500k – $749k'],
+                  ['Income Range', '$100k – $149k'],
+                ].map(([k, v], i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: i < 7 ? '1px solid rgba(10,33,66,0.6)' : 'none' }}>
+                    <span style={{ color: '#4a6a9a', fontSize: '12px' }}>{k}</span>
+                    <span style={{ color: '#fff', fontSize: '12px', fontWeight: 600, fontFamily: 'monospace' }}>{v}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '6px', padding: '8px 12px', textAlign: 'center' }}>
+                <p style={{ color: '#86efac', fontSize: '11px', fontWeight: 600 }}>74 fields enriched in &lt;60 seconds</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
