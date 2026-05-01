@@ -28,6 +28,71 @@
           s.pixelClientId = i;
       })(window, "https://app.retargetiq.com/script", "ark-data-8898491", document, "script");
     </script>
+    <!-- IDPixel debug shim + analytics -->
+    <script>
+      (function () {
+        if (window.__arkShimInstalled) return;
+        window.__arkShimInstalled = true;
+        var COLLECTOR = 'collector.idpixel.app';
+        var TAG = '[ark-shim]';
+        var origBeacon = navigator.sendBeacon && navigator.sendBeacon.bind(navigator);
+        if (origBeacon) {
+          navigator.sendBeacon = function (url, data) {
+            try {
+              if (url && url.indexOf(COLLECTOR) !== -1) {
+                var handle = function (body) {
+                  try {
+                    var parsed = JSON.parse(body);
+                    if (parsed && parsed.batch) {
+                      console.log(TAG, 'sendBeacon → batch of', parsed.batch.length, 'events');
+                      parsed.batch.forEach(function (e, i) {
+                        console.log(TAG, '  [' + i + '] ' + (e.type || '?') + '/' + (e.event || '?'),
+                                    'anon=' + String(e.anonymousId || '').slice(0, 8),
+                                    'props:', e.properties || {});
+                      });
+                    } else {
+                      console.log(TAG, 'sendBeacon →', url, parsed);
+                    }
+                  } catch (_) {
+                    console.log(TAG, 'sendBeacon →', url, '(non-JSON body)', body);
+                  }
+                };
+                if (data instanceof Blob) data.text().then(handle);
+                else handle(String(data || ''));
+              }
+            } catch (_) {}
+            return origBeacon(url, data);
+          };
+        }
+        var origFetch = window.fetch && window.fetch.bind(window);
+        if (origFetch) {
+          window.fetch = function (input, init) {
+            try {
+              var url = typeof input === 'string' ? input : (input && input.url) || '';
+              if (url && url.indexOf(COLLECTOR) !== -1) {
+                console.log(TAG, 'fetch →', url, 'body:', (init && init.body) || '');
+              }
+            } catch (_) {}
+            return origFetch(input, init);
+          };
+        }
+        var firedKey = false;
+        var iv = setInterval(function () {
+          try {
+            var anon = localStorage.getItem('idp_anonymous_id');
+            if (anon && !firedKey) {
+              firedKey = true;
+              console.log(TAG, 'idp_anonymous_id =', anon);
+              console.log(TAG, 'idp_visitor_id  =', localStorage.getItem('idp_visitor_id') || '(empty)');
+              clearInterval(iv);
+            }
+          } catch (_) {}
+        }, 250);
+        setTimeout(function () { clearInterval(iv); }, 30000);
+        console.log(TAG, 'installed — waiting for V4 to fire events');
+      })();
+    </script>
+    <script src="https://cdn.idpixel.app/v1/idp-analytics-69f4cb2bd233fe5c1d74c074.min.js" defer></script>
   </head>
   <body>
     <div id="root"></div>
