@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import EnrichedVisitsCalculator from '../components/pricing/EnrichedVisitsCalculator';
 import { Check, X as XIcon } from 'lucide-react';
+import { computeCost } from '@/lib/billingPricing';
+
+function arkdataLabel(n) {
+  const cents = computeCost(n).total_cents;
+  if (cents === 0) return 'FREE';
+  return '$' + Math.round(cents / 100).toLocaleString('en-US');
+}
 
 function TypewriterText({ text, delay = 0, speed = 60 }) {
   const [displayed, setDisplayed] = useState('');
@@ -34,19 +41,19 @@ const FEATURE_ROWS = [
 ];
 
 const COMPETITOR_TABLE = [
-  { ev: '150',    arkdata: 'FREE',    rb2b: 'FREE',        opensend: '$500' },
-  { ev: '300',    arkdata: '$37',     rb2b: '$79',         opensend: '$500' },
-  { ev: '500',    arkdata: '$60',     rb2b: '$149',        opensend: '$500' },
-  { ev: '1,000',  arkdata: '$117',    rb2b: '$249',        opensend: '$500' },
-  { ev: '1,500',  arkdata: '$169',    rb2b: '$349',        opensend: '$500' },
-  { ev: '2,000',  arkdata: '$218',    rb2b: '$349',        opensend: '$500' },
-  { ev: '2,500',  arkdata: '$264',    rb2b: '$349',        opensend: '$1,000' },
-  { ev: '3,000',  arkdata: '$306',    rb2b: '$499',        opensend: '$1,000' },
-  { ev: '5,000',  arkdata: '$450',    rb2b: '$499',        opensend: '$2,000' },
-  { ev: '7,500',  arkdata: '$582',    rb2b: '$649',        opensend: 'Enterprise' },
-  { ev: '10,000', arkdata: '$675',    rb2b: '$799',        opensend: 'Enterprise' },
-  { ev: '12,500', arkdata: '$741',    rb2b: '$849',        opensend: 'Enterprise' },
-];
+  { ev: '150',    n: 150,    rb2b: 'FREE',        opensend: '$500' },
+  { ev: '300',    n: 300,    rb2b: '$79',         opensend: '$500' },
+  { ev: '500',    n: 500,    rb2b: '$149',        opensend: '$500' },
+  { ev: '1,000',  n: 1000,   rb2b: '$249',        opensend: '$500' },
+  { ev: '1,500',  n: 1500,   rb2b: '$349',        opensend: '$500' },
+  { ev: '2,000',  n: 2000,   rb2b: '$349',        opensend: '$500' },
+  { ev: '2,500',  n: 2500,   rb2b: '$349',        opensend: '$1,000' },
+  { ev: '3,000',  n: 3000,   rb2b: '$499',        opensend: '$1,000' },
+  { ev: '5,000',  n: 5000,   rb2b: '$499',        opensend: '$2,000' },
+  { ev: '7,500',  n: 7500,   rb2b: '$649',        opensend: 'Enterprise' },
+  { ev: '10,000', n: 10000,  rb2b: '$799',        opensend: 'Enterprise' },
+  { ev: '12,500', n: 12500,  rb2b: '$849',        opensend: 'Enterprise' },
+].map(r => ({ ...r, arkdata: arkdataLabel(r.n) }));
 
 function CellVal({ val }) {
   if (val === true) return <Check size={16} color="#22c55e" />;
