@@ -302,7 +302,7 @@ export default function EnrichedVisitsCalculator() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: 12, height: 3, background: '#f97316', display: 'inline-block', borderRadius: '2px' }} />
-            <span style={{ color: '#D9ECFF', fontSize: '11px', fontWeight: 600 }}>RB2B Pro+ (flat bucket tiers, "Contact Us" above 12,500)</span>
+            <span style={{ color: '#D9ECFF', fontSize: '11px', fontWeight: 600 }}>RB2B not including ($0.25 overage per resolution)</span>
           </div>
         </div>
       </div>
