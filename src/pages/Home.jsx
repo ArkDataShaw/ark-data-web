@@ -284,28 +284,10 @@ export default function Home() {
       {/* PRICING TEASER */}
       <section className="sp" style={{ background: '#020D1F', borderTop: '1px solid #0A2142' }}>
         <div className="sc">
-          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <div style={{ textAlign: 'center' }}>
             <p style={{ color: '#B1001A', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>Pricing</p>
             <h2 style={{ fontSize: 'clamp(28px, 3.5vw, 44px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '12px' }}>Pricing That Scales With You.</h2>
-            <p style={{ color: S.muted, fontSize: '16px', maxWidth: '440px', margin: '0 auto' }}>Productized packages with clear value. No hidden fees. Custom available for enterprise.</p>
-          </div>
-          <div style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '14px', padding: '48px', textAlign: 'center', marginBottom: '32px' }}>
-            <p style={{ color: '#22c55e', fontWeight: 900, fontSize: 'clamp(42px, 5vw, 64px)', letterSpacing: '-2px', marginBottom: '8px' }}>$0 – $900/mo</p>
-            <p style={{ color: S.muted, fontSize: '16px', marginBottom: '8px' }}>smooth exponential curve · usage-based · no tiers</p>
-            <p style={{ color: '#4a6a9a', fontSize: '13px', marginBottom: '28px' }}>Free through 200 enriched visits. Your cost rises on a smooth curve that flattens as volume grows — never exceeds $900/mo.</p>
-            <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '32px' }}>
-              {[
-                { vol: '200', cost: 'FREE' },
-                { vol: '1,000', cost: '$117' },
-                { vol: '5,000', cost: '$450' },
-                { vol: '10,000', cost: '$675' },
-              ].map((t, i) => (
-                <div key={i} style={{ background: '#0A2142', borderRadius: '8px', padding: '12px 20px', minWidth: '120px' }}>
-                  <p style={{ color: t.cost === 'FREE' ? '#22c55e' : '#fff', fontWeight: 800, fontSize: '18px', marginBottom: '2px' }}>{t.cost}</p>
-                  <p style={{ color: '#4a6a9a', fontSize: '11px' }}>{t.vol} enriched visits</p>
-                </div>
-              ))}
-            </div>
+            <p style={{ color: S.muted, fontSize: '16px', maxWidth: '440px', margin: '0 auto', marginBottom: '32px' }}>Usage-based. No tiers, no buckets, no surprises.</p>
             <Link to={createPageUrl('Pricing') + '#pricing-calculator'}>
               <button className="ark-btn-green" style={{ padding: '14px 32px', fontSize: '15px' }}>See Full Pricing Calculator →</button>
             </Link>

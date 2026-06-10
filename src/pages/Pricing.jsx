@@ -129,7 +129,7 @@ export default function Pricing() {
             <p style={{ color: '#86efac', fontSize: '16px', marginBottom: '28px' }}>See your visitors. Upgrade when you're ready to act.</p>
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 auto 28px', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'left' }}>
               {[
-                '250 person-level visitors identified per month',
+                '200 person-level visitors identified per month',
                 '500 company-level visitors identified per month',
                 'View names and companies in your dashboard',
                 'No email addresses, integrations, or exports on free plan',
