@@ -13,7 +13,7 @@ export default function PrivacyPolicy() {
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Introduction</h2>
             <p className="text-gray-700">
-              Ark Data, Inc. ("Company", "we", "us", "our") operates the Ark Data website and service. This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our service and the choices you have associated with that data.
+              ArkData, Inc. ("Company", "we", "us", "our") operates the ArkData website and service. This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our service and the choices you have associated with that data.
             </p>
           </section>
 
@@ -32,7 +32,7 @@ export default function PrivacyPolicy() {
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">3. Use of Data</h2>
             <p className="text-gray-700">
-              Ark Data uses the collected data for various purposes:
+              ArkData uses the collected data for various purposes:
             </p>
             <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">
               <li>To provide and maintain our service</li>

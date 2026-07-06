@@ -10,7 +10,7 @@ const coreServices = [
     id: 'lost-traffic',
     name: 'Lost Traffic Recovery',
     tagline: 'Recover anonymous visitors before they disappear.',
-    desc: 'Up to 97% of your website visitors leave without identifying themselves. Ark Data\'s pixel captures every session across 11 event types, resolves identity using our licensed, validated identity graph, and enriches each visitor with 650+ data points - spanning contact, demographic, professional, company, and social data.',
+    desc: 'Up to 97% of your website visitors leave without identifying themselves. ArkData\'s pixel captures every session across 11 event types, resolves identity using our licensed, validated identity graph, and enriches each visitor with 650+ data points - spanning contact, demographic, professional, company, and social data.',
     color: 'blue',
     icon: '🔍',
     features: [

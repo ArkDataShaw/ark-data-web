@@ -63,7 +63,7 @@ export default function BlogPost() {
               {post.author_name?.[0] || 'A'}
             </div>
             <div>
-              <p style={{ color: '#fff', fontWeight: 700, fontSize: '13px' }}>{post.author_name || 'Ark Data Team'}</p>
+              <p style={{ color: '#fff', fontWeight: 700, fontSize: '13px' }}>{post.author_name || 'ArkData Team'}</p>
               <p style={{ color: '#4a6a9a', fontSize: '12px' }}>{new Date(post.created_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
             </div>
           </div>
@@ -113,7 +113,7 @@ export default function BlogPost() {
         {/* CTA */}
         <div style={{ background: 'linear-gradient(135deg, #06162A, #042016)', border: '1px solid #0A2142', borderRadius: '12px', padding: '36px', textAlign: 'center', marginTop: '48px' }}>
           <h3 style={{ color: '#fff', fontWeight: 900, fontSize: '20px', letterSpacing: '-0.4px', marginBottom: '10px' }}>Ready to put this into practice?</h3>
-          <p style={{ color: S.muted, fontSize: '14px', marginBottom: '24px' }}>Book a 30-minute call with our team and see how Ark Data fits your stack.</p>
+          <p style={{ color: S.muted, fontSize: '14px', marginBottom: '24px' }}>Book a 30-minute call with our team and see how ArkData fits your stack.</p>
           <Link to={createPageUrl('BookADemo')}>
             <button className="ark-btn-red" style={{ padding: '12px 28px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
               Book a Call <ArrowRight size={14} />

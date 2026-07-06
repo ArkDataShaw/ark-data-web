@@ -11,7 +11,7 @@ const resources = [
   {
     type: 'Guide',
     title: 'The Lost Traffic Playbook: Identify & Convert Anonymous Visitors',
-    excerpt: 'A step-by-step guide to deploying Ark Data\'s pixel, configuring identity resolution, and routing recovered visitors into your CRM and sequences.',
+    excerpt: 'A step-by-step guide to deploying ArkData\'s pixel, configuring identity resolution, and routing recovered visitors into your CRM and sequences.',
     readTime: '12 min read',
     tag: 'Lost Traffic',
     tagColor: '#0A2142',
@@ -67,8 +67,8 @@ const resources = [
   },
   {
     type: 'Article',
-    title: 'How to Enrich HubSpot Records Automatically with Ark Data',
-    excerpt: 'A step-by-step walkthrough of the Ark Data + HubSpot integration: field mapping, sync frequency, deduplication, and sequence triggers.',
+    title: 'How to Enrich HubSpot Records Automatically with ArkData',
+    excerpt: 'A step-by-step walkthrough of the ArkData + HubSpot integration: field mapping, sync frequency, deduplication, and sequence triggers.',
     readTime: '6 min read',
     tag: 'Integrations',
     tagColor: '#0A2142',
@@ -86,7 +86,7 @@ const resources = [
   {
     type: 'Playbook',
     title: 'The Account-Based Marketing Playbook for High-Intent Data',
-    excerpt: 'How ABM teams use Ark Data\'s intent feed to identify in-market accounts, build target account lists, and align sales and marketing on the same signals.',
+    excerpt: 'How ABM teams use ArkData\'s intent feed to identify in-market accounts, build target account lists, and align sales and marketing on the same signals.',
     readTime: '11 min read',
     tag: 'ABM',
     tagColor: '#063524',

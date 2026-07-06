@@ -12,7 +12,7 @@ export default function HowItWorks() {
         <div className="sc" style={{ textAlign: 'center', maxWidth: '720px' }}>
           <p style={{ color: '#B1001A', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>How It Works</p>
           <h1 style={{ fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px', lineHeight: 1.1 }}>From Pixel to Pipeline in Minutes.</h1>
-          <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, maxWidth: '560px', margin: '0 auto' }}>Ark Data connects to your site and stack, enriches every resolved visitor with 650+ data points, and delivers actionable leads directly to your CRM and activation tools.</p>
+          <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, maxWidth: '560px', margin: '0 auto' }}>ArkData connects to your site and stack, enriches every resolved visitor with 650+ data points, and delivers actionable leads directly to your CRM and activation tools.</p>
         </div>
       </section>
 

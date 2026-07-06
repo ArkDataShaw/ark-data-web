@@ -161,7 +161,7 @@ export default function Product() {
                 <span style={{ color: S.muted, fontSize: '12px', fontWeight: 600 }}>Visitor Identification</span>
               </div>
               <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>Turn Anonymous Traffic Into Pipeline.</h2>
-              <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7 }}>Up to 97% of website visitors leave without identifying themselves. Ark Data's pixel captures these sessions and resolves them to real people - with verified contact data and company intelligence - before they go dark.</p>
+              <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7 }}>Up to 97% of website visitors leave without identifying themselves. ArkData's pixel captures these sessions and resolves them to real people - with verified contact data and company intelligence - before they go dark.</p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '40px' }}>
               {[
@@ -280,7 +280,7 @@ export default function Product() {
         {/* CTA */}
         <div style={{ marginTop: '80px', background: 'linear-gradient(135deg, #06162A 0%, #000002 50%, #042016 100%)', border: '1px solid #0A2142', borderRadius: '16px', padding: '56px', textAlign: 'center' }}>
           <h2 style={{ fontWeight: 900, fontSize: 'clamp(24px, 3vw, 36px)', letterSpacing: '-1px', marginBottom: '12px' }}>See It In Action.</h2>
-          <p style={{ color: S.muted, fontSize: '15px', marginBottom: '28px', maxWidth: '440px', margin: '0 auto 28px' }}>Book a 30-minute walkthrough and see how Ark Data fits into your stack.</p>
+          <p style={{ color: S.muted, fontSize: '15px', marginBottom: '28px', maxWidth: '440px', margin: '0 auto 28px' }}>Book a 30-minute walkthrough and see how ArkData fits into your stack.</p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to={createPageUrl('BookADemo')}>
               <button className="ark-btn-red" style={{ padding: '14px 32px', fontSize: '15px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>

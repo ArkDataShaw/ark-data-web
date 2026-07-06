@@ -9,7 +9,7 @@ const faqCategories = [
   {
     cat: 'Data & Enrichment',
     items: [
-      { q: 'What does Ark Data do?', a: 'Ark Data is a visitor identity resolution and intent data platform. You install a lightweight pixel on your site, and we resolve your anonymous visitors into identified people using our licensed, validated identity graph. Resolved visitors are enriched with 650+ data points and delivered to your CRM, ad platforms, or outreach tools.' },
+      { q: 'What does ArkData do?', a: 'ArkData is a visitor identity resolution and intent data platform. You install a lightweight pixel on your site, and we resolve your anonymous visitors into identified people using our licensed, validated identity graph. Resolved visitors are enriched with 650+ data points and delivered to your CRM, ad platforms, or outreach tools.' },
       { q: 'What attributes are included in enrichment?', a: 'We provide 650+ data points across several categories: identity and demographics, contact info (phone and email), professional data (job title, department, seniority level), company data (name, domain, revenue, headcount, industry), social profiles (LinkedIn), household attributes, and active intent topics.' },
       { q: 'Do you offer intent data?', a: 'Yes. The Audience Builder lets you build audiences from 12,000+ intent topics across B2B and B2C - people actively researching your category, whether or not they have visited your site - and sync them to Meta, Google Ads, or DV360.' },
       { q: 'Is this company-level or individual-level data?', a: 'We resolve visitors at the individual level. Of resolved visitors, roughly 72% also include company-level data such as company name, domain, revenue, headcount, and industry.' },
@@ -36,7 +36,7 @@ const faqCategories = [
   {
     cat: 'Privacy & Data Handling',
     items: [
-      { q: 'How do you handle privacy?', a: 'Ark Data is built with privacy in mind. All data is sourced from licensed, reputable data providers with opt-out compliance. We practice privacy-conscious data handling across our entire pipeline.' },
+      { q: 'How do you handle privacy?', a: 'ArkData is built with privacy in mind. All data is sourced from licensed, reputable data providers with opt-out compliance. We practice privacy-conscious data handling across our entire pipeline.' },
       { q: 'How do you source your data?', a: 'Our identity graph is aggregated exclusively from licensed data sources and continuously validated for accuracy. We do not scrape or collect data from unauthorized sources.' },
     ]
   },
@@ -61,7 +61,7 @@ export default function FAQ() {
         <div className="sc" style={{ textAlign: 'center', maxWidth: '680px' }}>
           <p style={{ color: '#B1001A', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>FAQ</p>
           <h1 style={{ fontSize: 'clamp(32px, 4vw, 50px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px' }}>Frequently Asked Questions</h1>
-          <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7 }}>Everything you need to know about Ark Data's platform, pricing, compliance, and onboarding.</p>
+          <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7 }}>Everything you need to know about ArkData's platform, pricing, compliance, and onboarding.</p>
         </div>
       </section>
 

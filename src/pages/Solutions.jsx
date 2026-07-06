@@ -109,7 +109,7 @@ export default function Solutions() {
                   <p style={{ color: S.muted, fontSize: '13px', lineHeight: 1.6 }}>{ind.problem}</p>
                 </div>
                 <div>
-                  <p style={{ color: '#DFFFEF', fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '4px' }}>Ark Data Solution</p>
+                  <p style={{ color: '#DFFFEF', fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '4px' }}>ArkData Solution</p>
                   <p style={{ color: S.mutedGreen, fontSize: '13px', lineHeight: 1.6 }}>{ind.solution}</p>
                 </div>
               </div>

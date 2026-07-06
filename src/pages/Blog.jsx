@@ -43,7 +43,7 @@ function ArticleCard({ post, featured }) {
               <div style={{ width: '28px', height: '28px', background: '#0A2142', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>
                 {post.author_name?.[0] || 'A'}
               </div>
-              <span style={{ color: S.muted, fontSize: '12px', fontWeight: 600 }}>{post.author_name || 'Ark Data Team'}</span>
+              <span style={{ color: S.muted, fontSize: '12px', fontWeight: 600 }}>{post.author_name || 'ArkData Team'}</span>
             </div>
             <Link to={`${createPageUrl('BlogPost')}?slug=${post.slug}`}>
               <button className="ark-btn-red" style={{ padding: '9px 18px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -72,7 +72,7 @@ function ArticleCard({ post, featured }) {
         <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '16px', lineHeight: 1.35, marginBottom: '10px', letterSpacing: '-0.3px' }}>{post.title}</h3>
         <p style={{ color: S.muted, fontSize: '13px', lineHeight: 1.65, marginBottom: '20px', flex: 1 }}>{post.excerpt}</p>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '14px', borderTop: '1px solid #0A2142' }}>
-          <span style={{ color: '#4a6a9a', fontSize: '12px' }}>{post.author_name || 'Ark Data Team'}</span>
+          <span style={{ color: '#4a6a9a', fontSize: '12px' }}>{post.author_name || 'ArkData Team'}</span>
           <Link to={`${createPageUrl('BlogPost')}?slug=${post.slug}`} style={{ color: '#D9ECFF', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
             Read <ArrowRight size={12} />
           </Link>

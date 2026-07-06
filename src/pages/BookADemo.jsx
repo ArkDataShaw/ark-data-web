@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const CALENDLY_URL = 'https://calendly.com/jordan-arkdata/ark-data-info-session';
+const CALENDLY_URL = 'https://calendly.com/shaw-arkdata/arkdata-info-session';
 
 export default function BookADemo() {
   useEffect(() => {

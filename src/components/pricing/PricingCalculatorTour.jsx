@@ -5,7 +5,7 @@ const STEPS = [
   {
     id: 'welcome',
     title: '👋 Welcome to the Pricing Calculator',
-    description: "This interactive calculator helps you estimate your exact monthly cost with Ark Data. We'll walk you through every section so you can make confident decisions. The whole thing takes about 2 minutes.",
+    description: "This interactive calculator helps you estimate your exact monthly cost with ArkData. We'll walk you through every section so you can make confident decisions. The whole thing takes about 2 minutes.",
     target: null,
     position: 'center',
     tip: null,
@@ -21,7 +21,7 @@ const STEPS = [
   {
     id: 'enrichment-rate',
     title: '2. Set Your Enrichment Rate',
-    description: "The enrichment rate (35%–70%) determines what percentage of your visits become billable Enriched Visits. The default is 55%, which reflects the average across Ark Data clients. B2B-heavy sites often see 60%+.",
+    description: "The enrichment rate (35%–70%) determines what percentage of your visits become billable Enriched Visits. The default is 55%, which reflects the average across ArkData clients. B2B-heavy sites often see 60%+.",
     target: '[data-tour="enrichment-rate"]',
     position: 'bottom',
     tip: '💡 Most clients fall between 50–60%. Rates below 45% or above 65% are uncommon.',
@@ -48,7 +48,7 @@ const STEPS = [
     description: "This chart illustrates how your return compounds month over month. Your cost per visit stays flat, but as you refine campaigns and close more pipeline, each enriched visit generates more revenue. By month 4+, the spread widens significantly.",
     target: '[data-tour="roi-chart"]',
     position: 'top',
-    tip: '💡 Based on real performance data from existing Ark Data customers.',
+    tip: '💡 Based on real performance data from existing ArkData customers.',
   },
   {
     id: 'tier-breakdown',
@@ -69,7 +69,7 @@ const STEPS = [
   {
     id: 'trial-cta',
     title: '8. Start Free - No Credit Card',
-    description: "Ready to see the data in action? Click the button below the calculator to start your free 30-day trial. You\'ll be asked for basic contact info and then redirected to the Ark Data platform.",
+    description: "Ready to see the data in action? Click the button below the calculator to start your free 30-day trial. You\'ll be asked for basic contact info and then redirected to the ArkData platform.",
     target: '[data-tour="trial-cta"]',
     position: 'top',
     tip: '✅ No credit card required. Cancel anytime. Setup takes under 10 minutes.',
@@ -77,7 +77,7 @@ const STEPS = [
   {
     id: 'done',
     title: '🎉 You\'re All Set!',
-    description: "You now know everything you need to estimate your pricing, understand your ROI, and get started with Ark Data. Enter your real numbers in the calculator and hit the free trial button when you\'re ready.",
+    description: "You now know everything you need to estimate your pricing, understand your ROI, and get started with ArkData. Enter your real numbers in the calculator and hit the free trial button when you\'re ready.",
     target: null,
     position: 'center',
     tip: null,

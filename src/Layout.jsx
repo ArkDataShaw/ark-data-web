@@ -204,8 +204,8 @@ export default function Layout({ children, currentPageName }) {
       }}>
         <div className="sc" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '70px' }}>
           <Link to={createPageUrl('Home')} style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6989af7aa56af5f62af3065e/35cf97429_image.png" alt="Ark Data" style={{ height: '32px' }} />
-            <span style={{ fontWeight: 800, fontSize: '17px', color: '#fff', letterSpacing: '-0.3px' }}>Ark Data</span>
+            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6989af7aa56af5f62af3065e/35cf97429_image.png" alt="ArkData" style={{ height: '32px' }} />
+            <span style={{ fontWeight: 800, fontSize: '17px', color: '#fff', letterSpacing: '-0.3px' }}>ArkData</span>
           </Link>
 
           <nav className="d-none-mobile" style={{ alignItems: 'center', gap: '26px' }}>
@@ -258,7 +258,7 @@ export default function Layout({ children, currentPageName }) {
         <div className="sc" style={{ paddingTop: '64px', paddingBottom: '32px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '40px', marginBottom: '56px' }}>
             <div style={{ gridColumn: 'span 2' }}>
-              <div style={{ fontWeight: 800, fontSize: '18px', color: '#fff', marginBottom: '14px', letterSpacing: '-0.3px' }}>Ark Data</div>
+              <div style={{ fontWeight: 800, fontSize: '18px', color: '#fff', marginBottom: '14px', letterSpacing: '-0.3px' }}>ArkData</div>
               <p style={{ color: '#D9ECFF', fontSize: '13px', lineHeight: 1.75, maxWidth: '220px', marginBottom: '16px' }}>
                 High-intent data enrichment for outbound, demand gen, RevOps, and growth.
               </p>
@@ -308,7 +308,7 @@ export default function Layout({ children, currentPageName }) {
           </div>
 
           <div style={{ borderTop: '1px solid rgba(20,60,110,0.4)', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-            <p style={{ color: '#D9ECFF', fontSize: '12px' }}>© 2026 Ark Data. All rights reserved. Compliance-first data, built for operators.</p>
+            <p style={{ color: '#D9ECFF', fontSize: '12px' }}>© 2026 ArkData. All rights reserved. Compliance-first data, built for operators.</p>
             <div style={{ display: 'flex', gap: '20px' }}>
               {['Twitter', 'LinkedIn', 'GitHub'].map(s => (
                 <a key={s} href="#" className="ark-link" style={{ color: '#D9ECFF', fontSize: '12px' }}>{s}</a>

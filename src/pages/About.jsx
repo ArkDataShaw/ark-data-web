@@ -11,12 +11,12 @@ export default function About() {
       {/* Hero */}
       <section style={{ background: 'linear-gradient(135deg, #06162A 0%, #000002 60%)', borderBottom: '1px solid #0A2142', padding: '100px 0 80px' }}>
         <div className="sc" style={{ maxWidth: '800px' }}>
-          <p style={{ color: '#B1001A', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '16px' }}>About Ark Data</p>
+          <p style={{ color: '#B1001A', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '16px' }}>About ArkData</p>
           <h1 style={{ fontSize: 'clamp(36px, 4.5vw, 56px)', fontWeight: 900, letterSpacing: '-1.5px', lineHeight: 1.1, marginBottom: '24px' }}>
             Built for Operators.<br />Obsessed with Data Quality.
           </h1>
           <p style={{ color: S.muted, fontSize: '18px', lineHeight: 1.75, maxWidth: '620px' }}>
-            Ark Data was built by a revenue operator who was tired of data that was outdated, incomplete, and unactionable. I built the platform I always wanted - and now I'm making it available to teams like yours.
+            ArkData was built by a revenue operator who was tired of data that was outdated, incomplete, and unactionable. I built the platform I always wanted - and now I'm making it available to teams like yours.
           </p>
         </div>
       </section>
@@ -32,7 +32,7 @@ export default function About() {
                 We believe revenue teams deserve data that actually works: 650+ data points per resolved visitor, delivered directly to their stack. No more guesswork. No more manual research. No more wasted pipeline.
               </p>
               <p style={{ color: S.muted, fontSize: '15px', lineHeight: 1.75 }}>
-                Ark Data exists to close the gap between anonymous traffic and qualified opportunity - at scale, with compliance, and without friction.
+                ArkData exists to close the gap between anonymous traffic and qualified opportunity - at scale, with compliance, and without friction.
               </p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -62,7 +62,7 @@ export default function About() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
             {[
               { icon: '🎯', title: 'Accuracy', desc: 'Every record is validated, deduplicated, and normalized. We never sacrifice quality for volume.' },
-              { icon: '🔒', title: 'Compliance', desc: 'Privacy is not an afterthought. Ark Data is built with privacy in mind and designed to respect user data at every step.' },
+              { icon: '🔒', title: 'Compliance', desc: 'Privacy is not an afterthought. ArkData is built with privacy in mind and designed to respect user data at every step.' },
               { icon: '⚡', title: 'Speed', desc: 'From pixel install to live enrichment in under an hour. From contract to full deployment in under a week.' },
               { icon: '🤝', title: 'Partnership', desc: 'I don\'t just deliver data. I work directly with you to optimize for outcomes - not just deliverables.' },
             ].map((v, i) => (
@@ -80,7 +80,7 @@ export default function About() {
       <section style={{ background: '#000002', borderTop: '1px solid #0A2142', padding: '80px 0' }}>
         <div className="sc" style={{ textAlign: 'center' }}>
           <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>Ready to Work Together?</h2>
-          <p style={{ color: S.muted, fontSize: '16px', marginBottom: '32px' }}>Let's find out if Ark Data is the right fit for your team.</p>
+          <p style={{ color: S.muted, fontSize: '16px', marginBottom: '32px' }}>Let's find out if ArkData is the right fit for your team.</p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to={createPageUrl('BookADemo')}>
               <button className="ark-btn-red" style={{ padding: '14px 32px', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>

@@ -100,7 +100,7 @@ function ComparisonTooltip({ active, payload }) {
   return (
     <div style={{ background: '#06162A', border: '1px solid rgba(26,92,168,0.6)', borderRadius: '8px', padding: '12px 16px', fontSize: '12px' }}>
       <p style={{ color: '#D9ECFF', fontWeight: 700, marginBottom: '6px' }}>{fmt(d.x)} enriched visits</p>
-      <p style={{ color: '#22c55e', fontWeight: 700 }}>Ark Data: {d.ark === 0 ? 'FREE' : fmtUSD(d.ark)}</p>
+      <p style={{ color: '#22c55e', fontWeight: 700 }}>ArkData: {d.ark === 0 ? 'FREE' : fmtUSD(d.ark)}</p>
       {d.rb2b !== null && <p style={{ color: '#f97316', fontWeight: 700, marginTop: '3px' }}>RB2B: {d.rb2b === 0 ? 'FREE' : fmtUSD(d.rb2b)}</p>}
       {d.rb2b !== null && d.ark > 0 && d.rb2b > 0 && (
         <p style={{ color: '#22c55e', fontSize: '11px', marginTop: '5px' }}>You save {fmtUSD(d.rb2b - d.ark)} ({Math.round((1 - d.ark / d.rb2b) * 100)}%)</p>
@@ -263,9 +263,9 @@ export default function EnrichedVisitsCalculator() {
         )}
       </div>
 
-      {/* ── Comparison Chart: Ark Data vs RB2B ── */}
+      {/* ── Comparison Chart: ArkData vs RB2B ── */}
       <div style={{ background: 'linear-gradient(145deg, #071829 0%, #040E1A 100%)', border: '1px solid rgba(26,92,168,0.4)', borderRadius: '14px', padding: '28px', marginBottom: '28px' }}>
-        <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '17px', marginBottom: '6px' }}>Ark Data vs RB2B Pricing</h2>
+        <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '17px', marginBottom: '6px' }}>ArkData vs RB2B Pricing</h2>
         <p style={{ color: '#4a6a9a', fontSize: '12px', marginBottom: '20px', lineHeight: 1.6 }}>
           Your cost scales smoothly with volume. No tiers, no buckets, no surprises. Free through {FREE_THRESHOLD} enriched visits.
         </p>
@@ -287,7 +287,7 @@ export default function EnrichedVisitsCalculator() {
                   <ReferenceLine x={enrichedVisits} stroke="#B1001A" strokeDasharray="4 3" strokeWidth={2}
                     label={{ value: 'You', fill: '#ff8a99', fontSize: 11, fontWeight: 700, position: 'insideTopRight', dy: 30 }} />
                 )}
-                <Line type="monotone" dataKey="ark" stroke="#22c55e" strokeWidth={3} dot={false} activeDot={{ r: 5, fill: '#fff', stroke: '#22c55e', strokeWidth: 2 }} name="Ark Data" />
+                <Line type="monotone" dataKey="ark" stroke="#22c55e" strokeWidth={3} dot={false} activeDot={{ r: 5, fill: '#fff', stroke: '#22c55e', strokeWidth: 2 }} name="ArkData" />
                 <Line type="monotone" dataKey="rb2b" stroke="#f97316" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#fff', stroke: '#f97316', strokeWidth: 2 }} name="RB2B" connectNulls={false} />
               </LineChart>
             </ResponsiveContainer>
@@ -298,7 +298,7 @@ export default function EnrichedVisitsCalculator() {
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid rgba(10,33,66,0.8)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: 12, height: 3, background: '#22c55e', display: 'inline-block', borderRadius: '2px' }} />
-            <span style={{ color: '#D9ECFF', fontSize: '11px', fontWeight: 600 }}>Ark Data</span>
+            <span style={{ color: '#D9ECFF', fontSize: '11px', fontWeight: 600 }}>ArkData</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: 12, height: 3, background: '#f97316', display: 'inline-block', borderRadius: '2px' }} />
@@ -337,7 +337,7 @@ export default function EnrichedVisitsCalculator() {
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '40px', marginBottom: '16px' }}>🎉</div>
                 <h3 style={{ color: '#fff', fontWeight: 800, fontSize: '22px', marginBottom: '10px' }}>You're all set!</h3>
-                <p style={{ color: '#4a6a9a', fontSize: '14px', marginBottom: '28px' }}>Click below to access the Ark Data platform and start your free trial.</p>
+                <p style={{ color: '#4a6a9a', fontSize: '14px', marginBottom: '28px' }}>Click below to access the ArkData platform and start your free trial.</p>
                 <a href="https://app.arkdata.io" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', width: '100%', background: 'linear-gradient(135deg, #064e2a 0%, #0a6e3b 50%, #064e2a 100%)', border: '1px solid rgba(34,197,94,0.45)', borderRadius: '8px', padding: '16px', color: '#fff', fontSize: '16px', fontWeight: 800, textDecoration: 'none' }}>
                   Go to app.arkdata.io →
                 </a>

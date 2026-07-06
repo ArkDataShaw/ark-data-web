@@ -123,7 +123,7 @@ export default function Integrations() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
             {[
               { num: '01', title: 'Connect', desc: 'Authenticate via OAuth or API key. Takes 30 seconds.' },
-              { num: '02', title: 'Map Fields', desc: 'Configure which Ark Data fields map to your CRM schema.' },
+              { num: '02', title: 'Map Fields', desc: 'Configure which ArkData fields map to your CRM schema.' },
               { num: '03', title: 'Set Rules', desc: 'Choose real-time or batch sync, routing rules, and filters.' },
               { num: '04', title: 'Go Live', desc: 'Activate and watch enriched leads flow into your stack.' },
             ].map((step, i) => (

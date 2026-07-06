@@ -7,11 +7,11 @@ import { base44 } from '@/api/base44Client';
 const S = { muted: '#D9ECFF', mutedGreen: '#DFFFEF', red: '#B1001A' };
 
 const partnerTypes = [
-  { id: 'reseller', label: 'Reseller / Agency Partner', desc: 'White-label or resell Ark Data to your clients' },
-  { id: 'data_provider', label: 'Data Provider', desc: 'Supply data into the Ark Data ecosystem' },
-  { id: 'tech_partner', label: 'Technology Partner', desc: 'Integrate your platform with Ark Data' },
+  { id: 'reseller', label: 'Reseller / Agency Partner', desc: 'White-label or resell ArkData to your clients' },
+  { id: 'data_provider', label: 'Data Provider', desc: 'Supply data into the ArkData ecosystem' },
+  { id: 'tech_partner', label: 'Technology Partner', desc: 'Integrate your platform with ArkData' },
   { id: 'affiliate', label: 'Affiliate / Referral', desc: 'Refer clients and earn commissions' },
-  { id: 'careers', label: 'Careers / Join the Team', desc: 'Explore open roles at Ark Data' },
+  { id: 'careers', label: 'Careers / Join the Team', desc: 'Explore open roles at ArkData' },
 ];
 
 export default function Apply() {
@@ -66,7 +66,7 @@ export default function Apply() {
       <section style={{ background: 'linear-gradient(135deg, #06162A 0%, #000002 60%)', borderBottom: '1px solid #0A2142', padding: '80px 0 60px' }}>
         <div className="sc" style={{ maxWidth: '760px', textAlign: 'center' }}>
           <p style={{ color: '#B1001A', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>Apply</p>
-          <h1 style={{ fontSize: 'clamp(32px, 4vw, 50px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px' }}>Partner With Ark Data</h1>
+          <h1 style={{ fontSize: 'clamp(32px, 4vw, 50px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px' }}>Partner With ArkData</h1>
           <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, maxWidth: '520px', margin: '0 auto' }}>
             Whether you're a reseller, data provider, technology partner, or looking to join our team - we'd love to hear from you.
           </p>
