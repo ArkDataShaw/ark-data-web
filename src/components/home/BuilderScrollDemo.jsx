@@ -66,6 +66,7 @@ export default function BuilderScrollDemo() {
   const revealedRef = useRef(new Set());
   const generatedRef = useRef(false);
   const interactiveRef = useRef(false);
+  const debugRef = useRef(null);
   const [mountIframe, setMountIframe] = useState(false);
   const [booted, setBooted] = useState(false);
   const [isDesktop, setIsDesktop] = useState(true);
@@ -86,17 +87,28 @@ export default function BuilderScrollDemo() {
   // boot: wait for the app, apply filters, load snapshot, build clones
   useEffect(() => {
     if (!mountIframe || booted) return;
+    let tries = 0;
+    const dbg = (msg) => { if (debugRef.current) debugRef.current.textContent = 'boot: ' + msg; };
     const iv = setInterval(() => {
-      const w = app();
-      if (!w) return;
+      tries++;
+      const ifr = iframeRef.current;
+      const w = ifr && ifr.contentWindow;
+      if (!w) { dbg(`no iframe window (t${tries})`); return; }
+      let emb;
+      try { emb = w.ArkEmbed; } catch (e) { dbg('cross-origin? ' + e.message); return; }
+      if (!emb) { dbg(`no ArkEmbed — embed-script not loaded? (t${tries})`); return; }
+      if (!emb.ready) { dbg(`app not ready (t${tries})`); return; }
       try {
-        w.ArkEmbed.applyAll();
-        w.ArkEmbed.loadSnapshot('/builder/snapshot-solar.json');
-        chipData.current = w.ArkEmbed.chipInfo();
+        emb.applyAll();
+        emb.loadSnapshot('/builder/snapshot-solar.json');
+        chipData.current = emb.chipInfo();
+        if (!chipData.current || !chipData.current.length) { dbg(`applied but 0 chips found (t${tries})`); return; }
         buildClones(chipData.current);
         setBooted(true);
+        dbg(`OK — ${chipData.current.length} chips`);
+        setTimeout(() => { if (debugRef.current) debugRef.current.style.display = 'none'; }, 4000);
         clearInterval(iv);
-      } catch { /* retry */ }
+      } catch (e) { dbg('ERR ' + (e && e.message)); }
     }, 250);
     return () => clearInterval(iv);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -270,6 +282,7 @@ export default function BuilderScrollDemo() {
           <p className="ark-mono" style={{ color: '#6FE3B0', fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', margin: '24px 0 12px', flexShrink: 0 }}>
             THE FLAGSHIP · AUDIENCE BUILDER
           </p>
+          <span ref={debugRef} className="ark-mono" style={{ position: 'absolute', top: '8px', left: '10px', zIndex: 9, color: '#FF8A9A', fontSize: '11px', background: 'rgba(0,0,0,0.6)', padding: '3px 8px', borderRadius: '6px' }}>boot: waiting for iframe…</span>
 
           {/* the REAL builder */}
           <div ref={frameRef} style={{ opacity: 0, width: 'min(1240px, calc(100vw - 40px))', flex: 1, minHeight: 0, borderRadius: '14px 14px 0 0', overflow: 'hidden', border: '1px solid #1B3050', borderBottom: 'none', boxShadow: '0 30px 80px rgba(0,0,0,0.55)', background: '#f8fafc', position: 'relative' }}>

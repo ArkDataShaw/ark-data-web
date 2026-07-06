@@ -67,16 +67,21 @@
   }
 
   window.ArkEmbed = {
-    get ready() { return !!(window.S && window.sync && window.renderSidebar); },
+    // NOTE: the app's state is `let S` — a global *lexical* binding, not a
+    // window property. This script shares the iframe's global scope, so bare
+    // identifiers resolve it; window.S does NOT.
+    get ready() {
+      try { return !!(S && typeof sync === 'function' && typeof renderSidebar === 'function'); }
+      catch (e) { return false; }
+    },
 
     applyAll: function () {
-      var S = window.S;
       S.checks.homeowner = new Set(['Homeowner']);
       S.checks.income = new Set(['$100,000 to $149,999', '$150,000 to $199,999', '$200,000 to $249,999', '$250,000+']);
       ['TX', 'FL', 'AZ'].forEach(function (c) { S.loc.personal.state.add(c); });
       S.topics.add('Solar Panel Installation');
       S.topicMeta['Solar Panel Installation'] = { id: 7270, kind: 'b2c' };
-      window.renderSidebar(); window.sync();
+      renderSidebar(); sync();
       tagChips();
       var rn = document.getElementById('reachNum');
       if (rn) rn.classList.add('ark-hidden');
