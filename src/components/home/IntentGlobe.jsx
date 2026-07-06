@@ -70,12 +70,11 @@ const ARC_LIFT = 0.32;
 
 // flow timeline (ms since flow start)
 const T_SRC_POPUP = 250;
-const T_ARC_START = 1500;
-const T_ARC_END = 2900;
-const T_FADE_START = 5800;
-const T_END = 6400;
+const T_ARC_START = 800;
+const T_ARC_END = 1900;
+const T_FADE_START = 4600;
+const T_END = 5200;
 const SPAWN_EVERY = 4200;
-const T_SRC_POPUP_OUT = T_ARC_END + 350; // source card yields to destination card
 
 function buildSphere() {
   const pts = [];
@@ -303,8 +302,8 @@ export default function IntentGlobe() {
         }
 
         // popups (CSS pixel space)
-        let srcOp = age < T_SRC_POPUP ? 0 : Math.min(1, (age - T_SRC_POPUP) / 300) * fade;
-        if (!reduced && age > T_ARC_END) srcOp *= Math.max(0, 1 - (age - T_ARC_END) / (T_SRC_POPUP_OUT - T_ARC_END));
+        // source card stays up alongside the destination card; both share `fade`
+        const srcOp = age < T_SRC_POPUP ? 0 : Math.min(1, (age - T_SRC_POPUP) / 300) * fade;
         positionPopup(`${f.id}-src`, sp.x / dpr, sp.y / dpr, srcOp, cw);
         const dstOp = age < T_ARC_END ? 0 : Math.min(1, (age - T_ARC_END) / 300) * fade;
         positionPopup(`${f.id}-dst`, dp.x / dpr, dp.y / dpr, dstOp, cw);
