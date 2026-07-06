@@ -26,7 +26,10 @@ const tryLoad = (src) => new Promise((resolve, reject) => {
 function resolveLogo(destKey) {
   if (logoPromises.has(destKey)) return logoPromises.get(destKey);
   const dest = DESTS[destKey];
-  const p = tryLoad(symbolUrl(dest.domain)).then(src => ({ src, rounded: false }))
+  const start = dest.noSymbol
+    ? Promise.reject(new Error('symbol skipped'))
+    : tryLoad(symbolUrl(dest.domain)).then(src => ({ src, rounded: false }));
+  const p = start
     .catch(() => tryLoad(iconUrl(dest.domain)).then(src => ({ src, rounded: true })))
     .catch(() => tryLoad(faviconUrl(dest.domain)).then(src => ({ src, rounded: true })))
     .catch(() => ({ monogram: true }))
@@ -70,17 +73,19 @@ function DestLogo({ destKey, dest }) {
 // type 'intent' routes to ad platforms; type 'visitor' routes to CRM/email.
 // ---------------------------------------------------------------------------
 const DESTS = {
-  meta:       { name: 'Meta',        domain: 'meta.com',        color: '#0866FF' },
+  // noSymbol: skip Brandfetch /symbol for brands where it serves a
+  // placeholder (Meta, HighLevel) or an illegible transparent mark (Mailchimp)
+  meta:       { name: 'Meta',        domain: 'meta.com',        color: '#0866FF', noSymbol: true },
   tiktok:     { name: 'TikTok',      domain: 'tiktok.com',      color: '#FE2C55' },
   googleads:  { name: 'Google Ads',  domain: 'google.com',      color: '#4285F4' },
   youtube:    { name: 'YouTube',     domain: 'youtube.com',     color: '#FF0000' },
   snapchat:   { name: 'Snapchat',    domain: 'snapchat.com',    color: '#FFFC00' },
   hubspot:    { name: 'HubSpot',     domain: 'hubspot.com',     color: '#FF7A59' },
-  mailchimp:  { name: 'Mailchimp',   domain: 'mailchimp.com',   color: '#FFE01B' },
+  mailchimp:  { name: 'Mailchimp',   domain: 'mailchimp.com',   color: '#FFE01B', noSymbol: true },
   klaviyo:    { name: 'Klaviyo',     domain: 'klaviyo.com',     color: '#2BB673' },
   slack:      { name: 'Slack',       domain: 'slack.com',       color: '#E01E5A' },
   salesforce: { name: 'Salesforce',  domain: 'salesforce.com',  color: '#00A1E0' },
-  ghl:        { name: 'HighLevel',   domain: 'gohighlevel.com', color: '#38A6F0' },
+  ghl:        { name: 'HighLevel',   domain: 'gohighlevel.com', color: '#38A6F0', noSymbol: true },
 };
 
 const SCENARIOS = [
