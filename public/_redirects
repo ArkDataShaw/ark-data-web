@@ -1,2 +1,2 @@
-/.netlify/functions/*  https://arkdata-audience-builder-demo.netlify.app/.netlify/functions/:splat  200
+/api/*  https://arkdata-audience-builder-demo.netlify.app/.netlify/functions/:splat  200
 /*    /index.html   200

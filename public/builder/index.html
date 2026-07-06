@@ -1567,7 +1567,7 @@ function buildSpec(){
 }
 
 // ---------- proxy plumbing (the ONLY path to live data; DataMoon never named) ----------
-const PROXY="/.netlify/functions/audience";
+const PROXY="/api/audience";
 async function callProxy(payload){
   const res=await fetch(PROXY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
   let body={};try{body=await res.json();}catch(e){}
