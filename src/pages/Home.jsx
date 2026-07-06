@@ -5,7 +5,7 @@ import { ArrowRight, CheckCircle } from 'lucide-react';
 import IntentGlobe from '../components/home/IntentGlobe';
 import ResolutionCard from '../components/home/ResolutionCard';
 import DataPipeline from '../components/home/DataPipeline';
-import BuilderShowcase from '../components/home/BuilderShowcase';
+import BuilderScrollDemo from '../components/home/BuilderScrollDemo';
 import IntentShowcase from '../components/home/IntentShowcase';
 import IntentPulse from '../components/home/IntentPulse';
 const ProtoTag = ({ n, label }) => (
@@ -166,8 +166,8 @@ export default function Home() {
       {/* HOW IT WORKS — unified pipeline scroll animation */}
       <DataPipeline />
 
-      <ProtoTag n="A" label="AUDIENCE BUILDER HOMEPAGE TEASER (click-to-load live demo)" />
-      <BuilderShowcase />
+      <ProtoTag n="A" label="AUDIENCE BUILDER SCROLL SEQUENCE (chips -> builder -> live data; freezes on top half, cross-fades to live embed later)" />
+      <BuilderScrollDemo />
 
       {/* FEATURE GRID — light */}
       <section className="sp ark-light">
