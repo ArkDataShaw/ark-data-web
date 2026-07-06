@@ -9,28 +9,59 @@ const symbolUrl = (domain) => `https://cdn.brandfetch.io/${domain}/symbol?c=${BR
 const iconUrl = (domain) => `https://cdn.brandfetch.io/${domain}/icon?c=${BRANDFETCH_CLIENT_ID}&fallback=404`;
 const faviconUrl = (domain) => `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 
-// Brandfetch transparent symbol → Brandfetch icon → Google favicon → monogram.
-// Symbols are transparent brand marks; icon/favicon assets often ship their
-// own baked-in tile, so those stages get rounded corners.
-function DestLogo({ dest }) {
-  const [stage, setStage] = useState(0); // 0 symbol, 1 icon, 2 favicon, 3 monogram
-  if (stage === 3) {
+// Logos are resolved ONCE per destination at page load (symbol → icon →
+// favicon → monogram) and cached module-wide. Cards render from the cache,
+// so no network requests happen per card appearance — the chosen URL is
+// also already in the browser's image cache from the probe.
+const logoCache = new Map();    // destKey -> { src, rounded } | { monogram: true }
+const logoPromises = new Map(); // destKey -> Promise of the above
+
+const tryLoad = (src) => new Promise((resolve, reject) => {
+  const img = new Image();
+  img.onload = () => resolve(src);
+  img.onerror = reject;
+  img.src = src;
+});
+
+function resolveLogo(destKey) {
+  if (logoPromises.has(destKey)) return logoPromises.get(destKey);
+  const dest = DESTS[destKey];
+  const p = tryLoad(symbolUrl(dest.domain)).then(src => ({ src, rounded: false }))
+    .catch(() => tryLoad(iconUrl(dest.domain)).then(src => ({ src, rounded: true })))
+    .catch(() => tryLoad(faviconUrl(dest.domain)).then(src => ({ src, rounded: true })))
+    .catch(() => ({ monogram: true }))
+    .then(result => { logoCache.set(destKey, result); return result; });
+  logoPromises.set(destKey, p);
+  return p;
+}
+
+const preloadAllLogos = () => Object.keys(DESTS).forEach(resolveLogo);
+
+function DestLogo({ destKey, dest }) {
+  const [logo, setLogo] = useState(logoCache.get(destKey) || null);
+  useEffect(() => {
+    if (logo) return;
+    let alive = true;
+    resolveLogo(destKey).then(r => { if (alive) setLogo(r); });
+    return () => { alive = false; };
+  }, [destKey, logo]);
+
+  if (!logo) return <span style={{ width: 26, height: 26, flexShrink: 0 }} />;
+  if (logo.monogram) {
     return (
       <span style={{ width: 26, height: 26, borderRadius: '6px', background: dest.color, color: dest.color === '#FFFC00' || dest.color === '#FFE01B' ? '#111' : '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '14px', fontWeight: 800 }}>
         {dest.name[0]}
       </span>
     );
   }
-  const src = stage === 0 ? symbolUrl(dest.domain) : stage === 1 ? iconUrl(dest.domain) : faviconUrl(dest.domain);
   return (
-    <img src={src} alt={dest.name}
+    <img src={logo.src} alt={dest.name}
       width="26" height="26"
       style={{
         objectFit: 'contain', flexShrink: 0,
-        borderRadius: stage === 0 ? 0 : '6px',
+        borderRadius: logo.rounded ? '6px' : 0,
         filter: 'drop-shadow(0 0 3px rgba(255,255,255,0.28))',
-      }}
-      onError={() => setStage(s => s + 1)} />
+      }} />
   );
 }
 
@@ -152,6 +183,8 @@ export default function IntentGlobe() {
   const popupEls = useRef(new Map()); // `${id}-src` / `${id}-dst` -> element
   const flowsRef = useRef([]);
   const [mounted, setMounted] = useState([]); // flows that need popup DOM
+
+  useEffect(() => { preloadAllLogos(); }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -455,7 +488,7 @@ export default function IntentGlobe() {
               boxShadow: `0 8px 24px rgba(0,0,0,0.45), 0 0 18px ${dest.color}22`,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '7px' }}>
-                <DestLogo dest={dest} />
+                <DestLogo destKey={scenario.dest} dest={dest} />
                 <span style={{ color: '#fff', fontSize: '12px', fontWeight: 700 }}>{dest.name}</span>
               </div>
               <p className="ark-mono" style={{ color: '#D7E5F5', fontSize: '10px', margin: '0 0 4px' }}>{scenario.campaign}</p>
