@@ -122,6 +122,22 @@ function randomPoint(minZ, rot, xSign) {
 const angleBetween = (a, b) =>
   Math.acos(Math.min(1, Math.max(-1, a.x * b.x + a.y * b.y + a.z * b.z)));
 
+const hexToRgb = (hex) => {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+};
+
+// Color ramp along the arc: pure source color until 25%, smooth gradation
+// through the middle, pure destination color from 60% onward.
+const arcColorAt = (t, srcRgb, dstRgb) => {
+  const m = Math.min(1, Math.max(0, (t - 0.25) / 0.35));
+  return [
+    Math.round(srcRgb[0] + (dstRgb[0] - srcRgb[0]) * m),
+    Math.round(srcRgb[1] + (dstRgb[1] - srcRgb[1]) * m),
+    Math.round(srcRgb[2] + (dstRgb[2] - srcRgb[2]) * m),
+  ];
+};
+
 // ---------------------------------------------------------------------------
 export default function IntentGlobe() {
   const canvasRef = useRef(null);
@@ -293,35 +309,44 @@ export default function IntentGlobe() {
         ctx.lineWidth = 1 * dpr;
         ctx.stroke();
 
-        // arc + streak
+        // arc + streak — stroked per-segment so the color grades from the
+        // source color into the destination's brand color along the arc
         if (age > T_ARC_START) {
           const p = Math.min(1, (age - T_ARC_START) / (T_ARC_END - T_ARC_START));
           const ease = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+          const srcRgb = scenario.type === 'intent' ? [25, 195, 125] : [74, 158, 255];
+          const dstRgb = hexToRgb(destColor);
+          const arcPoint = (t) => {
+            const u = slerp(f.src, f.dst, t);
+            const lift = 1 + ARC_LIFT * Math.sin(Math.PI * t);
+            const pr = rotXZ({ x: u.x * lift, y: u.y * lift, z: u.z * lift }, rot);
+            return [cx + pr.x * R, cy + pr.y * R];
+          };
           const drawSeg = (t0, t1, alpha) => {
-            ctx.beginPath();
             const STEPS = 36;
-            for (let s = 0; s <= STEPS; s++) {
+            let prev = arcPoint(t0);
+            for (let s = 1; s <= STEPS; s++) {
               const t = t0 + (t1 - t0) * (s / STEPS);
-              const u = slerp(f.src, f.dst, t);
-              const lift = 1 + ARC_LIFT * Math.sin(Math.PI * t);
-              const pr = rotXZ({ x: u.x * lift, y: u.y * lift, z: u.z * lift }, rot);
-              const px = cx + pr.x * R, py = cy + pr.y * R;
-              s === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+              const pt = arcPoint(t);
+              const c = arcColorAt(t, srcRgb, dstRgb);
+              ctx.beginPath();
+              ctx.moveTo(prev[0], prev[1]);
+              ctx.lineTo(pt[0], pt[1]);
+              ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${alpha * fade})`;
+              ctx.lineWidth = 1.4 * dpr;
+              ctx.stroke();
+              prev = pt;
             }
-            ctx.strokeStyle = `rgba(${flowColor},${alpha * fade})`;
-            ctx.lineWidth = 1.4 * dpr;
-            ctx.stroke();
           };
           if (p < 1) {
             drawSeg(0, ease, 0.16); // faint trail behind head
             drawSeg(Math.max(0, ease - 0.16), ease, 0.85); // bright streak
-            // head
-            const hu = slerp(f.src, f.dst, ease);
-            const hl = 1 + ARC_LIFT * Math.sin(Math.PI * ease);
-            const hp = rotXZ({ x: hu.x * hl, y: hu.y * hl, z: hu.z * hl }, rot);
+            // head — takes on the blended color at its position
+            const [hx, hy] = arcPoint(ease);
+            const hc = arcColorAt(ease, srcRgb, dstRgb);
             ctx.beginPath();
-            ctx.arc(cx + hp.x * R, cy + hp.y * R, 2.4 * dpr, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${flowColor},${fade})`;
+            ctx.arc(hx, hy, 2.4 * dpr, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${hc[0]},${hc[1]},${hc[2]},${fade})`;
             ctx.fill();
           } else {
             drawSeg(0, 1, 0.22);
