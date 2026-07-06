@@ -70,8 +70,8 @@ const ARC_LIFT = 0.32;
 
 // flow timeline (ms since flow start)
 const T_SRC_POPUP = 250;
-const T_ARC_START = 800;
-const T_ARC_END = 1900;
+const T_ARC_START = 450;
+const T_ARC_END = 1250;
 const T_FADE_START = 4600;
 const T_END = 5200;
 const SPAWN_EVERY = 4200;
