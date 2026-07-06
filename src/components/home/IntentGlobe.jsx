@@ -5,23 +5,31 @@ import React, { useEffect, useRef, useState } from 'react';
 // actions). Popups are HTML overlays tracked to the rotating 3D nodes.
 
 const BRANDFETCH_CLIENT_ID = '1idqlTY69N6EdqhcU7n';
-const logoUrl = (domain) => `https://cdn.brandfetch.io/${domain}/icon?c=${BRANDFETCH_CLIENT_ID}&fallback=404`;
+const symbolUrl = (domain) => `https://cdn.brandfetch.io/${domain}/symbol?c=${BRANDFETCH_CLIENT_ID}&fallback=404`;
+const iconUrl = (domain) => `https://cdn.brandfetch.io/${domain}/icon?c=${BRANDFETCH_CLIENT_ID}&fallback=404`;
 const faviconUrl = (domain) => `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 
-// Brandfetch (primary, browser-hotlink per TOS) → Google favicon → monogram.
+// Brandfetch transparent symbol → Brandfetch icon → Google favicon → monogram.
+// Symbols are transparent brand marks; icon/favicon assets often ship their
+// own baked-in tile, so those stages get rounded corners.
 function DestLogo({ dest }) {
-  const [stage, setStage] = useState(0); // 0 brandfetch, 1 favicon, 2 monogram
-  if (stage === 2) {
+  const [stage, setStage] = useState(0); // 0 symbol, 1 icon, 2 favicon, 3 monogram
+  if (stage === 3) {
     return (
       <span style={{ width: 26, height: 26, borderRadius: '6px', background: dest.color, color: dest.color === '#FFFC00' || dest.color === '#FFE01B' ? '#111' : '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '14px', fontWeight: 800 }}>
         {dest.name[0]}
       </span>
     );
   }
+  const src = stage === 0 ? symbolUrl(dest.domain) : stage === 1 ? iconUrl(dest.domain) : faviconUrl(dest.domain);
   return (
-    <img src={stage === 0 ? logoUrl(dest.domain) : faviconUrl(dest.domain)} alt={dest.name}
+    <img src={src} alt={dest.name}
       width="26" height="26"
-      style={{ objectFit: 'contain', flexShrink: 0, filter: 'drop-shadow(0 0 3px rgba(255,255,255,0.28))' }}
+      style={{
+        objectFit: 'contain', flexShrink: 0,
+        borderRadius: stage === 0 ? 0 : '6px',
+        filter: 'drop-shadow(0 0 3px rgba(255,255,255,0.28))',
+      }}
       onError={() => setStage(s => s + 1)} />
   );
 }
