@@ -169,21 +169,65 @@ export default function IntentGlobe() {
         if (a > 1.0 && a < 2.1) break;
         dst = randomPoint(0.2, rot, -srcSide);
       }
-      const flow = { id: flowId++, scenario, src, dst, born: now };
+      // Lock each card's side of its node at spawn — never flips afterwards.
+      const spx = rotXZ(src, rot).x;
+      const dpx = rotXZ(dst, rot).x;
+      let cardSrcSide = spx >= 0 ? 1 : -1;
+      let cardDstSide = dpx >= 0 ? 1 : -1;
+      const flow = { id: flowId++, scenario, src, dst, born: now, srcCardSide: cardSrcSide, dstCardSide: cardDstSide };
       flowsRef.current = [...flowsRef.current.filter(f => now - f.born < T_END), flow];
       setMounted(flowsRef.current.map(f => ({ id: f.id, scenario: f.scenario })));
     }
 
-    function positionPopup(key, x, y, opacity, w) {
-      const el = popupEls.current.get(key);
-      if (!el) return;
+    // Place a card on its locked side of the node; returns its rect.
+    function computePlacement(el, x, y, side, w) {
       const pw = el.offsetWidth || 190;
-      const side = x > w / 2 ? 1 : -1;
+      const ph = el.offsetHeight || 110;
       let left = side > 0 ? x + 14 : x - 14 - pw;
       left = Math.min(Math.max(left, -24), w - pw + 24);
-      const top = Math.min(Math.max(y - 30, 0), w - 90);
-      el.style.transform = `translate(${left}px, ${top}px)`;
-      el.style.opacity = opacity;
+      const top = Math.min(Math.max(y - 30, 0), w - ph);
+      return { left, top, w: pw, h: ph };
+    }
+
+    const rectsOverlap = (a, b, pad) =>
+      a.left < b.left + b.w + pad && b.left < a.left + a.w + pad &&
+      a.top < b.top + b.h + pad && b.top < a.top + a.h + pad;
+
+    // Position a flow's source + destination cards, guaranteeing the pair
+    // never overlaps each other (destination yields, sliding vertically).
+    function placePair(f, sx, sy, dx, dy, srcOp, dstOp, w) {
+      const srcEl = popupEls.current.get(`${f.id}-src`);
+      const dstEl = popupEls.current.get(`${f.id}-dst`);
+      let srcRect = null;
+      if (srcEl) {
+        srcRect = computePlacement(srcEl, sx, sy, f.srcCardSide, w);
+        srcEl.style.transform = `translate(${srcRect.left}px, ${srcRect.top}px)`;
+        srcEl.style.opacity = srcOp;
+      }
+      if (dstEl) {
+        const dstRect = computePlacement(dstEl, dx, dy, f.dstCardSide, w);
+        // once a slide direction is chosen it sticks for the whole flow,
+        // so the card never snaps back mid-animation
+        if (!f.dstSlide && srcRect && srcOp > 0.01 && dstOp > 0.01 && rectsOverlap(srcRect, dstRect, 8)) {
+          f.dstSlide = dstRect.top + dstRect.h / 2 >= srcRect.top + srcRect.h / 2 ? 'below' : 'above';
+        }
+        if (f.dstSlide && srcRect) {
+          if (f.dstSlide === 'below') {
+            dstRect.top = srcRect.top + srcRect.h + 10;
+          } else {
+            dstRect.top = srcRect.top - dstRect.h - 10;
+          }
+          dstRect.top = Math.min(Math.max(dstRect.top, -12), w - dstRect.h + 12);
+          // if clamping pushed it back into the source card, resolve horizontally
+          if (rectsOverlap(srcRect, dstRect, 0)) {
+            dstRect.left = f.dstCardSide > 0
+              ? Math.min(srcRect.left + srcRect.w + 10, w - dstRect.w + 24)
+              : Math.max(srcRect.left - dstRect.w - 10, -24);
+          }
+        }
+        dstEl.style.transform = `translate(${dstRect.left}px, ${dstRect.top}px)`;
+        dstEl.style.opacity = dstOp;
+      }
     }
 
     function draw(now) {
@@ -304,9 +348,8 @@ export default function IntentGlobe() {
         // popups (CSS pixel space)
         // source card stays up alongside the destination card; both share `fade`
         const srcOp = age < T_SRC_POPUP ? 0 : Math.min(1, (age - T_SRC_POPUP) / 300) * fade;
-        positionPopup(`${f.id}-src`, sp.x / dpr, sp.y / dpr, srcOp, cw);
         const dstOp = age < T_ARC_END ? 0 : Math.min(1, (age - T_ARC_END) / 300) * fade;
-        positionPopup(`${f.id}-dst`, dp.x / dpr, dp.y / dpr, dstOp, cw);
+        placePair(f, sp.x / dpr, sp.y / dpr, dp.x / dpr, dp.y / dpr, srcOp, dstOp, cw);
       }
       flowsRef.current = alive;
 
@@ -352,7 +395,7 @@ export default function IntentGlobe() {
             {/* SOURCE: person surfacing the signal */}
             <div ref={setPopupRef(`${id}-src`)} style={{
               position: 'absolute', top: 0, left: 0, opacity: 0, width: '196px',
-              transition: 'opacity 0.3s', pointerEvents: 'none', zIndex: 3,
+              transition: 'opacity 0.3s', pointerEvents: 'none', zIndex: 10 + id * 2,
               background: 'rgba(8,16,32,0.94)', border: `1px solid ${srcAccent}55`,
               borderLeft: `3px solid ${srcAccent}`, borderRadius: '8px', padding: '10px 12px',
               boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
@@ -373,7 +416,7 @@ export default function IntentGlobe() {
             {/* DESTINATION: where the signal goes */}
             <div ref={setPopupRef(`${id}-dst`)} style={{
               position: 'absolute', top: 0, left: 0, opacity: 0, width: '190px',
-              transition: 'opacity 0.3s', pointerEvents: 'none', zIndex: 3,
+              transition: 'opacity 0.3s', pointerEvents: 'none', zIndex: 11 + id * 2,
               background: `linear-gradient(135deg, ${dest.color}26 0%, rgba(8,16,32,0.94) 55%)`,
               border: `1px solid ${dest.color}88`, borderLeft: `3px solid ${dest.color}`,
               borderRadius: '8px', padding: '10px 12px',
