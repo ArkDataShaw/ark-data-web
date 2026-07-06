@@ -4,6 +4,7 @@ import { createPageUrl } from '../utils';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 import IntentGlobe from '../components/home/IntentGlobe';
 import ResolutionCard from '../components/home/ResolutionCard';
+import DataPipeline from '../components/home/DataPipeline';
 
 const APP_URL = 'https://app.arkdata.io';
 
@@ -31,13 +32,6 @@ const problems = [
     title: "You're late to every deal",
     desc: 'Buyers research for weeks before they talk to anyone. Without intent signals, you enter the conversation last — and compete on price instead of fit.',
   },
-];
-
-const steps = [
-  { num: '01', title: 'Discover', desc: 'Build audiences from 12,000+ intent topics across B2B and B2C — from niche software categories to consumer purchases. Target buyers, not demographics.' },
-  { num: '02', title: 'Track', desc: 'Intent signals refresh daily as people research your category. Know who moved in-market this week — before they ever land on your site.' },
-  { num: '03', title: 'Enrich', desc: 'Every audience member comes as a full person: name, contact info, and 650+ data points. Website visitors get resolved into the same rich profiles.' },
-  { num: '04', title: 'Activate', desc: 'One-click sync to Meta, Google Ads, and DV360 as custom audiences — or straight into HubSpot, Klaviyo, HighLevel, and Slack for sales follow-up.' },
 ];
 
 const features = [
@@ -161,29 +155,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* HOW IT WORKS — light */}
-      <section className="sp ark-light">
-        <div className="sc">
-          <div style={{ maxWidth: '560px', marginBottom: '56px' }}>
-            <p className="ark-mono" style={{ color: '#C8102E', fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', marginBottom: '14px' }}>HOW IT WORKS</p>
-            <h2 className="ark-display" style={{ fontSize: 'clamp(28px, 3.5vw, 44px)', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>
-              Discover. Track. Enrich. Activate.
-            </h2>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
-            {steps.map(step => (
-              <div key={step.num} className="ark-card-light" style={{ padding: '30px' }}>
-                <span className="ark-mono" style={{ color: '#C8102E', fontSize: '13px', fontWeight: 600, display: 'block', marginBottom: '16px' }}>{step.num}</span>
-                <h3 style={{ fontWeight: 700, fontSize: '18px', marginBottom: '10px' }}>{step.title}</h3>
-                <p className="ark-body" style={{ fontSize: '14px', lineHeight: 1.65, margin: 0 }}>{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* HOW IT WORKS — unified pipeline scroll animation */}
+      <DataPipeline />
 
       {/* FEATURE GRID — light */}
-      <section className="sp ark-light" style={{ paddingTop: 0 }}>
+      <section className="sp ark-light">
         <div className="sc">
           <div style={{ maxWidth: '620px', margin: '0 auto 56px', textAlign: 'center' }}>
             <p className="ark-mono" style={{ color: '#C8102E', fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', marginBottom: '14px' }}>THE PLATFORM</p>
