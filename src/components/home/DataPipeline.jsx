@@ -38,11 +38,14 @@ function useScrollProgress(containerRef, offsetPercentage = 0.75, onUpdate) {
 }
 
 const icons = {
-  merge: (
+  visitor: (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 3v4c0 3 2.5 5 6 5s6-2 6-5V3" />
-      <path d="M12 12v9" />
-      <path d="M9 18l3 3 3-3" />
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="10" r="3" />
+      <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
+      <line x1="12" y1="2" x2="12" y2="4" opacity="0.4" />
+      <line x1="4.93" y1="4.93" x2="6.34" y2="6.34" opacity="0.4" />
+      <line x1="2" y1="12" x2="4" y2="12" opacity="0.4" />
     </svg>
   ),
   identified: (
@@ -125,7 +128,7 @@ const STEPS = [
     title: 'Two signals. One pipeline.',
     description: 'Whether they are researching your category across the web or sitting on your pricing page right now, both kinds of buyers enter the same pipeline.',
     detail: 'Intent + visitor data unified — no separate tools.',
-    icon: icons.merge,
+    icon: icons.visitor,
     extra: <DualSources />,
   },
   {
