@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>intentmap.io wrap isolation test</title>
+    <!-- ONLY pixel on this page: the wrapped one. No baselines, no shims. -->
+    <script async src="https://cdn.intentmap.io/v1/track.min.js?request_id=arkdata-wrap-v2-1779428185"></script>
+  </head>
+  <body style="font-family: system-ui; max-width: 720px; margin: 40px auto; padding: 24px; color: #0f172a;">
+    <h1>intentmap.io wrap — isolation test page</h1>
+    <p>
+      This page exists for one purpose: validate that the wrapped DataMoon pixel
+      operates end-to-end with <strong>zero</strong> direct vendor-host calls in
+      the browser's network panel.
+    </p>
+    <p>
+      No baseline pixels are loaded here, so the wrapped pixel has clean access
+      to <code>window.liQHub</code> and can run uncontested.
+    </p>
+    <p>
+      Expected network activity from the pixel:
+    </p>
+    <ul>
+      <li><code>cdn.intentmap.io/v1/track.min.js</code></li>
+      <li><code>li.intentmap.io/did-00a6.min.js</code></li>
+      <li><code>li.intentmap.io/i/sync-container</code>, <code>li.intentmap.io/idx/idex</code>, <code>li.intentmap.io/rp/...</code></li>
+      <li><code>t.intentmap.io/api/v1?md5=...</code> (after LI resolves an md5)</li>
+    </ul>
+    <p>
+      Expected to <strong>not</strong> appear:
+    </p>
+    <ul>
+      <li>Anything on <code>*.liadm.com</code></li>
+      <li>Anything on <code>*.datamoon.com</code> or <code>*.retargetiq.com</code></li>
+    </ul>
+  </body>
+</html>
