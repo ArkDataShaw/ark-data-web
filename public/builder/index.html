@@ -1355,6 +1355,14 @@ function checkRow(key,opt,pf){
 
 // ---------- chips + reach ----------
 const chipsEl=document.getElementById("chips"),reachNum=document.getElementById("reachNum"),reachKind=document.getElementById("reachKind");
+// compact a merged range label for chip display: money fields → "$250–500K"/"$100K+"/"$1–25M"
+// (ssBandShort verbatim — UPPERCASE K/M/B, convention locked 2026-07-06: IBM Carbon/AP precedent,
+// lowercase m = SI milli); age → "25–54"/"65+"; headcount → "51–500"/"5001–10K".
+function chipRangeShort(field,label){
+  if(field==="headcount")return label.replace(/ to /g,"\u2013").replace(/\b(\d+)000\b/g,"$1K");
+  if(field==="age")return label.replace(/ and older/i,"+").replace(/(\d)-(\d)/g,"$1\u2013$2"); // no money path — "55+" must not become "$55+"
+  return ssBandShort(label);
+}
 const gaugePin=document.getElementById("gaugePin"),gaugeHint=document.getElementById("gaugeHint");
 function gatherChips(){
   const out=[];
@@ -1364,6 +1372,13 @@ function gatherChips(){
   Object.keys(S.checks).forEach(k=>{
     if(k==="score"&&S.checks[k].size){
       var vals=[...S.checks[k]];out.push({grp:"Intent",v:vals.join(", "),rm:()=>{delete S.checks.score;}});
+    }else if(RANGE_ORDER[k]){
+      // ordinal range field (age/income/networth/headcount/revenue): merge contiguous
+      // selections into one chip per run, then compact — "$100,000 to $149,999" … "$250,000+"
+      // → "$100k+"; "$250,000 to $499,999" → "$250–500k"; revenue "$1M - $25M" → "$1–25m".
+      // Age chips label as "Age". Removing the merged chip clears the whole field.
+      var chipGrp=k==="age"?"Age":(LABELS[k]||k);
+      mergeRanges(k,[...S.checks[k]]).forEach(merged=>out.push({grp:chipGrp,v:chipRangeShort(k,merged),rm:()=>S.checks[k].clear()}));
     }else{S.checks[k].forEach(o=>out.push({grp:LABELS[k]||k,v:o,rm:()=>S.checks[k].delete(o)}));}
   });
   Object.keys(S.texts).forEach(k=>{if(S.texts[k])out.push({grp:LABELS[k]||k,v:S.texts[k],rm:()=>S.texts[k]=""});});

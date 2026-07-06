@@ -23,6 +23,7 @@
     'body.ark-data-hidden #previewArea #map{opacity:0}',
     '#previewArea .card, #previewArea #map{transition:opacity .55s ease}',
     '#reachNum.ark-hidden{visibility:hidden}',
+    '#saveBtn{display:none}', // no Save in the scripted homepage embed
   ].join('\n');
   document.head.appendChild(css);
 
