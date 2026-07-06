@@ -109,13 +109,15 @@ function DestLogo({ destKey, dest }) {
       </span>
     );
   }
+  const size = dest.logoSize || 26;
   return (
     <img src={logo.src} alt={dest.name}
-      width="26" height="26"
+      width={size} height={size}
       style={{
         objectFit: 'contain', flexShrink: 0,
         borderRadius: logo.rounded ? '6px' : 0,
         filter: 'drop-shadow(0 0 3px rgba(255,255,255,0.28))',
+        margin: size > 26 ? `-${(size - 26) / 2}px 0` : 0, // keep row height stable
       }} />
   );
 }
@@ -135,8 +137,10 @@ const DESTS = {
   // not the transparent symbol mark
   mailchimp:  { name: 'Mailchimp',   domain: 'mailchimp.com',   color: '#FFE01B', preferIcon: true },
   klaviyo:    { name: 'Klaviyo',     domain: 'klaviyo.com',     color: '#2BB673' },
-  slack:      { name: 'Slack',       domain: 'slack.com',       color: '#E01E5A' },
-  salesforce: { name: 'Salesforce',  domain: 'salesforce.com',  color: '#00A1E0' },
+  // logoSize: per-brand override — marks with heavy internal padding or wide
+  // aspect (Slack, Salesforce) render small at the default 26px
+  slack:      { name: 'Slack',       domain: 'slack.com',       color: '#E01E5A', logoSize: 34 },
+  salesforce: { name: 'Salesforce',  domain: 'salesforce.com',  color: '#00A1E0', logoSize: 34 },
   ghl:        { name: 'HighLevel',   domain: 'gohighlevel.com', color: '#38A6F0' },
 };
 
