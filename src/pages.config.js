@@ -48,6 +48,7 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import About from './pages/About';
+import Agencies from './pages/Agencies';
 import Apply from './pages/Apply';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
@@ -73,6 +74,7 @@ import __Layout from './Layout.jsx';
 
 export const PAGES = {
     "About": About,
+    "Agencies": Agencies,
     "Apply": Apply,
     "Blog": Blog,
     "BlogPost": BlogPost,

@@ -26,14 +26,14 @@ export default function Layout({ children, currentPageName }) {
     { label: 'Solutions', page: 'Solutions' },
     { label: 'Services', page: 'Services' },
     { label: 'Pricing', page: 'Pricing' },
+    { label: 'For Agencies', page: 'Agencies' },
     { label: 'Resources', page: 'Resources' },
-    { label: 'Blog', page: 'Blog' },
   ];
 
   return (
     <div style={{ background: '#00000F', minHeight: '100vh', color: '#fff' }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; }
         html, body { background: #00000F !important; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         a { text-decoration: none; color: inherit; }
@@ -155,6 +155,31 @@ export default function Layout({ children, currentPageName }) {
 
         /* Typography upgrades */
         h1, h2, h3, h4, h5, h6 { letter-spacing: -0.02em; }
+        .ark-display { font-family: 'Bricolage Grotesque', 'Inter', sans-serif; }
+        .ark-mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+
+        /* Light sections */
+        .ark-light { background: #F4F7FA; color: #0B1526; }
+        .ark-light h2, .ark-light h3 { color: #0B1526; }
+        .ark-light .ark-body { color: #46556B; }
+        .ark-card-light {
+          background: #FFFFFF; border: 1px solid #DDE5EE; border-radius: 12px;
+          transition: all 0.25s;
+        }
+        .ark-card-light:hover {
+          border-color: #B9C8DB;
+          box-shadow: 0 8px 28px rgba(11,21,38,0.08);
+          transform: translateY(-2px);
+        }
+        .ark-btn-dark {
+          background: #0B1526; color: #fff; border: none; border-radius: 6px;
+          font-weight: 700; cursor: pointer; transition: all 0.25s;
+        }
+        .ark-btn-dark:hover { background: #1a2a44; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(11,21,38,0.25); }
+
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
         
         /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
@@ -253,7 +278,7 @@ export default function Layout({ children, currentPageName }) {
 
             {[
               { title: 'Platform', links: [['Platform', 'Product'], ['How It Works', 'HowItWorks'], ['Integrations', 'Integrations'], ['Security', 'Security']] },
-              { title: 'Solutions', links: [['By Company Size', 'Solutions'], ['By Role', 'Solutions'], ['By Industry', 'Solutions'], ['Services', 'Services']] },
+              { title: 'Solutions', links: [['By Company Size', 'Solutions'], ['By Role', 'Solutions'], ['For Agencies', 'Agencies'], ['Services', 'Services']] },
               { title: 'Company', links: [['About', 'About'], ['Blog', 'Blog'], ['Apply / Partner', 'Apply']] },
               { title: 'Legal', links: [['Privacy Policy', 'PrivacyPolicy'], ['Terms of Service', 'Terms'], ['Cookie Policy', 'Cookies'], ['Contact Us', 'Contact']] },
             ].map(col => (

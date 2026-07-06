@@ -18,28 +18,28 @@ const features = [
   {
     icon: Zap,
     title: 'High Intent Data',
-    desc: 'A separate add-on product powered by IntentCore. Access individuals actively researching your solution category with verified contact data.',
-    bullets: ['Off-site intent signals (separate product)', 'Individual-level (not just account)', 'Topic-based audience building', 'Pairs with visitor enrichment for full coverage'],
+    desc: 'Build audiences of individuals actively researching your solution category — from 12,000+ intent topics across B2B and B2C.',
+    bullets: ['12,000+ intent topics, B2B + B2C', 'Individual-level (not just account)', 'Topic-based audience building', 'Pairs with visitor enrichment for full coverage'],
     color: '#063524',
   },
   {
     icon: Database,
     title: 'Enrichment Engine',
-    desc: 'Every resolved visitor enriched with 74+ fields across identity, demographics, contact, professional, company, and skiptrace data from 40+ licensed data brokers.',
-    bullets: ['Identity graph from 40+ licensed data brokers', 'Credit bureau skiptrace validation', 'Demographic + professional + company data', '~72% of resolved visitors include company data'],
+    desc: 'Every resolved visitor enriched with 650+ data points across identity, demographics, contact, professional, and company categories.',
+    bullets: ['650+ data points per resolved visitor', 'Licensed, validated identity graph', 'Demographic + professional + company data', '~72% of resolved visitors include company data'],
     color: '#0A2142',
   },
   {
     icon: Cpu,
     title: 'Delivery & Activation',
     desc: 'Push enriched data to your CRM, ESP, outbound tools, or custom endpoints. Real-time or batch.',
-    bullets: ['Native CRM & ESP integrations', 'Meta retargeting audience sync', 'Webhook & REST API delivery', 'Custom field mapping'],
+    bullets: ['Native CRM & ESP integrations', 'Meta, Google Ads & DV360 audience sync', 'Webhook & REST API delivery', 'Custom field mapping'],
     color: '#063524',
   },
   {
     icon: Shield,
     title: 'Privacy & Security',
-    desc: 'Built with privacy in mind. Identity graph sourced exclusively from licensed data brokers with opt-out compliance.',
+    desc: 'Built with privacy in mind. Identity graph sourced exclusively from licensed data providers with opt-out compliance.',
     bullets: ['CCPA & CAN-SPAM compliant', 'Licensed data sources only', 'Opt-out suppression support', 'Built with privacy in mind'],
     color: '#3d0a0a',
   },
@@ -47,11 +47,11 @@ const features = [
 
 const techSpecs = [
   { label: 'Identity Resolution', value: 'Person-level (not just company)' },
-  { label: 'Data Sources', value: '40+ licensed data brokers' },
+  { label: 'Data Sources', value: 'Licensed data providers only' },
   { label: 'Visitor Resolution Rate', value: 'Up to 60% of website traffic' },
   { label: 'Company Match Rate', value: '~72% of resolved visitors' },
-  { label: 'Enrichment Fields', value: '74+ across 6 categories' },
-  { label: 'Validation Method', value: 'Credit bureau skiptrace' },
+  { label: 'Data Points', value: '650+ per resolved visitor' },
+  { label: 'Intent Topics', value: '12,000+ across B2B + B2C' },
   { label: 'Pixel Install Time', value: 'Under 15 minutes' },
   { label: 'Behavioral Events', value: '11 event types captured' },
   { label: 'Compliance', value: 'CCPA, CAN-SPAM' },
@@ -165,7 +165,7 @@ export default function Product() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '40px' }}>
               {[
-                { title: 'Person-Level Identity', desc: 'We resolve sessions to individual people - not just companies. Get name, email, phone, role, company, and 74+ enrichment fields.' },
+                { title: 'Person-Level Identity', desc: 'We resolve sessions to individual people - not just companies. Get name, email, phone, role, company, and 650+ data points.' },
                 { title: 'Behavioral Event Capture', desc: '11 event types tracked - page views, clicks, form submissions, scroll depth, file downloads, video engagement, copy events, idle time, and exit intent.' },
                 { title: 'Real-Time Routing', desc: 'Identified visitors are pushed to your CRM, ESP, or outbound sequence. Sync to Meta retargeting or trigger CRM workflows automatically.' },
                 { title: 'ICP Matching', desc: 'Define your ideal customer profile during onboarding. Matched visitors are automatically flagged and routed to the right workflows.' },
@@ -198,7 +198,7 @@ export default function Product() {
                 <span style={{ color: S.mutedGreen, fontSize: '12px', fontWeight: 600 }}>High Intent Data</span>
               </div>
               <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>Reach In-Market Buyers Before Your Competitors.</h2>
-              <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7 }}>High Intent Data is a separate add-on product powered by IntentCore. It identifies individuals actively researching your solution category and delivers them with verified contact data - ready for outbound sequences. Pair it with Lost Traffic Recovery for full-funnel coverage.</p>
+              <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7 }}>The Audience Builder identifies individuals actively researching your solution category - from 12,000+ intent topics across B2B and B2C - and delivers them with verified contact data, ready for outbound sequences or ad audiences. Pair it with visitor identification for full-funnel coverage.</p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '40px' }}>
               {[
@@ -218,8 +218,8 @@ export default function Product() {
 
         {activeTab === 'Enrichment Engine' && (
           <div style={{ maxWidth: '820px', margin: '0 auto' }}>
-            <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>74+ Fields. Six Categories. Credit Bureau Validated.</h2>
-            <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>Every resolved visitor enriched with data from 40+ licensed data brokers, validated via credit bureau skiptrace. Identity, demographics, contact, professional, company, and social data - all in one record.</p>
+            <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>650+ Data Points. One Record.</h2>
+            <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>Every resolved visitor enriched from our licensed, validated identity graph. Identity, demographics, contact, professional, company, and social data - all in one record.</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
               {[
                 { category: 'Identity & Demographics', fields: ['Full name & exact age', 'Gender & marital status', 'Home address & region', 'Homeowner status', 'Net worth & income range', 'Credit rating band'] },

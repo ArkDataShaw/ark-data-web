@@ -94,8 +94,8 @@ const STEPS = [
   {
     id: 'enriched',
     title: 'Record Enriched',
-    description: '74 fields appended: company data, contact info, demographics, and household attributes - all validated and deduplicated.',
-    detail: '74 enrichment fields per record.',
+    description: '650+ data points appended: company data, contact info, demographics, and household attributes - all validated and deduplicated.',
+    detail: '650+ data points per record.',
     icon: icons.enriched,
   },
   {

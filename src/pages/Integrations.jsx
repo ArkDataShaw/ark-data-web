@@ -5,10 +5,16 @@ import { CheckCircle, ArrowRight } from 'lucide-react';
 
 const S = { muted: '#D9ECFF', mutedGreen: '#DFFFEF', red: '#B1001A' };
 
-const categories = ['All', 'CRM', 'Email & Outreach', 'Enrichment', 'Automation'];
+const categories = ['All', 'Ad Platforms', 'CRM', 'Email & Outreach', 'Enrichment', 'Automation'];
 
 const integrations = [
+  { name: 'Meta Ads', category: 'Ad Platforms', desc: 'Push resolved visitors and intent audiences straight into Meta as Custom Audiences. Live and proven in production.', syncs: ['Custom Audiences', 'Audience Refresh'], auth: 'OAuth 2.0', popular: true },
+  { name: 'Google Ads', category: 'Ad Platforms', desc: 'Sync ArkData audiences to Google Ads Customer Match for search, display, and YouTube targeting.', syncs: ['Customer Match Lists', 'Audience Refresh'], auth: 'OAuth 2.0', popular: true },
+  { name: 'Display & Video 360', category: 'Ad Platforms', desc: 'Push audiences into DV360 for programmatic display and video campaigns at scale.', syncs: ['Audience Lists', 'Audience Refresh'], auth: 'OAuth 2.0' },
   { name: 'HubSpot', category: 'CRM', desc: 'Push identified visitors and enriched records directly into HubSpot CRM with full field mapping support.', syncs: ['Contacts', 'Companies', 'Deals'], auth: 'OAuth 2.0', popular: true },
+  { name: 'Slack', category: 'Automation', desc: 'Get a Slack notification the moment a high-value visitor is identified on your site - with their full profile inline.', syncs: ['Channel Alerts', 'Visitor Profiles'], auth: 'OAuth 2.0', popular: true },
+  { name: 'Salesforce', category: 'CRM', desc: 'Coming soon: sync resolved visitors into Salesforce as leads and contacts with full field mapping.', syncs: ['Leads', 'Contacts'], auth: 'OAuth 2.0', comingSoon: true },
+  { name: 'Shopify', category: 'Automation', desc: 'Coming soon: identify anonymous shoppers and sync them into your marketing flows for abandoned-browse recovery.', syncs: ['Customers', 'Events'], auth: 'OAuth 2.0', comingSoon: true },
   { name: 'GoHighLevel (GHL)', category: 'CRM', desc: 'Sync enriched leads into GHL contacts, trigger workflows, and build audiences for outbound campaigns.', syncs: ['Contacts', 'Opportunities', 'Workflows'], auth: 'API Key', popular: true },
   { name: 'Klaviyo', category: 'Email & Outreach', desc: 'Sync identified profiles and trigger flows based on visitor behavior and enrichment data.', syncs: ['Profiles', 'Events', 'Lists'], auth: 'API Key', popular: true },
   { name: 'Instantly', category: 'Email & Outreach', desc: 'Push enriched leads with verified emails directly into Instantly campaigns for cold outreach at scale.', syncs: ['Leads', 'Campaigns'], auth: 'API Key', popular: true },
@@ -34,7 +40,7 @@ export default function Integrations() {
         <div className="sc" style={{ textAlign: 'center', maxWidth: '680px' }}>
           <p style={{ color: S.red, fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>Integrations</p>
           <h1 style={{ fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px' }}>Your Entire Stack, Connected.</h1>
-          <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, marginBottom: '32px' }}>Native integrations with your CRM, outreach tools, and enrichment platforms. Real-time data delivery into the tools you already use.</p>
+          <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, marginBottom: '32px' }}>Native audience sync to Meta, Google Ads, and DV360 - plus real-time data delivery into your CRM, outreach tools, and enrichment platforms.</p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to={createPageUrl('BookADemo')}>
               <button className="ark-btn-red" style={{ padding: '13px 28px', fontSize: '15px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
@@ -102,6 +108,7 @@ export default function Integrations() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '14px', borderTop: '1px solid #0A2142' }}>
                 <span style={{ color: '#4a6a9a', fontSize: '11px' }}>Auth: <span style={{ color: S.muted, fontWeight: 600 }}>{integration.auth}</span></span>
                 {integration.popular && <span style={{ background: '#042016', border: '1px solid #063524', color: '#22c55e', fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px' }}>Popular</span>}
+                {integration.comingSoon && <span style={{ background: '#0A2142', border: '1px solid #1a4a8a', color: '#8FA9C7', fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px' }}>Coming Soon</span>}
               </div>
             </div>
           ))}

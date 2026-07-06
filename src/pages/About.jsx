@@ -29,7 +29,7 @@ export default function About() {
               <p style={{ color: '#DFFFEF', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>Our Mission</p>
               <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '20px', lineHeight: 1.2 }}>Make Every Lead Visible. Make Every Action Informed.</h2>
               <p style={{ color: S.muted, fontSize: '15px', lineHeight: 1.75, marginBottom: '20px' }}>
-                We believe revenue teams deserve data that actually works: enriched with 74-column depth and delivered directly to their stack. No more guesswork. No more manual research. No more wasted pipeline.
+                We believe revenue teams deserve data that actually works: 650+ data points per resolved visitor, delivered directly to their stack. No more guesswork. No more manual research. No more wasted pipeline.
               </p>
               <p style={{ color: S.muted, fontSize: '15px', lineHeight: 1.75 }}>
                 Ark Data exists to close the gap between anonymous traffic and qualified opportunity - at scale, with compliance, and without friction.
@@ -37,9 +37,9 @@ export default function About() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               {[
-                { n: '74', l: 'Enrichment columns' },
+                { n: '650+', l: 'Data points per person' },
                 { n: '~60%', l: 'Match rate' },
-                { n: '$0', l: 'Data COGS' },
+                { n: '12K+', l: 'Intent topics' },
                 { n: '<1wk', l: 'Average go-live' },
               ].map((s, i) => (
                 <div key={i} style={{ background: '#06162A', border: '1px solid #0A2142', borderRadius: '10px', padding: '24px', textAlign: 'center' }}>

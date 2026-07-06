@@ -9,17 +9,17 @@ const faqCategories = [
   {
     cat: 'Data & Enrichment',
     items: [
-      { q: 'What does Ark Data do?', a: 'Ark Data is a visitor intelligence platform. You install a lightweight pixel on your site, and we identify your anonymous visitors by cross-referencing sessions against our identity graph - sourced from 40+ licensed data brokers and validated against credit bureau records. Resolved visitors are enriched with 74+ data fields and delivered to your CRM or outreach tools.' },
-      { q: 'What attributes are included in enrichment?', a: 'We provide 74+ enrichment fields across several categories: identity and demographics, contact info (phone and email), professional data (job title, department, seniority level), company data (name, domain, revenue, headcount, industry), social profiles (LinkedIn), and skiptrace-validated fields like credit rating and exact age.' },
-      { q: 'Do you offer intent data?', a: 'High-intent data is available as a separate add-on product powered by IntentCore. It is not part of the standard Ark Data enrichment. Book a call if you want to learn more about adding intent signals to your workflow.' },
+      { q: 'What does Ark Data do?', a: 'Ark Data is a visitor identity resolution and intent data platform. You install a lightweight pixel on your site, and we resolve your anonymous visitors into identified people using our licensed, validated identity graph. Resolved visitors are enriched with 650+ data points and delivered to your CRM, ad platforms, or outreach tools.' },
+      { q: 'What attributes are included in enrichment?', a: 'We provide 650+ data points across several categories: identity and demographics, contact info (phone and email), professional data (job title, department, seniority level), company data (name, domain, revenue, headcount, industry), social profiles (LinkedIn), household attributes, and active intent topics.' },
+      { q: 'Do you offer intent data?', a: 'Yes. The Audience Builder lets you build audiences from 12,000+ intent topics across B2B and B2C - people actively researching your category, whether or not they have visited your site - and sync them to Meta, Google Ads, or DV360.' },
       { q: 'Is this company-level or individual-level data?', a: 'We resolve visitors at the individual level. Of resolved visitors, roughly 72% also include company-level data such as company name, domain, revenue, headcount, and industry.' },
-      { q: 'How do you source your data?', a: 'Our identity graph is aggregated from 40+ licensed data sources and validated against credit bureau records. This gives us broad coverage across consumer and professional data points.' },
+      { q: 'How do you source your data?', a: 'Our identity graph is built exclusively from licensed data sources and continuously validated for accuracy. This gives us broad coverage across consumer and professional data points.' },
     ]
   },
   {
     cat: 'Lost Traffic',
     items: [
-      { q: 'How is lost traffic recovered?', a: 'Our pixel captures anonymous visitor sessions and cross-references them against our identity graph, which is powered by 40+ licensed data sources. Resolved visitors are enriched with 74+ fields and delivered directly to your CRM or outreach platform.' },
+      { q: 'How is lost traffic recovered?', a: 'Our pixel captures anonymous visitor sessions and resolves them against our licensed identity graph. Resolved visitors are enriched with 650+ data points and delivered directly to your CRM or outreach platform.' },
       { q: 'What match rates can I expect?', a: 'Most clients see a 40–60% visitor resolution rate, meaning 40–60% of your anonymous traffic is identified and enriched. Actual rates vary by traffic mix and industry.' },
       { q: 'What does the pixel track?', a: 'The pixel captures 11 event types with rich behavioral data: page views, clicks, form submissions, scroll depth, file downloads, video play/pause/complete, text copy, user idle, and exit intent.' },
       { q: 'Will this slow down my website?', a: 'No. Our pixel is lightweight and fully asynchronous. It has zero impact on page load performance or Core Web Vitals.' },
@@ -28,7 +28,7 @@ const faqCategories = [
   {
     cat: 'Integrations & Delivery',
     items: [
-      { q: 'What platforms do you integrate with?', a: 'We integrate with Resend, Instantly, Go High Level, Klaviyo, Clay, HubSpot, and HeyReach. We also support custom HTTP webhooks, so you can connect to virtually any platform that accepts inbound data.' },
+      { q: 'What platforms do you integrate with?', a: 'Audience sync: Meta Ads, Google Ads, and DV360. Data delivery: HubSpot, Slack, Klaviyo, HighLevel, Resend, Instantly, Clay, and HeyReach. Salesforce and Shopify are on the near-term roadmap, and custom HTTP webhooks connect virtually any other platform.' },
       { q: 'How is data delivered?', a: 'Data can be delivered via direct platform integrations, batch CSV export, or custom webhook. Delivery format is configurable per integration.' },
       { q: 'Can I do custom field mapping?', a: 'Yes. We support custom field mapping to match your CRM schema and naming conventions.' },
     ]
@@ -36,8 +36,8 @@ const faqCategories = [
   {
     cat: 'Privacy & Data Handling',
     items: [
-      { q: 'How do you handle privacy?', a: 'Ark Data is built with privacy in mind. All data is sourced from licensed, reputable data providers and validated against credit bureau records. We practice privacy-conscious data handling across our entire pipeline.' },
-      { q: 'How do you source your data?', a: 'Our identity graph is aggregated from 40+ licensed data sources and validated against credit bureau records for accuracy. We do not scrape or collect data from unauthorized sources.' },
+      { q: 'How do you handle privacy?', a: 'Ark Data is built with privacy in mind. All data is sourced from licensed, reputable data providers with opt-out compliance. We practice privacy-conscious data handling across our entire pipeline.' },
+      { q: 'How do you source your data?', a: 'Our identity graph is aggregated exclusively from licensed data sources and continuously validated for accuracy. We do not scrape or collect data from unauthorized sources.' },
     ]
   },
   {
