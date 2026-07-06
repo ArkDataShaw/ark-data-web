@@ -27,8 +27,8 @@ const REACH = 38412;
 
 const CHIPS = [
   { id: 'homeowners', label: 'Homeowners' },
-  { id: 'geo', label: 'TX, FL & AZ' },
   { id: 'income', label: '$100K+ income' },
+  { id: 'geo', label: 'TX, FL & AZ' },
   { id: 'topic', label: 'Solar Installation Cost', topic: true },
 ];
 
@@ -193,12 +193,13 @@ export default function BuilderScrollDemo() {
         const pair = flyBase.current && flyBase.current.pairs[i];
         if (pair) {
           const t = easeInOut(fly);
-          el.style.opacity = fly >= 1 ? '0' : '1';
+          const blend = seg(fly, [0.88, 1]); // crossfade window
+          el.style.opacity = String(1 - blend);
           el.style.transformOrigin = 'top left';
           el.style.transform = `translate(${pair.dx * t}px, ${pair.dy * t}px) scale(${1 + (pair.scale - 1) * t})`;
         }
         const slot = slotRefs.current[i];
-        if (slot) slot.style.opacity = fly >= 1 ? '1' : '0';
+        if (slot) slot.style.opacity = String(seg(fly, [0.88, 1]));
       }
     });
     if (searchingRef.current) {
@@ -281,9 +282,9 @@ export default function BuilderScrollDemo() {
             ['Intent', <SlotChip key="t" label="Solar Installation Cost" topic slotRef={el => { slotRefs.current[3] = el; }} />],
             ['Personal', <span key="p" style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-start' }}>
               <SlotChip label="Homeowners" slotRef={el => { slotRefs.current[0] = el; }} />
-              <SlotChip label="$100K+ income" slotRef={el => { slotRefs.current[2] = el; }} />
+              <SlotChip label="$100K+ income" slotRef={el => { slotRefs.current[1] = el; }} />
             </span>],
-            ['Geographics', <SlotChip key="g" label="TX, FL & AZ" slotRef={el => { slotRefs.current[1] = el; }} />],
+            ['Geographics', <SlotChip key="g" label="TX, FL & AZ" slotRef={el => { slotRefs.current[2] = el; }} />],
             ['Firmographics', null],
             ['Career', null],
             ['Contact details', null],
