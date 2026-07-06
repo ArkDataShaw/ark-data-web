@@ -13,17 +13,16 @@ function DestLogo({ dest }) {
   const [stage, setStage] = useState(0); // 0 brandfetch, 1 favicon, 2 monogram
   if (stage === 2) {
     return (
-      <span style={{ width: 22, height: 22, borderRadius: '5px', background: dest.color, color: dest.color === '#FFFC00' || dest.color === '#FFE01B' ? '#111' : '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '12px', fontWeight: 800 }}>
+      <span style={{ width: 26, height: 26, borderRadius: '6px', background: dest.color, color: dest.color === '#FFFC00' || dest.color === '#FFE01B' ? '#111' : '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '14px', fontWeight: 800 }}>
         {dest.name[0]}
       </span>
     );
   }
   return (
-    <span style={{ width: 22, height: 22, borderRadius: '5px', background: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-      <img src={stage === 0 ? logoUrl(dest.domain) : faviconUrl(dest.domain)} alt={dest.name}
-        width="15" height="15" style={{ objectFit: 'contain' }}
-        onError={() => setStage(s => s + 1)} />
-    </span>
+    <img src={stage === 0 ? logoUrl(dest.domain) : faviconUrl(dest.domain)} alt={dest.name}
+      width="26" height="26"
+      style={{ objectFit: 'contain', flexShrink: 0, filter: 'drop-shadow(0 0 3px rgba(255,255,255,0.28))' }}
+      onError={() => setStage(s => s + 1)} />
   );
 }
 
