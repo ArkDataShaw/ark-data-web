@@ -23,12 +23,64 @@ const tryLoad = (src) => new Promise((resolve, reject) => {
   img.src = src;
 });
 
+// Load an image element, preferring CORS-clean (so pixels are readable for
+// fingerprinting); falls back to a plain load if the CDN lacks CORS headers.
+const loadImgEl = (src) => new Promise((resolve, reject) => {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => resolve(img);
+  img.onerror = () => {
+    const plain = new Image();
+    plain.onload = () => resolve(plain);
+    plain.onerror = reject;
+    plain.src = src;
+  };
+  img.src = src;
+});
+
+// Brandfetch's /symbol endpoint ignores fallback=404 and serves its own
+// placeholder image with HTTP 200 when a brand has no symbol asset — onload
+// fires, so a naive loader shows the Brandfetch logo. We fingerprint the
+// placeholder (dimensions + 8x8 pixel hash when CORS-readable) using
+// meta.com/symbol, a domain known to serve it, and reject any symbol that
+// matches the fingerprint.
+function imgSignature(img) {
+  const sig = { w: img.naturalWidth, h: img.naturalHeight, hash: null };
+  try {
+    const c = document.createElement('canvas');
+    c.width = 8; c.height = 8;
+    const g = c.getContext('2d');
+    g.drawImage(img, 0, 0, 8, 8);
+    sig.hash = g.getImageData(0, 0, 8, 8).data.join(',');
+  } catch { /* canvas tainted (no CORS) — compare dimensions only */ }
+  return sig;
+}
+
+let placeholderSigPromise = null;
+const getPlaceholderSig = () => {
+  if (!placeholderSigPromise) {
+    placeholderSigPromise = loadImgEl(symbolUrl('meta.com')).then(imgSignature).catch(() => null);
+  }
+  return placeholderSigPromise;
+};
+
+const sigsMatch = (a, b) =>
+  a && b && a.w === b.w && a.h === b.h &&
+  (a.hash === null || b.hash === null || a.hash === b.hash);
+
+async function trySymbol(domain) {
+  const src = symbolUrl(domain);
+  const [img, placeholder] = await Promise.all([loadImgEl(src), getPlaceholderSig()]);
+  if (sigsMatch(imgSignature(img), placeholder)) throw new Error('brandfetch placeholder');
+  return { src, rounded: false };
+}
+
 function resolveLogo(destKey) {
   if (logoPromises.has(destKey)) return logoPromises.get(destKey);
   const dest = DESTS[destKey];
-  const start = dest.noSymbol
-    ? Promise.reject(new Error('symbol skipped'))
-    : tryLoad(symbolUrl(dest.domain)).then(src => ({ src, rounded: false }));
+  const start = dest.preferIcon
+    ? Promise.reject(new Error('icon preferred'))
+    : trySymbol(dest.domain);
   const p = start
     .catch(() => tryLoad(iconUrl(dest.domain)).then(src => ({ src, rounded: true })))
     .catch(() => tryLoad(faviconUrl(dest.domain)).then(src => ({ src, rounded: true })))
@@ -73,19 +125,19 @@ function DestLogo({ destKey, dest }) {
 // type 'intent' routes to ad platforms; type 'visitor' routes to CRM/email.
 // ---------------------------------------------------------------------------
 const DESTS = {
-  // noSymbol: skip Brandfetch /symbol for brands where it serves a
-  // placeholder (Meta, HighLevel) or an illegible transparent mark (Mailchimp)
-  meta:       { name: 'Meta',        domain: 'meta.com',        color: '#0866FF', noSymbol: true },
+  meta:       { name: 'Meta',        domain: 'meta.com',        color: '#0866FF' },
   tiktok:     { name: 'TikTok',      domain: 'tiktok.com',      color: '#FE2C55' },
   googleads:  { name: 'Google Ads',  domain: 'google.com',      color: '#4285F4' },
   youtube:    { name: 'YouTube',     domain: 'youtube.com',     color: '#FF0000' },
   snapchat:   { name: 'Snapchat',    domain: 'snapchat.com',    color: '#FFFC00' },
   hubspot:    { name: 'HubSpot',     domain: 'hubspot.com',     color: '#FF7A59' },
-  mailchimp:  { name: 'Mailchimp',   domain: 'mailchimp.com',   color: '#FFE01B', noSymbol: true },
+  // preferIcon: brand-preference — Mailchimp should show its yellow-box icon,
+  // not the transparent symbol mark
+  mailchimp:  { name: 'Mailchimp',   domain: 'mailchimp.com',   color: '#FFE01B', preferIcon: true },
   klaviyo:    { name: 'Klaviyo',     domain: 'klaviyo.com',     color: '#2BB673' },
   slack:      { name: 'Slack',       domain: 'slack.com',       color: '#E01E5A' },
   salesforce: { name: 'Salesforce',  domain: 'salesforce.com',  color: '#00A1E0' },
-  ghl:        { name: 'HighLevel',   domain: 'gohighlevel.com', color: '#38A6F0', noSymbol: true },
+  ghl:        { name: 'HighLevel',   domain: 'gohighlevel.com', color: '#38A6F0' },
 };
 
 const SCENARIOS = [
