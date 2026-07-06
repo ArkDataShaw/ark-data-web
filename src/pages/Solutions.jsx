@@ -6,14 +6,14 @@ import { CheckCircle, ArrowRight } from 'lucide-react';
 const S = { muted: '#D9ECFF', mutedGreen: '#DFFFEF', red: '#B1001A' };
 
 const bySize = [
-  { name: 'Startup', desc: 'Quick wins on lean budgets. Maximize early pipeline with minimal ops overhead.', useCase: 'SDR outbound with intent scoring', inputs: 'Website pixel + CRM', outputs: 'Enriched leads + scores', outcome: 'Fill pipeline 3× faster', features: ['Lost Traffic pixel (up to 5k sessions)', 'Firmographic enrichment', 'Intent scoring', 'CSV or HubSpot delivery'] },
-  { name: 'SMB', desc: 'Scale pipeline generation and improve conversion without growing your team.', useCase: 'Demand gen + retargeting', inputs: 'Website + email list', outputs: 'Enriched audiences + intent data', outcome: 'Lower CPL, better ROAS', features: ['Lost Traffic + High Intent', 'CRM + ESP integrations', 'Audience builder', 'Custom segments (basic)'] },
+  { name: 'Startup', desc: 'Quick wins on lean budgets. Maximize early pipeline with minimal ops overhead.', useCase: 'SDR outbound with intent scoring', inputs: 'Website pixel + CRM', outputs: 'Enriched leads + scores', outcome: 'Fill pipeline 3× faster', features: ['Visitor identification pixel', 'Intent topic audiences (starter)', 'Firmographic enrichment', 'CSV or HubSpot delivery'] },
+  { name: 'SMB', desc: 'Scale pipeline generation and improve conversion without growing your team.', useCase: 'Intent audiences + retargeting', inputs: 'Website + ad accounts', outputs: 'Ad-ready intent audiences', outcome: 'Lower CPL, better ROAS', features: ['Intent audiences from 12,000+ topics', 'Meta + Google Ads sync', 'Visitor identification', 'CRM + ESP integrations'] },
   { name: 'Mid-Market', desc: 'Segment more precisely, score at scale, and activate across your full tech stack.', useCase: 'ABM + full-funnel scoring', inputs: 'CRM + website + ad platforms', outputs: 'Scored accounts + contacts', outcome: '+31% qualified meetings avg', features: ['High-volume enrichment', 'Multi-CRM routing', 'API access', 'Priority data refresh'] },
   { name: 'Enterprise', desc: 'Governance, SLAs, data residency, and analyst support for complex organizations.', useCase: 'RevOps governance + custom data', inputs: 'Enterprise data warehouse', outputs: 'Compliant, normalized data', outcome: 'Unified data layer across teams', features: ['Custom data contracts', 'SLA guarantee', 'DPA + compliance support', 'Dedicated analyst'] },
 ];
 
 const byRole = [
-  { role: 'Growth Marketing', icon: '📈', desc: 'Improve retargeting audiences, reduce CPL, and build higher-converting segments using real intent signals.', tactics: ['Build lookalike audiences from high-intent visitors', 'Reduce ad waste with firmographic filters', 'Trigger nurture sequences from intent signals'] },
+  { role: 'Growth Marketing', icon: '📈', desc: 'Improve retargeting audiences, reduce CPL, and build higher-converting segments using real intent signals.', tactics: ['Sync intent audiences to Meta, Google Ads & DV360', 'Reduce ad waste with firmographic filters', 'Trigger nurture sequences from intent signals'] },
   { role: 'Demand Gen', icon: '🎯', desc: 'Fill pipeline with buyers who are in-market now - not just anyone who ever visited your site.', tactics: ['Identify in-market accounts by category', 'Enrich form fills in real time', 'Score MQL → SQL handoffs accurately'] },
   { role: 'RevOps', icon: '⚙️', desc: 'Clean routing, consistent enrichment, and audit trails for every record in your CRM.', tactics: ['Automate lead routing rules', 'Normalize and deduplicate CRM records', 'Build unified data pipeline from traffic to close'] },
   { role: 'SDR / BDR', icon: '📞', desc: 'Prioritize outreach by intent score so reps spend time on accounts most likely to respond.', tactics: ['Get daily digest of high-intent accounts', 'Real-time alerts on target account visits', 'Trigger sequences from site activity signals'] },
@@ -22,10 +22,10 @@ const byRole = [
 ];
 
 const byIndustry = [
-  { industry: 'B2B SaaS', icon: '💻', problem: 'Long sales cycles, low form conversion', solution: 'High Intent + Lost Traffic to identify evaluators early' },
+  { industry: 'B2B SaaS', icon: '💻', problem: 'Long sales cycles, low form conversion', solution: 'Intent audiences + visitor identification to reach evaluators early' },
   { industry: 'Healthcare Services', icon: '🏥', problem: 'HIPAA sensitivity + low visibility', solution: 'Compliant firmographic enrichment for facility targeting' },
   { industry: 'Financial Services', icon: '💼', problem: 'Regulatory pressure + broker competition', solution: 'Intent signals for in-market investors and procurement buyers' },
-  { industry: 'E-commerce', icon: '🛍️', problem: 'Cart abandonment + anonymous sessions', solution: 'Lost Traffic recovery with purchase intent signals' },
+  { industry: 'E-commerce', icon: '🛍️', problem: 'Cart abandonment + anonymous sessions', solution: 'Visitor identification with purchase intent signals' },
   { industry: 'Home Services', icon: '🏠', problem: 'Local lead quality and CPL', solution: 'Geo-targeted intent data + local business enrichment' },
   { industry: 'Logistics & Manufacturing', icon: '🏭', problem: 'Niche buyers, long procurement cycles', solution: 'Account-level intent + buyer role resolution for niche verticals' },
 ];
@@ -39,8 +39,8 @@ export default function Solutions() {
       <section style={{ background: 'linear-gradient(135deg, #06162A 0%, #000002 60%)', borderBottom: '1px solid #0A2142', padding: '80px 0 60px' }}>
         <div className="sc" style={{ textAlign: 'center', maxWidth: '720px' }}>
           <p style={{ color: '#B1001A', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>Solutions</p>
-          <h1 style={{ fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px', lineHeight: 1.1 }}>Data Solutions for Every Revenue Team.</h1>
-          <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, maxWidth: '560px', margin: '0 auto' }}>From startups to enterprise. SDRs to RevOps. SaaS to e-commerce. Ark Data is built for your specific use case.</p>
+          <h1 style={{ fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px', lineHeight: 1.1 }}>Intent Data for Every Revenue Team.</h1>
+          <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, maxWidth: '560px', margin: '0 auto' }}>Whoever your buyer is, someone is researching your category right now. Here's how teams like yours reach them first - from startups to enterprise, SaaS to home services.</p>
         </div>
       </section>
 

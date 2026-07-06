@@ -5,22 +5,22 @@ import { CheckCircle, ArrowRight, Zap, Shield, Database, Globe, Cpu } from 'luci
 
 const S = { muted: '#D9ECFF', mutedGreen: '#DFFFEF', red: '#B1001A' };
 
-const tabs = ['Overview', 'Lost Traffic Recovery', 'High Intent Data', 'Enrichment Engine', 'Delivery & Integrations'];
+const tabs = ['Overview', 'Intent Audiences', 'Visitor Identification', 'Enrichment Engine', 'Activation & Integrations'];
 
 const features = [
   {
-    icon: Globe,
-    title: 'Lost Traffic Recovery',
-    desc: 'Identify anonymous website visitors and resolve them to real people with verified contact data, company info, and behavioral signals.',
-    bullets: ['Identity resolution at person-level', 'Verified email + direct dial phone', 'On-site behavioral event capture', 'Real-time CRM routing'],
-    color: '#0A2142',
+    icon: Zap,
+    title: 'Intent Audience Builder',
+    desc: 'Build audiences of individuals actively researching your solution category — from 12,000+ intent topics across B2B and B2C — and push them straight to your ad platforms.',
+    bullets: ['12,000+ intent topics, B2B + B2C', 'Individual-level (not just account)', 'One-click sync to Meta, Google Ads & DV360', 'Signals refreshed daily'],
+    color: '#063524',
   },
   {
-    icon: Zap,
-    title: 'High Intent Data',
-    desc: 'Build audiences of individuals actively researching your solution category — from 12,000+ intent topics across B2B and B2C.',
-    bullets: ['12,000+ intent topics, B2B + B2C', 'Individual-level (not just account)', 'Topic-based audience building', 'Pairs with visitor enrichment for full coverage'],
-    color: '#063524',
+    icon: Globe,
+    title: 'Visitor Identification',
+    desc: 'Resolve anonymous website visitors to real people with verified contact data, company info, behavioral signals — and the intent topics they are researching.',
+    bullets: ['Identity resolution at person-level', 'Verified email + direct dial phone', 'On-site behavioral event capture', 'Real-time CRM routing'],
+    color: '#0A2142',
   },
   {
     icon: Database,
@@ -68,10 +68,10 @@ export default function Product() {
         <div className="sc" style={{ textAlign: 'center', maxWidth: '720px' }}>
           <p style={{ color: S.red, fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px' }}>The Platform</p>
           <h1 style={{ fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '16px' }}>
-            Command-Center Grade<br />Data Infrastructure.
+            The Intent Data Platform<br />Built for Activation.
           </h1>
           <p style={{ color: S.muted, fontSize: '17px', lineHeight: 1.7, marginBottom: '32px' }}>
-            Two powerful engines - Lost Traffic Recovery and High Intent Data - unified in a single platform built for revenue operators.
+            Find in-market buyers across 12,000+ intent topics, identify every visitor on your own site, and push both straight into your ad platforms and CRM - one platform, end to end.
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to={createPageUrl('BookADemo')}>
@@ -153,12 +153,12 @@ export default function Product() {
           </>
         )}
 
-        {activeTab === 'Lost Traffic Recovery' && (
+        {activeTab === 'Visitor Identification' && (
           <div style={{ maxWidth: '820px', margin: '0 auto' }}>
             <div style={{ marginBottom: '40px' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#06162A', border: '1px solid #0A2142', borderRadius: '100px', padding: '6px 14px', marginBottom: '20px' }}>
                 <Globe size={14} style={{ color: '#1a5ca8' }} />
-                <span style={{ color: S.muted, fontSize: '12px', fontWeight: 600 }}>Lost Traffic Recovery</span>
+                <span style={{ color: S.muted, fontSize: '12px', fontWeight: 600 }}>Visitor Identification</span>
               </div>
               <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>Turn Anonymous Traffic Into Pipeline.</h2>
               <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7 }}>Up to 97% of website visitors leave without identifying themselves. Ark Data's pixel captures these sessions and resolves them to real people - with verified contact data and company intelligence - before they go dark.</p>
@@ -190,12 +190,12 @@ export default function Product() {
           </div>
         )}
 
-        {activeTab === 'High Intent Data' && (
+        {activeTab === 'Intent Audiences' && (
           <div style={{ maxWidth: '820px', margin: '0 auto' }}>
             <div style={{ marginBottom: '40px' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#042016', border: '1px solid #063524', borderRadius: '100px', padding: '6px 14px', marginBottom: '20px' }}>
                 <Zap size={14} style={{ color: '#22c55e' }} />
-                <span style={{ color: S.mutedGreen, fontSize: '12px', fontWeight: 600 }}>High Intent Data</span>
+                <span style={{ color: S.mutedGreen, fontSize: '12px', fontWeight: 600 }}>Intent Audiences</span>
               </div>
               <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>Reach In-Market Buyers Before Your Competitors.</h2>
               <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7 }}>The Audience Builder identifies individuals actively researching your solution category - from 12,000+ intent topics across B2B and B2C - and delivers them with verified contact data, ready for outbound sequences or ad audiences. Pair it with visitor identification for full-funnel coverage.</p>
@@ -204,8 +204,8 @@ export default function Product() {
               {[
                 { title: 'Off-Site Research Signals', desc: 'Track research activity across content sites, review platforms, comparison tools, and industry publications.' },
                 { title: 'Individual-Level Data', desc: 'Intent matched to individuals - not just accounts. Know exactly who on the buying committee is active.' },
-                { title: 'Topic-Based Audiences', desc: 'Build audiences around specific topics and solution categories relevant to your business.' },
-                { title: 'Separate Add-On', desc: 'High Intent Data is a standalone product that integrates with your Ark Data enrichment pipeline for maximum coverage.' },
+                { title: 'Topic-Based Audiences', desc: 'Build audiences around specific topics and solution categories relevant to your business — from 12,000+ topics across B2B and B2C.' },
+                { title: 'One-Click Ad Sync', desc: 'Push any audience to Meta, Google Ads, or DV360 as a custom audience. It stays in sync as new people move in-market.' },
               ].map((item, i) => (
                 <div key={i} style={{ background: '#042016', border: '1px solid #063524', borderRadius: '10px', padding: '24px' }}>
                   <h3 style={{ color: '#fff', fontWeight: 700, fontSize: '15px', marginBottom: '8px' }}>{item.title}</h3>
@@ -243,12 +243,16 @@ export default function Product() {
           </div>
         )}
 
-        {activeTab === 'Delivery & Integrations' && (
+        {activeTab === 'Activation & Integrations' && (
           <div style={{ maxWidth: '820px', margin: '0 auto' }}>
-            <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>Deliver Data Where Your Team Works.</h2>
-            <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>Enriched visitor data delivered directly to your CRM, ESP, outbound tools, or custom endpoints. Real-time or batch - you choose.</p>
+            <h2 style={{ fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: '16px' }}>Activate Audiences Where Your Buyers Are.</h2>
+            <p style={{ color: S.muted, fontSize: '16px', lineHeight: 1.7, marginBottom: '40px' }}>Intent audiences sync to your ad platforms as custom audiences. Resolved visitors flow to your CRM, ESP, and outbound tools. Real-time or batch - you choose.</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '40px' }}>
               {[
+                { name: 'Meta Ads', type: 'Ad Sync' },
+                { name: 'Google Ads', type: 'Ad Sync' },
+                { name: 'DV360', type: 'Ad Sync' },
+                { name: 'Slack', type: 'Alerts' },
                 { name: 'HubSpot', type: 'CRM' },
                 { name: 'Go High Level', type: 'CRM' },
                 { name: 'Clay', type: 'Enrichment' },
