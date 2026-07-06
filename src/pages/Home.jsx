@@ -5,6 +5,14 @@ import { ArrowRight, CheckCircle } from 'lucide-react';
 import IntentGlobe from '../components/home/IntentGlobe';
 import ResolutionCard from '../components/home/ResolutionCard';
 import DataPipeline from '../components/home/DataPipeline';
+import BuilderShowcase from '../components/home/BuilderShowcase';
+import IntentShowcase from '../components/home/IntentShowcase';
+import IntentPulse from '../components/home/IntentPulse';
+const ProtoTag = ({ n, label }) => (
+  <div style={{ background: '#1A0B0B', borderTop: '1px solid #C8102E', borderBottom: '1px solid #3A1520', padding: '7px 0', textAlign: 'center' }}>
+    <span className="ark-mono" style={{ color: '#FF8A9A', fontSize: '11px', letterSpacing: '0.14em' }}>▼ SANDBOX PROTOTYPE {n} — {label}</span>
+  </div>
+);
 
 const APP_URL = 'https://app.arkdata.io';
 
@@ -158,6 +166,9 @@ export default function Home() {
       {/* HOW IT WORKS — unified pipeline scroll animation */}
       <DataPipeline />
 
+      <ProtoTag n="A" label="AUDIENCE BUILDER HOMEPAGE TEASER (click-to-load live demo)" />
+      <BuilderShowcase />
+
       {/* FEATURE GRID — light */}
       <section className="sp ark-light">
         <div className="sc">
@@ -182,6 +193,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <ProtoTag n="B" label="INTENT USE-CASE SHOWCASE (live signal feed by industry)" />
+      <IntentShowcase />
 
       {/* VISITOR ID SPOTLIGHT — dark */}
       <section className="sp" style={{ background: '#060D1A' }}>
@@ -235,6 +249,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <ProtoTag n="C" label="INTENT PULSE — INDUSTRY INSIGHTS + NEWSLETTER" />
+      <IntentPulse />
 
       {/* FAQ — light */}
       <section className="sp ark-light">
