@@ -4,56 +4,70 @@ import { createPageUrl } from '../../utils';
 import { ArrowRight } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BuilderScrollDemo v2 — drives the REAL builder.
-// The actual demo app is vendored at /builder/index.html (same-origin), so we
-// script it directly: as the user scrolls, big ICP chips punch in, then fly
-// into the real strip while we apply the real filters (S + sync()), then we
-// click the real Generate button — real map, real charts, real reach. When the
-// pin releases, the visitor is left with the genuine interactive builder.
-// No mock, no swap seam.
+// BuilderScrollDemo v3 — pixel-perfect scripted story on the REAL builder.
+//
+// The vendored builder (/builder/index.html?script=1) exposes window.ArkEmbed.
+// On iframe boot we applyAll() the solar filters; the real strip chips exist
+// but are visibility:hidden. We clone their exact DOM (same markup, same
+// computed style) into a parent overlay at ~2.6x scale — the "big bold"
+// chips ARE the builder's chips. Scroll FLIPs each clone from center stage to
+// its chip's precise rect (ending at scale(1) on the exact pixel), the real
+// chip is revealed, the clone removed: an undetectable handoff.
+// Generate is the app's real button served from a baked snapshot (same
+// numbers, charts and colored ZIPs for every visitor, zero upstream cost);
+// map + cards fade in with scroll depth, then the iframe unlocks — the user
+// is inside a genuinely interactive builder whose NEXT Generate runs live.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const GREEN = '#19C37D';
-const GREEN_SOFT = 'rgba(25,195,125,0.12)';
 const GREEN_BORDER = 'rgba(25,195,125,0.35)';
 
-const CHIPS = [
-  { id: 'homeowners', label: 'Homeowners' },
-  { id: 'income', label: '$100K+ income' },
-  { id: 'geo', label: 'TX, FL & AZ' },
-  { id: 'topic', label: 'Solar Panel Installation', topic: true },
+// narrative order → chip groups in the builder strip
+const STORY = [
+  { group: 'homeowner', caption: null },
+  { group: 'income', caption: null },
+  { group: 'geo', caption: null },
+  { group: 'topic', caption: 'SEARCHING FOR' },
 ];
 
-const INCOME_100K = ['$100,000 to $149,999', '$150,000 to $199,999', '$200,000 to $249,999', '$250,000+'];
-
-// scroll-track timings
 const T = {
-  chipIn: i => [0.03 + i * 0.045, 0.10 + i * 0.045],
-  searching: [0.19, 0.24],
-  builderIn: [0.28, 0.38],
-  fly: i => [0.36 + i * 0.03, 0.48 + i * 0.03],
-  generateAt: 0.60,
-  interactiveAt: 0.94,
+  chipIn: i => [0.04 + i * 0.05, 0.11 + i * 0.05],
+  fly: i => [0.34 + i * 0.035, 0.47 + i * 0.035],
+  builderIn: [0.24, 0.34],
+  generateAt: 0.64,
+  dataReveal: [0.68, 0.90],
+  interactiveAt: 0.93,
 };
+const BIG_SCALE = 2.6;
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const seg = (p, [a, b]) => clamp((p - a) / (b - a), 0, 1);
 const easeOut = t => 1 - Math.pow(1 - t, 3);
 const easeInOut = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
+// exact .chip styles from the builder's stylesheet, applied inline to clones
+const CHIP_STYLE = {
+  display: 'inline-flex', alignItems: 'center', gap: '6px',
+  background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '999px',
+  padding: '4px 9px', fontSize: '12px', color: '#334155',
+  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif',
+  whiteSpace: 'nowrap', lineHeight: 'normal', boxSizing: 'border-box',
+};
+
 export default function BuilderScrollDemo() {
   const trackRef = useRef(null);
-  const stageRef = useRef(null);
-  const frameRef = useRef(null);     // builder container (reveal transform)
+  const frameRef = useRef(null);
   const iframeRef = useRef(null);
-  const overlayRef = useRef(null);   // big-chip overlay layer
-  const bigChipRefs = useRef([]);
-  const searchingRef = useRef(null);
+  const overlayRef = useRef(null);
+  const captionRef = useRef(null);
   const hintRef = useRef(null);
-  const appliedRef = useRef(new Set());
+  const cloneRefs = useRef({});      // group -> [clone els]
+  const chipData = useRef(null);     // ArkEmbed.chipInfo() result
+  const homesRef = useRef({});       // clone el -> {hx, hy} overlay home position
+  const revealedRef = useRef(new Set());
   const generatedRef = useRef(false);
   const interactiveRef = useRef(false);
   const [mountIframe, setMountIframe] = useState(false);
+  const [booted, setBooted] = useState(false);
   const [isDesktop, setIsDesktop] = useState(true);
 
   useEffect(() => {
@@ -64,123 +78,155 @@ export default function BuilderScrollDemo() {
     return () => mq.removeEventListener('change', set);
   }, []);
 
-  // ── real-builder scripting (same-origin) ──────────────────────────────────
-  const getApp = useCallback(() => {
+  const app = useCallback(() => {
     const w = iframeRef.current && iframeRef.current.contentWindow;
-    if (!w || !w.S || !w.sync || !w.renderSidebar) return null;
-    return w;
+    return (w && w.ArkEmbed && w.ArkEmbed.ready) ? w : null;
   }, []);
 
-  const applyStep = useCallback((k) => {
-    const w = getApp();
-    if (!w || appliedRef.current.has(k)) return;
-    try {
-      if (k === 0) w.S.checks.homeowner = new w.Set(['Homeowner']);
-      if (k === 1) w.S.checks.income = new w.Set(INCOME_100K);
-      if (k === 2) ['TX', 'FL', 'AZ'].forEach(c => w.S.loc.personal.state.add(c));
-      if (k === 3) { w.S.topics.add('Solar Panel Installation'); w.S.topicMeta['Solar Panel Installation'] = { id: 7270, kind: 'b2c' }; }
-      w.renderSidebar(); w.sync();
-      appliedRef.current.add(k);
-    } catch { /* app not ready yet — retried next frame */ }
-  }, [getApp]);
+  // boot: wait for the app, apply filters, load snapshot, build clones
+  useEffect(() => {
+    if (!mountIframe || booted) return;
+    const iv = setInterval(() => {
+      const w = app();
+      if (!w) return;
+      try {
+        w.ArkEmbed.applyAll();
+        w.ArkEmbed.loadSnapshot('/builder/snapshot-solar.json');
+        chipData.current = w.ArkEmbed.chipInfo();
+        buildClones(chipData.current);
+        setBooted(true);
+        clearInterval(iv);
+      } catch { /* retry */ }
+    }, 250);
+    return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mountIframe, booted]);
 
-  const unapplyStep = useCallback((k) => {
-    const w = getApp();
-    if (!w || !appliedRef.current.has(k)) return;
-    try {
-      if (k === 0) delete w.S.checks.homeowner;
-      if (k === 1) delete w.S.checks.income;
-      if (k === 2) w.S.loc.personal.state.clear();
-      if (k === 3) { w.S.topics.clear(); w.S.topicMeta = {}; }
-      w.renderSidebar(); w.sync();
-      appliedRef.current.delete(k);
-    } catch { /* ignore */ }
-  }, [getApp]);
+  const buildClones = (info) => {
+    const overlay = overlayRef.current;
+    if (!overlay || !info) return;
+    overlay.innerHTML = '';
+    cloneRefs.current = {};
+    homesRef.current = new Map();
 
-  const chipTarget = useCallback((k) => {
-    // land on the real strip-chips row inside the iframe
-    const w = getApp();
-    const iframe = iframeRef.current;
-    if (!w || !iframe) return null;
-    const chipsEl = w.document.getElementById('chips');
-    if (!chipsEl) return null;
-    const ir = iframe.getBoundingClientRect();
-    const cr = chipsEl.getBoundingClientRect();
-    return { x: ir.left + cr.left + 8 + k * 120, y: ir.top + cr.top + 4 };
-  }, [getApp]);
+    STORY.forEach((step, si) => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:10px;justify-content:center;align-items:center;';
+      if (step.caption) {
+        const cap = document.createElement('div');
+        cap.textContent = step.caption;
+        cap.className = 'ark-mono';
+        cap.style.cssText = 'opacity:0;color:#A9C1DC;font-size:15px;letter-spacing:0.22em;text-align:center;margin:14px 0 6px;text-shadow:0 2px 12px rgba(0,0,0,0.6);';
+        captionRef.current = cap;
+        overlay.appendChild(cap);
+      }
+      const clones = [];
+      info.filter(c => c.group === step.group).forEach(c => {
+        const el = document.createElement('span');
+        Object.assign(el.style, CHIP_STYLE);
+        // chip markup is always "<b>Group:</b> value" — rebuild it safely
+        const b = document.createElement('b');
+        b.style.fontWeight = '700';
+        b.textContent = c.label;
+        el.appendChild(b);
+        el.appendChild(document.createTextNode(' ' + c.value));
+        el.style.opacity = '0';
+        el.style.boxShadow = '0 12px 44px rgba(0,0,0,0.45)';
+        el.dataset.w = c.rect.w; el.dataset.h = c.rect.h;
+        el.dataset.rx = c.rect.x; el.dataset.ry = c.rect.y;
+        row.appendChild(el);
+        clones.push(el);
+      });
+      cloneRefs.current[step.group] = clones;
+      overlay.appendChild(row);
+      row.style.transform = `scale(${BIG_SCALE})`;
+      row.style.transformOrigin = 'center';
+      row.style.margin = `${si === 0 ? 0 : 26}px 0`;
+    });
+  };
 
   const frame = useCallback(() => {
     const track = trackRef.current;
     if (!track) return;
     const r = track.getBoundingClientRect();
     const vh = window.innerHeight;
-    if (!mountIframe && r.top < vh * 2) setMountIframe(true);
+    if (!mountIframe && r.top < vh * 2.5) { setMountIframe(true); return; }
     const p = clamp(-r.top / Math.max(r.height - vh, 1), 0, 1);
+    const w = app();
 
-    // builder container reveal
+    // builder frame reveal
     if (frameRef.current) {
       const t = easeOut(seg(p, T.builderIn));
       frameRef.current.style.opacity = String(t);
       frameRef.current.style.transform = `translateY(${(1 - t) * 48}px)`;
     }
 
-    // big chips: pop in → fly to the real strip
-    CHIPS.forEach((c, i) => {
-      const el = bigChipRefs.current[i];
-      if (!el) return;
-      const tIn = c.topic ? seg(p, T.searching) : seg(p, T.chipIn(i));
+    // chips: pop in big → FLIP to their exact rects
+    const iframeBox = iframeRef.current ? iframeRef.current.getBoundingClientRect() : null;
+    STORY.forEach((step, i) => {
+      const clones = cloneRefs.current[step.group] || [];
+      const tIn = seg(p, T.chipIn(i));
       const fly = seg(p, T.fly(i));
 
-      if (fly <= 0) {
-        const pop = easeOut(tIn);
-        el.style.opacity = String(pop);
-        el.style.transform = `translateY(${(1 - pop) * 26}px) scale(${0.7 + pop * 0.3})`;
-        el._fx = 0; el._fy = 0;
-        if (appliedRef.current.has(i)) unapplyStep(i); // scrolled back up
-      } else {
-        const b = el.getBoundingClientRect();
-        const tgt = chipTarget(i);
-        if (tgt) {
+      clones.forEach(el => {
+        if (fly <= 0) {
+          const pop = easeOut(tIn);
+          el.style.opacity = String(pop);
+          el.style.transform = `translateY(${(1 - pop) * 14}px)`;
+          if (revealedRef.current.has(step.group) && w) {
+            w.ArkEmbed.hideGroup(step.group); // scrolled back up
+            revealedRef.current.delete(step.group);
+          }
+        } else if (iframeBox) {
+          // FLIP: from overlay home (scaled by row) to exact chip rect, ending scale(1/BIG_SCALE) within the scaled row = real size
           const t = easeInOut(fly);
-          // measure the un-transformed origin by removing current transform contribution
-          const baseX = b.left - (el._fx || 0);
-          const baseY = b.top - (el._fy || 0);
-          const fx = (tgt.x - baseX) * t;
-          const fy = (tgt.y - baseY) * t;
-          el._fx = fx; el._fy = fy;
+          const b = el.getBoundingClientRect();
+          const prev = el._t || { x: 0, y: 0, s: 1 };
+          // overlay home = current rect minus the transform we last applied (stable across frames)
+          if (!el._home) el._home = { x: b.left - prev.x, y: b.top - prev.y };
+          const targetX = iframeBox.left + parseFloat(el.dataset.rx);
+          const targetY = iframeBox.top + parseFloat(el.dataset.ry);
+          const dx = (targetX - el._home.x) * t;
+          const dy = (targetY - el._home.y) * t;
+          const s = 1 + (1 / BIG_SCALE - 1) * t; // row is scaled BIG_SCALE; net ends at exactly 1.0
+          el._t = { x: dx, y: dy, s };
           el.style.transformOrigin = 'top left';
-          el.style.transform = `translate(${fx}px, ${fy}px) scale(${1 - 0.72 * t})`;
-          el.style.opacity = String(1 - seg(fly, [0.82, 1]));
-        } else {
-          el.style.opacity = String(1 - seg(fly, [0.5, 1]));
+          el.style.transform = `translate(${dx / BIG_SCALE}px, ${dy / BIG_SCALE}px) scale(${s})`;
+          el.style.opacity = String(1 - seg(fly, [0.93, 1]));
+          el.style.boxShadow = `0 ${12 * (1 - t)}px ${44 * (1 - t)}px rgba(0,0,0,${0.45 * (1 - t)})`;
+
+          if (fly >= 0.97 && w && !revealedRef.current.has(step.group)) {
+            w.ArkEmbed.reveal(step.group);
+            revealedRef.current.add(step.group);
+          }
         }
-        if (fly >= 0.96) applyStep(i); // the real chip appears as the ghost lands
-      }
+      });
     });
 
-    if (searchingRef.current) {
-      const t = seg(p, T.searching);
+    if (captionRef.current) {
+      const t = seg(p, T.chipIn(3));
       const gone = seg(p, T.fly(3));
-      searchingRef.current.style.opacity = String(easeOut(t) * (1 - gone));
+      captionRef.current.style.opacity = String(easeOut(t) * (1 - gone));
     }
 
-    // real Generate
-    if (p >= T.generateAt && !generatedRef.current && appliedRef.current.size === 4) {
-      const w = getApp();
-      if (w) {
-        const btn = w.document.getElementById('generateBtn');
-        if (btn) { btn.click(); generatedRef.current = true; }
-      }
+    // real Generate from snapshot
+    if (p >= T.generateAt && !generatedRef.current && w && revealedRef.current.size === 4) {
+      if (w.ArkEmbed.generate()) generatedRef.current = true;
     }
 
-    // unlock interactivity near the end of the track (one-way)
+    // scroll-driven data fade
+    if (generatedRef.current && w) {
+      w.ArkEmbed.setDataReveal(seg(p, T.dataReveal));
+    }
+
+    // unlock
     if (p >= T.interactiveAt && !interactiveRef.current) {
       interactiveRef.current = true;
       if (iframeRef.current) iframeRef.current.style.pointerEvents = 'auto';
       if (overlayRef.current) overlayRef.current.style.display = 'none';
       if (hintRef.current) hintRef.current.style.opacity = '1';
     }
-  }, [mountIframe, applyStep, unapplyStep, chipTarget, getApp]);
+  }, [mountIframe, app]);
 
   useEffect(() => {
     if (!isDesktop) return;
@@ -219,44 +265,32 @@ export default function BuilderScrollDemo() {
 
   return (
     <>
-      <section ref={trackRef} style={{ height: '460vh', position: 'relative', background: '#060D1A', borderTop: '1px solid #101E33' }}>
-        <div ref={stageRef} style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <p className="ark-mono" style={{ color: '#6FE3B0', fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', margin: '26px 0 12px', flexShrink: 0 }}>
+      <section ref={trackRef} style={{ height: '480vh', position: 'relative', background: '#060D1A', borderTop: '1px solid #101E33' }}>
+        <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <p className="ark-mono" style={{ color: '#6FE3B0', fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', margin: '24px 0 12px', flexShrink: 0 }}>
             THE FLAGSHIP · AUDIENCE BUILDER
           </p>
 
-          {/* the REAL builder (same-origin, scripted) */}
-          <div ref={frameRef} style={{ opacity: 0, width: 'min(1240px, calc(100vw - 40px))', flex: 1, minHeight: 0, marginBottom: 0, borderRadius: '14px 14px 0 0', overflow: 'hidden', border: '1px solid #1B3050', borderBottom: 'none', boxShadow: '0 30px 80px rgba(0,0,0,0.55)', background: '#f8fafc', position: 'relative' }}>
+          {/* the REAL builder */}
+          <div ref={frameRef} style={{ opacity: 0, width: 'min(1240px, calc(100vw - 40px))', flex: 1, minHeight: 0, borderRadius: '14px 14px 0 0', overflow: 'hidden', border: '1px solid #1B3050', borderBottom: 'none', boxShadow: '0 30px 80px rgba(0,0,0,0.55)', background: '#f8fafc', position: 'relative' }}>
             {mountIframe && (
               <iframe
                 ref={iframeRef}
-                src="/builder/index.html"
+                src="/builder/index.html?script=1"
                 title="ArkData Audience Builder"
                 style={{ width: '100%', height: '100%', border: 'none', display: 'block', pointerEvents: 'none' }}
               />
             )}
-            {/* interactivity hint (appears when unlocked) */}
             <div ref={hintRef} style={{ position: 'absolute', bottom: '14px', right: '16px', opacity: 0, transition: 'opacity 0.6s', pointerEvents: 'none', background: 'rgba(6,13,26,0.85)', border: `1px solid ${GREEN_BORDER}`, borderRadius: '100px', padding: '7px 16px' }}>
-              <span className="ark-mono" style={{ color: '#6FE3B0', fontSize: '11px', letterSpacing: '0.08em' }}>● LIVE — edit any filter</span>
+              <span className="ark-mono" style={{ color: '#6FE3B0', fontSize: '11px', letterSpacing: '0.08em' }}>● LIVE — edit any filter, then Generate</span>
             </div>
           </div>
 
-          {/* big-chip overlay (above the builder while the story plays) */}
-          <div ref={overlayRef} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', pointerEvents: 'none', zIndex: 3 }}>
-            {CHIPS.slice(0, 3).map((c, i) => (
-              <span key={c.id} ref={el => { bigChipRefs.current[i] = el; }} className="ark-display" style={{ opacity: 0, fontSize: 'clamp(28px, 3.4vw, 44px)', fontWeight: 800, letterSpacing: '-0.02em', color: '#fff', background: 'rgba(74,158,255,0.10)', border: '1px solid rgba(74,158,255,0.4)', borderRadius: '100px', padding: '10px 32px', whiteSpace: 'nowrap', textShadow: '0 2px 20px rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)' }}>
-                {c.label}
-              </span>
-            ))}
-            <span ref={searchingRef} className="ark-mono" style={{ opacity: 0, color: '#A9C1DC', fontSize: '15px', letterSpacing: '0.22em', margin: '8px 0 0', textShadow: '0 2px 12px rgba(0,0,0,0.6)' }}>SEARCHING FOR</span>
-            <span ref={el => { bigChipRefs.current[3] = el; }} className="ark-display" style={{ opacity: 0, fontSize: 'clamp(28px, 3.4vw, 44px)', fontWeight: 800, letterSpacing: '-0.02em', color: '#6FE3B0', background: GREEN_SOFT, border: `1px solid ${GREEN_BORDER}`, borderRadius: '100px', padding: '10px 32px', whiteSpace: 'nowrap', boxShadow: '0 0 50px rgba(25,195,125,0.3)', backdropFilter: 'blur(6px)' }}>
-              Solar Panel Installation
-            </span>
-          </div>
+          {/* overlay: exact clones of the real chips, scaled up */}
+          <div ref={overlayRef} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 3 }} />
         </div>
       </section>
 
-      {/* post-sequence CTA */}
       <section style={{ background: '#060D1A', padding: '56px 0 80px' }}>
         <div style={{ textAlign: 'center' }}>
           <p style={{ color: '#A9C1DC', fontSize: '16px', margin: '0 0 20px' }}>
