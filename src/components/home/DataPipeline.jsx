@@ -205,7 +205,7 @@ export default function DataPipeline() {
           iconEl.style.color = ACCENT;
           iconEl.style.boxShadow = `0 0 24px ${ACCENT_GLOW}`;
           iconEl.style.transform = 'translateX(-50%) scale(1.15)';
-          iconEl.style.background = 'rgba(25,195,125,0.08)';
+          iconEl.style.background = '#091E27'; // opaque: NODE_BG + 8% green tint, so the track never shows through
         } else if (isPassed) {
           iconEl.style.borderColor = ACCENT;
           iconEl.style.color = ACCENT_DIM;
