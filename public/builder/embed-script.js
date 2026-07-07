@@ -20,7 +20,9 @@
   css.textContent = [
     '#chips .chip.ark-hidden{visibility:hidden}',
     'body.ark-data-hidden #previewArea .card{opacity:0}',
-    'body.ark-data-hidden #previewArea #map{opacity:0}',
+    // funnel: the MAP and the COVERAGE card are visible from stage 1 — they
+    // ARE the per-beat story; remaining cards fade in at the end.
+    'body.ark-data-hidden #previewArea .maprail .card:first-child{opacity:1}',
     '#previewArea .card, #previewArea #map{transition:opacity .55s ease}',
     '#reachNum.ark-hidden{visibility:hidden}',
     '#saveBtn{display:none}', // no Save in the scripted homepage embed
@@ -51,6 +53,11 @@
       if (cannedArmed && canned && canned.responses) {
         var r = canned.responses[payload.action];
         if (payload.action === 'cleanup') return { status: 200, body: { ok: true } };
+        // funnel mode: hold full density until the final stage releases it
+        if (payload.action === 'geoPoll' && window.ArkEmbed.holdGeo && !window.ArkEmbed._geoReleased) {
+          await new Promise(function (res) { setTimeout(res, 300); });
+          return { status: 200, body: { ready: false, status: 'building' } };
+        }
         if (r) {
           // small latency so the generating theater is visible but snappy
           await new Promise(function (res) { setTimeout(res, payload.action === 'build' ? 500 : 350); });
@@ -85,7 +92,7 @@
     // surface — chips on desktop, sentence fragments at ≤1000px (mobile has
     // NO chips; never touch chip DOM as a beat).
     STEPS: [
-      { id: 'topic', apply: function () { S.topics.add('FIFA World Cup'); S.topicMeta['FIFA World Cup'] = { id: 6099, kind: 'b2c' }; }, unapply: function () { S.topics.clear(); S.topicMeta = {}; } },
+      { id: 'topic', apply: function () { S.topics.add('Pool Construction'); S.topicMeta['Pool Construction'] = { id: 7676, kind: 'b2c' }; }, unapply: function () { S.topics.clear(); S.topicMeta = {}; } },
       { id: 'homeowner', apply: function () { S.checks.homeowner = new Set(['Homeowner']); }, unapply: function () { delete S.checks.homeowner; } },
       { id: 'networth', apply: function () { S.checks.networth = new Set(['more than $1,000,000']); }, unapply: function () { delete S.checks.networth; } },
       { id: 'geo', apply: function () { S.loc.personal.state.add('FL'); }, unapply: function () { S.loc.personal.state.clear(); } },
@@ -137,6 +144,61 @@
       return fetch(url).then(function (r) { return r.json(); }).then(function (j) { canned = j; });
     },
 
+    // ── funnel drill-down (mobile story) ────────────────────────────────────
+    // Each sentence stage repaints the map (state choropleth) + coverage card
+    // + reach from a baked per-stage insights snapshot, so the audience
+    // visibly narrows beat by beat. The canned geoPoll is HELD until the final
+    // stage so full FL density/charts don't paint early.
+    _stages: null,
+    _stageIdx: -1,
+    holdGeo: false,      // parent sets true BEFORE generate() on mobile
+    _geoReleased: false,
+    loadStages: function (url) {
+      var self = this;
+      return fetch(url).then(function (r) { return r.json(); }).then(function (j) { self._stages = j.stages; });
+    },
+    setStage: function (i) {
+      if (!this._stages || !this._stages[i]) return;
+      this._stageIdx = i;
+      var st = this._stages[i];
+      try { setReach(st.reach); if (window.renderSentence) renderSentence(); } catch (e) { /* noop */ }
+      // state choropleth via the builder's own estimate path (idempotent setter)
+      if (!this._geoReleased) {
+        window._geoData = { people: { states: st.states }, professional: null, company: null };
+        try { if (window.applyStateWithPhase1Anim) window.applyStateWithPhase1Anim(); } catch (e) { /* map not up yet — heartbeat re-asserts */ }
+      }
+      // coverage card counts (labels/icons are the builder's own render)
+      var cov = document.getElementById('coverageStats');
+      if (cov) {
+        var vals = [st.coverage.businessEmail, st.coverage.mobilePhone, st.coverage.linkedinPresent, st.coverage.uniqueCompanies];
+        var ns = cov.querySelectorAll('.stat .n');
+        for (var k = 0; k < ns.length && k < vals.length; k++) {
+          ns[k].textContent = vals[k] == null ? '\u2014' : Number(vals[k]).toLocaleString();
+        }
+      }
+    },
+    releaseGeo: function () {
+      // final stage: let the held canned geoPoll resolve → full FL density,
+      // county/ZIP flip + FL fit handled by the poll below.
+      if (this._geoReleased) return;
+      this._geoReleased = true;
+      var tries = 0; var didFit = false, didFull = false;
+      var iv = setInterval(function () {
+        tries++;
+        var m = window._fullMap;
+        if (!didFit && m && (!m.loaded || m.loaded()) && window._geoPullDone) {
+          var FL_BBOX = [-87.633, 25.121, -80.031, 31.003];
+          try { if (window.fitMapToScope) { window.fitMapToScope(FL_BBOX, 7); didFit = true; } _lastScopeKey = 'embed:FL'; } catch (e) { /* retry */ }
+        }
+        if (!didFull && window._geoPullDone) {
+          var full = document.querySelector('#mapMode input[value="full"]');
+          if (full && !full.checked) { full.checked = true; full.dispatchEvent(new Event('change')); }
+          didFull = true;
+        }
+        if ((didFit && didFull) || tries > 80) clearInterval(iv);
+      }, 400);
+    },
+
     generate: function () {
       if (!canned) return false;
       armCanned();
@@ -181,7 +243,7 @@
       if (x >= 1) { document.body.classList.remove('ark-data-hidden'); return; }
       document.body.classList.add('ark-data-hidden');
       var map = document.querySelector('#previewArea #map');
-      if (map) map.style.opacity = String(Math.min(1, x * 2.2));
+      if (map) map.style.opacity = '1'; // funnel: map visible from stage 1
       var cards = document.querySelectorAll('#previewArea .card');
       var n = cards.length || 1;
       cards.forEach(function (el, i) {

@@ -154,7 +154,7 @@ export default function BuilderScrollDemo() {
       if (!w) { dbg(`waiting for app (t${tries})`); return; }
       try {
         w.ArkEmbed.applyAll();
-        w.ArkEmbed.loadSnapshot('/builder/snapshot-solar.json');
+        w.ArkEmbed.loadSnapshot('/builder/snapshot-pool.json');
         const info = w.ArkEmbed.chipInfo();
         if (!info || !info.length) { dbg(`applied but 0 chips (t${tries})`); return; }
         buildStory(info);

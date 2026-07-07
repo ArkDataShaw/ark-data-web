@@ -24,7 +24,6 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const GREEN_BORDER = 'rgba(25,195,125,0.35)';
-const REACH = 1640;
 
 // beat thresholds within the track (index-aligned with ArkEmbed.STEPS)
 // Beats spread across the FULL pinned range (Shaw bug 2026-07-07: they were
@@ -50,7 +49,6 @@ export default function MobileSentenceDemo() {
   const lastBeatAtRef = useRef(0);
   const rafKickRef = useRef(false);
   const frameRef2 = useRef(null); // latest frame() for the catch-up self-kick
-  const reachSetRef = useRef(false);
   const generatedRef = useRef(false);
   const storyDoneRef = useRef(false);
   const [mountIframe, setMountIframe] = useState(false);
@@ -78,7 +76,9 @@ export default function MobileSentenceDemo() {
       const w = app();
       if (!w) { dbg('waiting for app'); return; }
       try {
-        w.ArkEmbed.loadSnapshot('/builder/snapshot-solar.json');
+        w.ArkEmbed.loadSnapshot('/builder/snapshot-pool.json');
+        w.ArkEmbed.loadStages('/builder/stages-pool.json');
+        w.ArkEmbed.holdGeo = true; // funnel: full FL density held until the last beat
         w.document.body.classList.add('ark-data-hidden');
         setBooted(true);
         dbg('OK');
@@ -109,8 +109,6 @@ export default function MobileSentenceDemo() {
     }
     if (!w || !booted) return;
 
-    // reach beat — the sentence's opening number
-    if (p >= T.reachAt && !reachSetRef.current) { w.ArkEmbed.setReach(REACH); reachSetRef.current = true; if (DEBUG) console.log(`[beats] REACH at p=${p.toFixed(3)}`); }
 
     // sentence beats: one S mutation per beat, renderer does the rest.
     // Catch-up is throttled to one beat per BEAT_MIN_GAP_MS so a fast flick
@@ -120,6 +118,9 @@ export default function MobileSentenceDemo() {
       if (p >= BEATS[i] && !appliedRef.current.has(i)) {
         if (now - lastBeatAtRef.current >= BEAT_MIN_GAP_MS) {
           w.ArkEmbed.applyStep(i); appliedRef.current.add(i); lastBeatAtRef.current = now;
+          if (i === 0 && !generatedRef.current) { if (w.ArkEmbed.generate()) generatedRef.current = true; }
+          w.ArkEmbed.setStage(i);            // reach + state density + coverage for this stage
+          if (i === BEATS.length - 1) w.ArkEmbed.releaseGeo(); // FL: full density + county/ZIP + fit
           if (DEBUG) console.log(`[beats] APPLY step ${i} at p=${p.toFixed(3)} innerH=${window.innerHeight} vv=${window.visualViewport ? Math.round(window.visualViewport.height) : 'n/a'}`);
           if (!rafKickRef.current) { rafKickRef.current = true; setTimeout(() => { rafKickRef.current = false; frameRef2.current && frameRef2.current(); }, BEAT_MIN_GAP_MS + 30); }
         }
@@ -127,12 +128,16 @@ export default function MobileSentenceDemo() {
       }
     }
     BEATS.forEach((at, i) => {
-      if (p < at && appliedRef.current.has(i) && !storyDoneRef.current) { w.ArkEmbed.unapplyStep(i); appliedRef.current.delete(i); }
+      if (p < at && appliedRef.current.has(i) && !storyDoneRef.current) {
+        w.ArkEmbed.unapplyStep(i); appliedRef.current.delete(i);
+        if (appliedRef.current.size > 0) w.ArkEmbed.setStage(appliedRef.current.size - 1);
+      }
     });
 
-    // canned Generate → charts populate under the sentence
-    if (p >= T.generateAt && !generatedRef.current && appliedRef.current.size === BEATS.length) {
-      if (w.ArkEmbed.generate()) generatedRef.current = true;
+    // re-assert the active stage (canned poll lands late and would otherwise
+    // stick stage-4 reach/density over an earlier stage)
+    if (generatedRef.current && appliedRef.current.size > 0 && !storyDoneRef.current) {
+      w.ArkEmbed.setStage(appliedRef.current.size - 1);
     }
     let fadeDone = false;
     if (generatedRef.current) {
