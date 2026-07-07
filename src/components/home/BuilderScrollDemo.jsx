@@ -286,7 +286,7 @@ export default function BuilderScrollDemo() {
             Describe your buyer.<br />Watch the audience build itself.
           </h2>
           <p style={{ color: '#A9C1DC', fontSize: '15px', lineHeight: 1.7, margin: '0 0 24px' }}>
-            Homeowners in TX, FL & AZ with $100K+ income researching{' '}
+            Homeowners in Florida with $100K+ income researching{' '}
             <span style={{ color: '#6FE3B0', fontWeight: 600 }}>Solar Panel Installation</span> — built into an
             ad-ready audience in seconds. Try the full builder on desktop, or open the live demo.
           </p>

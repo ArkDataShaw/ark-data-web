@@ -1397,7 +1397,7 @@ function gatherChips(){
   Object.keys(S.contactReq).forEach(id=>out.push({grp:"Contact",v:`${CONTACT_LABELS[id]||id} -- ${S.contactReq[id]==='exclude'?'Excluded':'Required'}`,rm:()=>{delete S.contactReq[id];}}));
   const LOC_LABEL={personal:"Location",professional:"Business loc",company:"Company HQ"};
   ["personal","professional","company"].forEach(g=>{const L=S.loc[g];
-    L.state.forEach(v=>out.push({grp:LOC_LABEL[g],v,rm:()=>L.state.delete(v)}));
+    if(L.state.size)out.push({grp:LOC_LABEL[g],v:[...L.state].join(", "),rm:()=>L.state.clear()}); // WEBSITE-EMBED PATCH: comma-separated multi-state chip (Shaw 2026-07-07)
     L.city.forEach(v=>out.push({grp:LOC_LABEL[g],v,rm:()=>L.city.delete(v)}));
     if(L.metro)L.metro.forEach(v=>{var dName=v;if(typeof US_METROS!=="undefined"){var found=US_METROS.find(function(x){return x.n===v;});if(found)dName=found.n;}out.push({grp:LOC_LABEL[g],v:dName,rm:()=>L.metro.delete(v)});});
     L.zip.forEach(v=>out.push({grp:LOC_LABEL[g],v,rm:()=>L.zip.delete(v)}));

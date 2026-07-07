@@ -78,7 +78,7 @@
     applyAll: function () {
       S.checks.homeowner = new Set(['Homeowner']);
       S.checks.income = new Set(['$100,000 to $149,999', '$150,000 to $199,999', '$200,000 to $249,999', '$250,000+']);
-      ['TX', 'FL', 'AZ'].forEach(function (c) { S.loc.personal.state.add(c); });
+      S.loc.personal.state.add('FL');
       S.topics.add('Solar Panel Installation');
       S.topicMeta['Solar Panel Installation'] = { id: 7270, kind: 'b2c' };
       renderSidebar(); sync();
