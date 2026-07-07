@@ -79,12 +79,24 @@
       catch (e) { return false; }
     },
 
+    // The scripted audience as ORDERED STEPS. Each step is one S mutation;
+    // apply via applyStep(i)+sync() so the builder's own renderer decides the
+    // surface — chips on desktop, sentence fragments at ≤1000px (mobile has
+    // NO chips; never touch chip DOM as a beat).
+    STEPS: [
+      { id: 'topic', apply: function () { S.topics.add('FIFA World Cup'); S.topicMeta['FIFA World Cup'] = { id: 6099, kind: 'b2c' }; }, unapply: function () { S.topics.clear(); S.topicMeta = {}; } },
+      { id: 'homeowner', apply: function () { S.checks.homeowner = new Set(['Homeowner']); }, unapply: function () { delete S.checks.homeowner; } },
+      { id: 'networth', apply: function () { S.checks.networth = new Set(['more than $1,000,000']); }, unapply: function () { delete S.checks.networth; } },
+      { id: 'geo', apply: function () { S.loc.personal.state.add('FL'); }, unapply: function () { S.loc.personal.state.clear(); } },
+    ],
+    applyStep: function (i) { this.STEPS[i].apply(); renderSidebar(); sync(); tagChips(); },
+    unapplyStep: function (i) { this.STEPS[i].unapply(); renderSidebar(); sync(); tagChips(); },
+    setReach: function (n) { try { setReach(n); if (window.renderSentence) renderSentence(); } catch (e) { /* noop */ } },
+    isMobile: function () { return window.innerWidth <= 1000; },
+
     applyAll: function () {
-      S.checks.homeowner = new Set(['Homeowner']);
-      S.checks.networth = new Set(['more than $1,000,000']);
-      S.loc.personal.state.add('FL');
-      S.topics.add('FIFA World Cup');
-      S.topicMeta['FIFA World Cup'] = { id: 6099, kind: 'b2c' };
+      var self = this;
+      this.STEPS.forEach(function (st) { st.apply(); });
       renderSidebar(); sync();
       tagChips();
       var rn = document.getElementById('reachNum');

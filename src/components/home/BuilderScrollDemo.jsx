@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 import { ArrowRight } from 'lucide-react';
+import MobileSentenceDemo from './MobileSentenceDemo';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BuilderScrollDemo v4 — pixel-perfect scripted story on the REAL builder,
@@ -320,24 +321,10 @@ export default function BuilderScrollDemo() {
   }, [frame, isDesktop]);
 
   if (!isDesktop) {
-    return (
-      <section className="sp" style={{ background: '#060D1A', borderTop: '1px solid #101E33' }}>
-        <div className="sc" style={{ textAlign: 'center' }}>
-          <p className="ark-mono" style={{ color: '#6FE3B0', fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', marginBottom: '14px' }}>THE FLAGSHIP · AUDIENCE BUILDER</p>
-          <h2 className="ark-display" style={{ fontSize: 'clamp(28px, 6vw, 36px)', fontWeight: 800, letterSpacing: '-0.02em', color: '#fff', marginBottom: '12px' }}>
-            Describe your buyer.<br />Watch the audience build itself.
-          </h2>
-          <p style={{ color: '#A9C1DC', fontSize: '15px', lineHeight: 1.7, margin: '0 0 24px' }}>
-            Millionaire homeowners in Florida searching for{' '}
-            <span style={{ color: '#6FE3B0', fontWeight: 600 }}>FIFA World Cup</span> — built into an
-            ad-ready audience in seconds. Try the full builder on desktop, or open the live demo.
-          </p>
-          <Link to={createPageUrl('Demo')}>
-            <button className="ark-btn-green" style={{ padding: '14px 28px', fontSize: '15px' }}>Try the live builder →</button>
-          </Link>
-        </div>
-      </section>
-    );
+    // ≤960px: scripted SENTENCE story — the mobile builder has no chips, so
+    // beats drive S mutations and the builder's own sentence renderer
+    // (Goal 11 fly-in) does the visuals. See MobileSentenceDemo.
+    return <MobileSentenceDemo />;
   }
 
   return (

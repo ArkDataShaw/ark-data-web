@@ -444,6 +444,19 @@
     .ss-rail::-webkit-scrollbar{display:none}
     .ss-rail-chip{flex-shrink:0;background:var(--violet-50);color:var(--violet);border-radius:6px;padding:1px 7px;font-size:11px;font-weight:600;white-space:nowrap}
     .ss-rail-chip b{font-weight:700;opacity:.7}
+    /* fragment fly-in: opacity+translateX only (no layout impact — fold measurement unaffected).
+       inline spans can't transform, so entering frags go inline-block EXCEPT .wrapok (must keep
+       inline wrapping) which fades opacity-only. Joins fade too. */
+    .ss-enter{animation:ssFadeIn .3s ease-out both}
+    .ss-frag.ss-enter:not(.wrapok){display:inline-block;animation:ssFlyIn .3s ease-out both}
+    .ss-rail-chip.ss-enter{animation:ssFlyIn .3s ease-out both}
+    @keyframes ssFlyIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes ssFadeIn{from{opacity:0}to{opacity:1}}
+    .ss-reach.ss-pulse{display:inline-block;animation:ssPulse .45s ease-out}
+    @keyframes ssPulse{0%{transform:scale(1)}35%{transform:scale(1.12);opacity:.85}100%{transform:scale(1)}}
+    @media (prefers-reduced-motion:reduce){
+      .ss-enter,.ss-frag.ss-enter:not(.wrapok),.ss-rail-chip.ss-enter,.ss-reach.ss-pulse{animation:none}
+    }
     /* chip ✕ hidden on mobile -- removal lives in the popover */
     .chip .x{display:none}
     .edge-collapse{display:none}
@@ -649,8 +662,10 @@ window.lucide={createIcons:function(){document.querySelectorAll("[data-lucide]")
 <script src="us-states.js" defer></script>
 <script src="us-cities.js" defer></script>
 <script src="us-metros.js" defer></script>
-<script src="city-zips.js" defer></script>
-<script src="zip-lookup.js" defer></script>
+<script>/* WEBSITE-EMBED PATCH: Shaw 2026-07-07 — mobile payload diet (city→ZIP expansion guards typeof CITY_ZIPS) */
+if(window.innerWidth>1000){var cz=document.createElement("script");cz.src="city-zips.js";cz.defer=true;document.head.appendChild(cz);}</script>
+<script>/* WEBSITE-EMBED PATCH: Shaw 2026-07-07 — mobile payload diet */
+if(window.innerWidth>1000){var zl=document.createElement("script");zl.src="zip-lookup.js";zl.defer=true;document.head.appendChild(zl);}</script>
 <script>
 // ---------- sidebar config (mirrors visual-data-compass FiltersSidebar) ----------
 const TOPICS=[
@@ -2623,17 +2638,25 @@ function suggestedName(){
 // ================= mobile sentence strip (port of Strip.tsx SentenceStrip) =================
 // 3-stage degradation: 15px → 13px → fold highest-prio fragments into the overflow rail.
 var _ssStage=0,_ssFolded=0,_ssKey="";
+// fly-in state: keys already shown this building session. Survives resize/fold rebuilds
+// (resize only resets _ssKey) — only genuinely NEW fragments animate. Cleared on empty spec.
+var _ssSeenKeys=new Set(),_ssLastReach=null;
 function renderSentence(){
   var col=document.getElementById("ssCol");if(!col)return;
   if(!col.offsetParent)return; // hidden (desktop) — skip measurement work
   var sen=specSentence(),frags=sen.fragments;
   var reach=(typeof window._reach==="number")?window._reach.toLocaleString():"\u2014";
   var hasFilters=gatherChips().length>0||(S.freetext||"").trim().length>0;
+  if(!hasFilters){_ssSeenKeys.clear();_ssLastReach=null;} // fresh building session
   var key=frags.map(function(f){return f.text;}).join("|");
   if(key!==_ssKey){_ssKey=key;_ssStage=0;_ssFolded=0;}
   var el=document.getElementById("ssSentence"),rail=document.getElementById("ssRail");
   var foldable=frags.filter(function(f){return f.prio>=3;}).length;
-  var esc=function(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");};
+  var esc=function(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");};
+  // fragment identity for enter-detection: pre+text (per-VALUE for multi-value frags) —
+  // changed text = old key gone, new key animates in. Every key lands in a data-fk attr,
+  // so it MUST route through esc() (filter values include user-typed freetext).
+  var fkOf=function(f,v){return (f.pre||"")+"|"+(v!=null?f.key+"@"+v:f.text);};
   var build=function(){
     var foldOrder=frags.map(function(f,i){return {i:i,prio:f.prio};}).sort(function(a,b){return b.prio-a.prio||b.i-a.i;}).slice(0,_ssFolded).map(function(x){return x.i;});
     var hidden=new Set(foldOrder);
@@ -2643,23 +2666,23 @@ function renderSentence(){
       var visible=frags.filter(function(f,i){return !hidden.has(i);});
       html+=visible.map(function(f){
         var out="";
-        if(f.pre)out+='<span class="ss-join">'+esc(f.pre)+' </span>';
-        if(f.plain)out+='<span class="ss-join ss-unit">'+esc(f.text)+'</span>';
+        if(f.pre)out+='<span class="ss-join" data-fk="'+esc(fkOf(f))+'">'+esc(f.pre)+' </span>';
+        if(f.plain)out+='<span class="ss-join ss-unit" data-fk="'+esc(fkOf(f))+'">'+esc(f.text)+'</span>';
         else if(f.values&&f.values.length>1){
           out+=f.values.map(function(v,vi){
-            var c='<span class="'+(v.length>28?"ss-frag wrapok":"ss-frag")+'">'+esc(v)+'</span>';
+            var c='<span class="'+(v.length>28?"ss-frag wrapok":"ss-frag")+'" data-fk="'+esc(fkOf(f,v))+'">'+esc(v)+'</span>';
             if(vi<f.values.length-2)c+='<span class="ss-join">, </span>';
             else if(vi===f.values.length-2)c+='<span class="ss-join"> &amp; </span>';
             return c;}).join("");
-        }else out+='<span class="'+(f.text.length>28?"ss-frag wrapok":"ss-frag")+'">'+esc(f.text)+'</span>';
+        }else out+='<span class="'+(f.text.length>28?"ss-frag wrapok":"ss-frag")+'" data-fk="'+esc(fkOf(f))+'">'+esc(f.text)+'</span>';
         return out;}).join(" ");
     }
     el.className="stripsentence"+(_ssStage===1?" small":"");
     el.innerHTML=html;
     var foldedChips=frags.map(function(f,i){return {f:f,i:i};}).filter(function(x){return hidden.has(x.i);}).map(function(x){return x.f.pre?x.f.pre+" "+x.f.text:x.f.text;});
-    var railHtml=foldedChips.map(function(t){return '<span class="ss-rail-chip">'+esc(t)+'</span>';}).join("")
-      +sen.leftovers.map(function(l){return '<span class="ss-rail-chip"><b>'+esc(l.label)+':</b> '+esc(l.value)+'</span>';}).join("")
-      +(sen.unmapped>0?'<span class="ss-rail-chip">+'+sen.unmapped+'</span>':"");
+    var railHtml=foldedChips.map(function(t){return '<span class="ss-rail-chip" data-fk="'+esc("rc|"+t)+'">'+esc(t)+'</span>';}).join("")
+      +sen.leftovers.map(function(l){return '<span class="ss-rail-chip" data-fk="'+esc("rl|"+l.label+"|"+l.value)+'"><b>'+esc(l.label)+':</b> '+esc(l.value)+'</span>';}).join("")
+      +(sen.unmapped>0?'<span class="ss-rail-chip" data-fk="rc|+n">+'+sen.unmapped+'</span>':"");
     rail.classList.toggle("hidden",!(hasFilters&&railHtml.length>0));
     rail.innerHTML=railHtml;
   };
@@ -2671,6 +2694,27 @@ function renderSentence(){
     else break;
     build();guard++;
   }
+  // ── fly-in pass — AFTER build+measure settle (enter classes animate opacity/transform
+  // only, so they can't disturb the fold measurement; applied last regardless).
+  var entering=[];
+  [el,rail].forEach(function(root){
+    root.querySelectorAll("[data-fk]").forEach(function(sp){
+      var fk=sp.getAttribute("data-fk");
+      if(!_ssSeenKeys.has(fk))entering.push(sp);
+    });
+  });
+  // stagger in DOM order, left → right (~70ms apart), then register keys as seen
+  entering.forEach(function(sp,i){
+    sp.classList.add("ss-enter");
+    sp.style.animationDelay=(i*70)+"ms";
+  });
+  [el,rail].forEach(function(root){root.querySelectorAll("[data-fk]").forEach(function(sp){_ssSeenKeys.add(sp.getAttribute("data-fk"));});});
+  // reach pulse — the sentence's anchor gets a quick emphasis when the count changes
+  if(hasFilters&&reach!=="\u2014"&&reach!==_ssLastReach&&_ssLastReach!==null){
+    var rEl=el.querySelector(".ss-reach");
+    if(rEl){rEl.classList.add("ss-pulse");rEl.addEventListener("animationend",function(){rEl.classList.remove("ss-pulse");},{once:true});}
+  }
+  _ssLastReach=reach;
 }
 window.renderSentence=renderSentence;
 window.addEventListener("resize",function(){_ssKey="";renderSentence();});
