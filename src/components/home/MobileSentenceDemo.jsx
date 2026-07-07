@@ -136,10 +136,11 @@ export default function MobileSentenceDemo() {
     for (let i = 0; i < BEATS.length; i++) {
       if (p >= BEATS[i] && !appliedRef.current.has(i)) {
         if (now - lastBeatAtRef.current >= BEAT_MIN_GAP_MS) {
-          // the map initializes ON Generate — so: generate first, then hold
-          // beat 0 until the map can actually paint (it's the star of beats 0-2)
-          if (i === 0 && !generatedRef.current) { generatedRef.current = !!w.ArkEmbed.generate(); if (!generatedRef.current) break; }
-          if (i === 0 && !w.ArkEmbed.mapReady()) break; // heartbeat retries until the map is up
+          // ORDER MATTERS: the intent gate blocks Generate until a topic is
+          // applied, and the map only initializes ON Generate. So beat 0
+          // applies the topic (sentence+reach need no map), Generate follows
+          // below, and beats 1+ wait for the map (they're map moves).
+          if (i >= 1 && (!generatedRef.current || !w.ArkEmbed.mapReady())) break; // heartbeat retries
           w.ArkEmbed.beatOn(i); appliedRef.current.add(i); lastBeatAtRef.current = now;
           if (DEBUG) console.log(`[beats] beatOn(${i}) p=${p.toFixed(3)}`);
           if (!rafKickRef.current) { rafKickRef.current = true; setTimeout(() => { rafKickRef.current = false; frameRef2.current && frameRef2.current(); }, BEAT_MIN_GAP_MS + 30); }
@@ -154,6 +155,10 @@ export default function MobileSentenceDemo() {
       }
     }
 
+    // generate as soon as beat 0 (topic) is applied — the intent gate passes now
+    if (!generatedRef.current && appliedRef.current.has(0)) {
+      generatedRef.current = !!w.ArkEmbed.generate();
+    }
     // cheap per-tick re-asserts (late canned poll stomps reach / nulls geo)
     if (generatedRef.current && !storyDoneRef.current) w.ArkEmbed.reassert();
     let fadeDone = false;
