@@ -134,6 +134,12 @@ export default function MobileSentenceDemo() {
       }
     });
 
+    // generate retry: the beat-0 attempt can miss if the snapshot fetch hasn't
+    // resolved yet — keep trying each tick until it takes (heartbeat covers
+    // the stationary case)
+    if (!generatedRef.current && appliedRef.current.has(0)) {
+      if (w.ArkEmbed.generate()) generatedRef.current = true;
+    }
     // re-assert the active stage (canned poll lands late and would otherwise
     // stick stage-4 reach/density over an earlier stage)
     if (generatedRef.current && appliedRef.current.size > 0 && !storyDoneRef.current) {
