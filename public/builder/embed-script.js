@@ -134,15 +134,22 @@
       // blocks a retry. Once the map is live, clear the cache and re-fit so
       // the view frames the scripted geo (FL).
       var tries = 0;
+      var didFit = false, didFull = false;
       var iv = setInterval(function () {
         tries++;
         var m = window._fullMap;
-        if (m && (!m.loaded || m.loaded())) {
-          try { _lastScopeKey = ''; updateMapScope(); } catch (e) { /* noop */ }
-          clearInterval(iv);
-          return;
+        if (!didFit && m && (!m.loaded || m.loaded())) {
+          // applyAll() ran pre-map, so its geo fit was dropped and the scope
+          // cache blocks retries — clear + re-fit once the map is live (FL).
+          try { _lastScopeKey = ''; updateMapScope(); didFit = true; } catch (e) { /* noop */ }
         }
-        if (tries > 40) clearInterval(iv); // give up after ~20s
+        // once full density has landed, auto-select County/ZIP (Shaw 2026-07-07)
+        if (!didFull && window._geoPullDone) {
+          var full = document.querySelector('#mapMode input[value="full"]');
+          if (full && !full.checked) { full.checked = true; full.dispatchEvent(new Event('change')); }
+          didFull = true;
+        }
+        if ((didFit && didFull) || tries > 60) clearInterval(iv); // ~30s cap
       }, 500);
       return true;
     },
