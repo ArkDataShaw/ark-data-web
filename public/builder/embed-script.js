@@ -169,26 +169,27 @@
       if (full && !full.checked) { full.checked = true; full.dispatchEvent(new Event('change')); }
       this._fullFlipped = true;
     },
+    _paintedIdx: -1,
     setStage: function (i) {
       if (!this._stages || !this._stages[i]) return;
-      var self = this;
       var st = this._stages[i];
       var stageChanged = this._stageIdx !== i;
       this._stageIdx = i;
-      try { setReach(st.reach); if (window.renderSentence) renderSentence(); } catch (e) { /* noop */ }
-      // per-stage density through the builder's own painters
-      if (!this._geoReleased) {
-        var g = { people: { states: st.states, counties: st.counties || [], zips: st.zips || [] }, professional: null, company: null };
+      if (stageChanged) { try { setReach(st.reach); if (window.renderSentence) renderSentence(); } catch (e) { /* noop */ } }
+      // per-stage density through the builder's own painters.
+      // PERF: paint ONLY on stage change (the frame loop re-asserts every tick
+      // — repainting ~3k county feature-states each 400ms froze phones), and
+      // stage 1 (no additional filters) is STATE-ONLY: no county payload at
+      // all; County/ZIP flips at stage 2 where county counts shrink.
+      if (!this._geoReleased && this._paintedIdx !== i) {
+        var stateOnly = i === 0;
+        var g = { people: { states: st.states, counties: stateOnly ? [] : (st.counties || []), zips: st.zips || [] }, professional: null, company: null };
         try {
           if (window._setEmbedGeoData) window._setEmbedGeoData(g); else window._geoData = g;
-          if (window.applyStateWithPhase1Anim) window.applyStateWithPhase1Anim(); // state layer (visible pre-flip; harmless after)
+          if (window.applyStateWithPhase1Anim) window.applyStateWithPhase1Anim();
+          this._paintedIdx = i; // only mark painted on success — heartbeat retries otherwise
         } catch (e) { /* map not up yet — heartbeat re-asserts */ }
-        // stage 1: open on states, then flip to County/ZIP once and stay
-        if (i === 0 && stageChanged && !this._fullFlipped) {
-          setTimeout(function () { self._flipToFull(); }, 1400);
-        } else if (i > 0) {
-          this._flipToFull(); // guarantee full mode from stage 2 on
-        }
+        if (i > 0) this._flipToFull(); // County/ZIP from the first filtered stage, then stays
       }
       // coverage card counts (labels/icons are the builder's own render)
       var cov = document.getElementById('coverageStats');
