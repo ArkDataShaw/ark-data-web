@@ -37,6 +37,8 @@
   .nameinput{border:1px solid var(--slate-200);border-radius:9px;padding:9px 12px;font-size:14px;min-width:230px}
   .btn-primary{background:var(--violet);color:#fff;border:0;padding:10px 18px;border-radius:9px;font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:8px}
   .btn-primary:hover{background:var(--violet-d)}
+  .btn-primary:disabled{background:var(--slate-300);cursor:not-allowed}
+  .btn-primary:disabled:hover{background:var(--slate-300)}
   .gen-wrap{position:relative;display:inline-flex}
   /* Generate glows when the current filters need a fresh pull (a filter was removed/widened or topics changed) */
   #generateBtn.regen{animation:genGlow 1.6s ease-in-out infinite}
@@ -1432,7 +1434,8 @@ function updateKind(){
   else if(S.topics.size>0){reachKind.textContent="Intent audience";reachKind.className="kind kind-intent";}
   else{reachKind.textContent="Advanced search";reachKind.className="kind kind-adv";}
 }
-function sync(){renderChips();recompute();updateKind();refreshName();if(window.refreshTitle)window.refreshTitle();if(window.renderSentence)window.renderSentence();if(window.updateSaveState)window.updateSaveState();if(window.updateMapScope)window.updateMapScope();if(window.onFilterChange)window.onFilterChange();}
+function updateGenGate(){var b=document.getElementById("generateBtn");if(!b)return;var ok=S.topics.size>0||(S.mode==="custom"&&(S.freetext||"").trim().length>0);b.disabled=!ok;b.title=ok?"":"Add at least one intent topic to generate an audience";} // WEBSITE-EMBED PATCH: Shaw 2026-07-07
+function sync(){updateGenGate();renderChips();recompute();updateKind();refreshName();if(window.refreshTitle)window.refreshTitle();if(window.renderSentence)window.renderSentence();if(window.updateSaveState)window.updateSaveState();if(window.updateMapScope)window.updateMapScope();if(window.onFilterChange)window.onFilterChange();}
 // ---------- deterministic natural-language audience title ----------
 function _cv(id){return [...(S.checks[id]||[])];}
 function _pv(id){return [...(S.picks[id]||[])];}
@@ -1620,6 +1623,7 @@ window.addEventListener("beforeunload",()=>{ // best-effort so abandoned preview
 });
 
 document.getElementById("generateBtn").onclick=async ()=>{
+  if(!(S.topics.size>0||(S.mode==="custom"&&(S.freetext||"").trim().length>0))){genStatus("Add at least one intent topic first.","error");return;} // WEBSITE-EMBED PATCH: Shaw 2026-07-07
   const seq=++genSeq;clearTimeout(pollTimer);
   const spec=buildSpec();
   window._lastSpec=spec; window._mapRows=null; window._listRows=[]; window._gotMap=false; window._gotList=false; window._geoPullDone=false; window._currentPreviewId=null;
@@ -3298,6 +3302,7 @@ renderSidebar();sync();
   };
 })();
 </script>
+<script>updateGenGate();</script>
 <script src="embed-script.js"></script>
 </body>
 </html>
