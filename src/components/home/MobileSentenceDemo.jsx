@@ -27,8 +27,13 @@ const GREEN_BORDER = 'rgba(25,195,125,0.35)';
 const REACH = 1640;
 
 // beat thresholds within the track (index-aligned with ArkEmbed.STEPS)
-const BEATS = [0.16, 0.30, 0.44, 0.58]; // topic, homeowner, networth, geo(FL)
-const T = { frameIn: [0.02, 0.10], reachAt: 0.10, generateAt: 0.66, dataReveal: [0.70, 0.97] };
+// Beats spread across the FULL pinned range (Shaw bug 2026-07-07: they were
+// compressed into 0.16-0.58 of a short track — the whole build landed in one
+// flick). First beat fires essentially at pin-start; last ~70% so the
+// generate + data fade still fit.
+const BEATS = [0.06, 0.27, 0.48, 0.69]; // topic, homeowner, networth, geo(FL)
+const T = { frameIn: [0.0, 0.05], reachAt: 0.02, generateAt: 0.78, dataReveal: [0.82, 0.99] };
+const BEAT_MIN_GAP_MS = 350; // catch-up throttle: one fly-in at a time, even on a fast flick
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const seg = (p, [a, b]) => clamp((p - a) / (b - a), 0, 1);
@@ -41,6 +46,9 @@ export default function MobileSentenceDemo() {
   const scrimRef = useRef(null);
   const debugRef = useRef(null);
   const appliedRef = useRef(new Set());
+  const lastBeatAtRef = useRef(0);
+  const rafKickRef = useRef(false);
+  const frameRef2 = useRef(null); // latest frame() for the catch-up self-kick
   const reachSetRef = useRef(false);
   const generatedRef = useRef(false);
   const storyDoneRef = useRef(false);
@@ -77,7 +85,7 @@ export default function MobileSentenceDemo() {
     if (!track) return;
     const r = track.getBoundingClientRect();
     const vh = window.innerHeight;
-    if (!mountIframe && r.top < vh * 2) { setMountIframe(true); return; }
+    if (!mountIframe && r.top < vh * 4) { setMountIframe(true); return; }
     const p = clamp(-r.top / Math.max(r.height - vh, 1), 0, 1);
     const w = app();
 
@@ -91,10 +99,21 @@ export default function MobileSentenceDemo() {
     // reach beat — the sentence's opening number
     if (p >= T.reachAt && !reachSetRef.current) { w.ArkEmbed.setReach(REACH); reachSetRef.current = true; }
 
-    // sentence beats: one S mutation per beat, renderer does the rest
+    // sentence beats: one S mutation per beat, renderer does the rest.
+    // Catch-up is throttled to one beat per BEAT_MIN_GAP_MS so a fast flick
+    // still reads as a left-to-right build; scroll-up unapplies immediately.
+    const now = performance.now();
+    for (let i = 0; i < BEATS.length; i++) {
+      if (p >= BEATS[i] && !appliedRef.current.has(i)) {
+        if (now - lastBeatAtRef.current >= BEAT_MIN_GAP_MS) {
+          w.ArkEmbed.applyStep(i); appliedRef.current.add(i); lastBeatAtRef.current = now;
+          if (!rafKickRef.current) { rafKickRef.current = true; setTimeout(() => { rafKickRef.current = false; frameRef2.current && frameRef2.current(); }, BEAT_MIN_GAP_MS + 30); }
+        }
+        break; // never apply two beats in one frame
+      }
+    }
     BEATS.forEach((at, i) => {
-      if (p >= at && !appliedRef.current.has(i)) { w.ArkEmbed.applyStep(i); appliedRef.current.add(i); }
-      else if (p < at && appliedRef.current.has(i) && !storyDoneRef.current) { w.ArkEmbed.unapplyStep(i); appliedRef.current.delete(i); }
+      if (p < at && appliedRef.current.has(i) && !storyDoneRef.current) { w.ArkEmbed.unapplyStep(i); appliedRef.current.delete(i); }
     });
 
     // canned Generate → charts populate under the sentence
@@ -113,6 +132,8 @@ export default function MobileSentenceDemo() {
     }
   }, [mountIframe, booted, app]);
 
+  useEffect(() => { frameRef2.current = frame; }, [frame]);
+
   useEffect(() => {
     let raf = 0;
     const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(frame); };
@@ -127,7 +148,7 @@ export default function MobileSentenceDemo() {
   }, [frame]);
 
   return (
-    <section ref={trackRef} style={{ height: '300vh', position: 'relative', background: '#060D1A', borderTop: '1px solid #101E33' }}>
+    <section ref={trackRef} style={{ height: '520vh', position: 'relative', background: '#060D1A', borderTop: '1px solid #101E33' }}>
       <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', paddingTop: '80px', boxSizing: 'border-box' }}>
         <span ref={debugRef} className="ark-mono" style={{ position: 'absolute', top: '8px', left: '10px', zIndex: 9, color: '#FF8A9A', fontSize: '10px', background: 'rgba(0,0,0,0.6)', padding: '2px 7px', borderRadius: '6px' }}>boot: waiting…</span>
 
