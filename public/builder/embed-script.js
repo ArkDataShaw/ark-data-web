@@ -191,10 +191,26 @@
         this._paintedKey = key;
       } catch (e) { /* map not up — heartbeat retries */ }
     },
+    _lastBeatT: 0,
+    // reach BEFORE the beat's S mutation — so applyStep's sync() renders ONCE
+    // with new reach + new fragments together. A second renderSentence right
+    // after the beat rebuilt innerHTML with all keys already seen and
+    // DESTROYED the fly-in animation (fable-5 regression 2026-07-08).
+    _preSetReach: function (idx) {
+      var st = this._stages && this._stages[idx];
+      if (!st) return;
+      try { if (window._reach !== st.reach) setReach(st.reach); } catch (e) { /* noop */ }
+    },
     _setStageMeta: function (idx) {
       var st = this._stages && this._stages[idx];
       if (!st) return;
-      try { if (window._reach !== st.reach) { setReach(st.reach); if (window.renderSentence) renderSentence(); } } catch (e) { /* noop */ }
+      // reach only re-rendered OUTSIDE the animation grace window (reassert path)
+      try {
+        if (window._reach !== st.reach) {
+          setReach(st.reach);
+          if (window.renderSentence && (performance.now() - this._lastBeatT) > 1600) renderSentence();
+        }
+      } catch (e) { /* noop */ }
       var cov = document.getElementById('coverageStats');
       if (cov) {
         var vals = [st.coverage.businessEmail, st.coverage.mobilePhone, st.coverage.linkedinPresent, st.coverage.uniqueCompanies];
@@ -210,23 +226,24 @@
     //  b4 millionaires → counties narrow to 48 + full density release
     BEAT_COUNT: 5,
     beatOn: function (k) {
-      var self = this;
-      if (k === 0) { this.applyStep(0); this._setStageMeta(0); this._paintStage(0, false); }
+      this._lastBeatT = performance.now();
+      if (k === 0) { this._preSetReach(0); this.applyStep(0); this._setStageMeta(0); this._paintStage(0, false); }
       if (k === 1) {
-        this.applyStep(1); this._setStageMeta(1); this._paintStage(1, false);
-        try { if (window.fitMapToScope) window.fitMapToScope(this.FL_BBOX, 7); _lastScopeKey = 'FL|'; /* exact updateMapScope key for FL-only — later syncs no-op (sentinel key caused US-view bounce) */ } catch (e) { /* noop */ }
+        this._preSetReach(1); this.applyStep(1); this._setStageMeta(1); this._paintStage(1, false);
+        try { if (window.fitMapToScope) window.fitMapToScope(this.FL_BBOX, 7); _lastScopeKey = 'FL|'; /* exact updateMapScope key for FL-only */ } catch (e) { /* noop */ }
       }
       if (k === 2) { this._flipToFull(); this._paintStage(1, true); this._setStageMeta(1); }
-      if (k === 3) { this.applyStep(2); this._setStageMeta(2); this._paintStage(2, true); }
-      if (k === 4) { this.applyStep(3); this._setStageMeta(3); this._paintStage(3, true); this.releaseGeo(); }
+      if (k === 3) { this._preSetReach(2); this.applyStep(2); this._setStageMeta(2); this._paintStage(2, true); }
+      if (k === 4) { this._preSetReach(3); this.applyStep(3); this._setStageMeta(3); this._paintStage(3, true); this.releaseGeo(); }
       this._stageIdx = k;
     },
     beatOff: function (k) {
-      if (k === 4) { this.unapplyStep(3); this._setStageMeta(2); this._paintStage(2, true); }
-      if (k === 3) { this.unapplyStep(2); this._setStageMeta(1); this._paintStage(1, true); }
+      this._lastBeatT = performance.now();
+      if (k === 4) { this._preSetReach(2); this.unapplyStep(3); this._setStageMeta(2); this._paintStage(2, true); }
+      if (k === 3) { this._preSetReach(1); this.unapplyStep(2); this._setStageMeta(1); this._paintStage(1, true); }
       if (k === 2) { this._flipToState(); this._paintStage(1, false); }
       if (k === 1) {
-        this.unapplyStep(1); this._setStageMeta(0); this._paintStage(0, false);
+        this._preSetReach(0); this.unapplyStep(1); this._setStageMeta(0); this._paintStage(0, false);
         try { if (window.fitMapToScope) window.fitMapToScope(null); _lastScopeKey = ''; } catch (e) { /* noop */ }
       }
       if (k === 0) { this.unapplyStep(0); }
