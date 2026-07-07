@@ -96,9 +96,9 @@
     // NO chips; never touch chip DOM as a beat).
     STEPS: [
       { id: 'topic', apply: function () { S.topics.add('Pool Construction'); S.topicMeta['Pool Construction'] = { id: 7676, kind: 'b2c' }; }, unapply: function () { S.topics.clear(); S.topicMeta = {}; } },
+      { id: 'geo', apply: function () { S.loc.personal.state.add('FL'); }, unapply: function () { S.loc.personal.state.clear(); } },
       { id: 'homeowner', apply: function () { S.checks.homeowner = new Set(['Homeowner']); }, unapply: function () { delete S.checks.homeowner; } },
       { id: 'networth', apply: function () { S.checks.networth = new Set(['more than $1,000,000']); }, unapply: function () { delete S.checks.networth; } },
-      { id: 'geo', apply: function () { S.loc.personal.state.add('FL'); }, unapply: function () { S.loc.personal.state.clear(); } },
     ],
     applyStep: function (i) { this.STEPS[i].apply(); renderSidebar(); sync(); tagChips(); },
     unapplyStep: function (i) { this.STEPS[i].unapply(); renderSidebar(); sync(); tagChips(); },
@@ -162,48 +162,82 @@
     },
     _fullFlipped: false,
     _flipToFull: function () {
-      // Shaw's order of operations: stage 1 opens on STATES, then flips to
-      // County/ZIP and STAYS there for every later stage.
       if (this._fullFlipped) return;
       var full = document.querySelector('#mapMode input[value="full"]');
       if (full && !full.checked) { full.checked = true; full.dispatchEvent(new Event('change')); }
       this._fullFlipped = true;
     },
-    _paintedIdx: -1,
-    setStage: function (i) {
-      if (!this._stages || !this._stages[i]) return;
-      var st = this._stages[i];
-      var stageChanged = this._stageIdx !== i;
-      this._stageIdx = i;
-      // reach: cheap — correct it EVERY call (the canned poll/startPull land
-      // late and stomp stage reach; this re-assert is O(1))
+    _flipToState: function () {
+      if (!this._fullFlipped) return;
+      var st = document.querySelector('#mapMode input[value="state"]');
+      if (st && !st.checked) { st.checked = true; st.dispatchEvent(new Event('change')); }
+      this._fullFlipped = false;
+    },
+    FL_BBOX: [-87.633, 25.121, -80.031, 31.003],
+    mapReady: function () { var m = window._fullMap; return !!(m && (!m.loaded || m.loaded())); },
+    _paintedKey: '',
+    _paintStage: function (idx, counties) {
+      // paint only when the (stage, layer) actually changes, or the builder
+      // nulled _geoData (startPull does at Generate) — county repaints are
+      // expensive (~3k feature-states) and froze phones when done per-tick
+      var key = idx + (counties ? 'c' : 's');
+      if (this._paintedKey === key && window._geoData) return;
+      var st = this._stages && this._stages[idx];
+      if (!st) return;
+      var g = { people: { states: st.states, counties: counties ? (st.counties || []) : [], zips: st.zips || [] }, professional: null, company: null };
+      try {
+        if (window._setEmbedGeoData) window._setEmbedGeoData(g); else window._geoData = g;
+        if (window.applyStateWithPhase1Anim) window.applyStateWithPhase1Anim();
+        this._paintedKey = key;
+      } catch (e) { /* map not up — heartbeat retries */ }
+    },
+    _setStageMeta: function (idx) {
+      var st = this._stages && this._stages[idx];
+      if (!st) return;
       try { if (window._reach !== st.reach) { setReach(st.reach); if (window.renderSentence) renderSentence(); } } catch (e) { /* noop */ }
-      // geo: if the builder nulled _geoData (startPull does at Generate), force a repaint
-      if (!window._geoData && this._paintedIdx === i) this._paintedIdx = -1;
-      // per-stage density through the builder's own painters.
-      // PERF: paint ONLY on stage change (the frame loop re-asserts every tick
-      // — repainting ~3k county feature-states each 400ms froze phones), and
-      // stage 1 (no additional filters) is STATE-ONLY: no county payload at
-      // all; County/ZIP flips at stage 2 where county counts shrink.
-      if (!this._geoReleased && this._paintedIdx !== i) {
-        var stateOnly = i === 0;
-        var g = { people: { states: st.states, counties: stateOnly ? [] : (st.counties || []), zips: st.zips || [] }, professional: null, company: null };
-        try {
-          if (window._setEmbedGeoData) window._setEmbedGeoData(g); else window._geoData = g;
-          if (window.applyStateWithPhase1Anim) window.applyStateWithPhase1Anim();
-          this._paintedIdx = i; // only mark painted on success — heartbeat retries otherwise
-        } catch (e) { /* map not up yet — heartbeat re-asserts */ }
-        if (i > 0) this._flipToFull(); // County/ZIP from the first filtered stage, then stays
-      }
-      // coverage card counts (labels/icons are the builder's own render)
       var cov = document.getElementById('coverageStats');
       if (cov) {
         var vals = [st.coverage.businessEmail, st.coverage.mobilePhone, st.coverage.linkedinPresent, st.coverage.uniqueCompanies];
         var ns = cov.querySelectorAll('.stat .n');
-        for (var k = 0; k < ns.length && k < vals.length; k++) {
-          ns[k].textContent = vals[k] == null ? '\u2014' : Number(vals[k]).toLocaleString();
-        }
+        for (var k = 0; k < ns.length && k < vals.length; k++) ns[k].textContent = vals[k] == null ? '\u2014' : Number(vals[k]).toLocaleString();
       }
+    },
+    // ── Shaw's beat order (2026-07-07): the map is the star of beats 0-2 ──
+    //  b0 topic  → nationwide STATE choropleth (reach visible)
+    //  b1 FL     → map auto-zooms Florida (still state view)
+    //  b2 flip   → County/ZIP mode (no filter change, same FL stage)
+    //  b3 homeowners  → counties narrow
+    //  b4 millionaires → counties narrow to 48 + full density release
+    BEAT_COUNT: 5,
+    beatOn: function (k) {
+      var self = this;
+      if (k === 0) { this.applyStep(0); this._setStageMeta(0); this._paintStage(0, false); }
+      if (k === 1) {
+        this.applyStep(1); this._setStageMeta(1); this._paintStage(1, false);
+        try { if (window.fitMapToScope) window.fitMapToScope(this.FL_BBOX, 7); _lastScopeKey = 'embed:FL'; } catch (e) { /* noop */ }
+      }
+      if (k === 2) { this._flipToFull(); this._paintStage(1, true); this._setStageMeta(1); }
+      if (k === 3) { this.applyStep(2); this._setStageMeta(2); this._paintStage(2, true); }
+      if (k === 4) { this.applyStep(3); this._setStageMeta(3); this._paintStage(3, true); this.releaseGeo(); }
+      this._stageIdx = k;
+    },
+    beatOff: function (k) {
+      if (k === 4) { this.unapplyStep(3); this._setStageMeta(2); this._paintStage(2, true); }
+      if (k === 3) { this.unapplyStep(2); this._setStageMeta(1); this._paintStage(1, true); }
+      if (k === 2) { this._flipToState(); this._paintStage(1, false); }
+      if (k === 1) {
+        this.unapplyStep(1); this._setStageMeta(0); this._paintStage(0, false);
+        try { if (window.fitMapToScope) window.fitMapToScope(null); _lastScopeKey = ''; } catch (e) { /* noop */ }
+      }
+      if (k === 0) { this.unapplyStep(0); }
+      this._stageIdx = k - 1;
+    },
+    // per-tick cheap re-asserts (late canned poll stomps reach / nulls geo)
+    reassert: function () {
+      if (this._stageIdx < 0 || this._geoReleased) return;
+      var stageIdx = this._stageIdx >= 2 ? this._stageIdx - 1 : this._stageIdx; // beats 2+ share stage idx-1
+      this._setStageMeta(Math.min(stageIdx, 3));
+      if (!window._geoData) { this._paintedKey = ''; this._paintStage(Math.min(stageIdx, 3), this._stageIdx >= 2); }
     },
     releaseGeo: function () {
       // final stage: let the held canned geoPoll resolve → full FL density,

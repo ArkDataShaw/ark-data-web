@@ -6,6 +6,7 @@
 <title>Audience Builder -- Mockup</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+<link rel="preconnect" href="https://unpkg.com" crossorigin><link rel="preconnect" href="https://basemaps.cartocdn.com" crossorigin><link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
 <style>
   :root{
     --violet:#7c3aed; --violet-d:#6d28d9; --violet-50:#f5f3ff;
@@ -660,7 +661,8 @@ window.lucide={createIcons:function(){document.querySelectorAll("[data-lucide]")
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" defer></script>
 <script src="https://unpkg.com/pmtiles@4.3.0/dist/pmtiles.js" defer></script>
 <script src="us-states.js" defer></script>
-<script src="us-cities.js" defer></script>
+<script>/* WEBSITE-EMBED PATCH: Shaw 2026-07-07 — mobile payload diet (city typeahead guards typeof US_CITIES) */
+if(window.innerWidth>1000){var uc=document.createElement("script");uc.src="us-cities.js";uc.defer=true;document.head.appendChild(uc);}</script>
 <script src="us-metros.js" defer></script>
 <script>/* WEBSITE-EMBED PATCH: Shaw 2026-07-07 — mobile payload diet (city→ZIP expansion guards typeof CITY_ZIPS) */
 if(window.innerWidth>1000){var cz=document.createElement("script");cz.src="city-zips.js";cz.defer=true;document.head.appendChild(cz);}</script>

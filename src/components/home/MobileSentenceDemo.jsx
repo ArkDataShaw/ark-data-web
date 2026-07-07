@@ -30,7 +30,8 @@ const GREEN_BORDER = 'rgba(25,195,125,0.35)';
 // compressed into 0.16-0.58 of a short track — the whole build landed in one
 // flick). First beat fires essentially at pin-start; last ~70% so the
 // generate + data fade still fit.
-const BEATS = [0.06, 0.27, 0.48, 0.69]; // topic, homeowner, networth, geo(FL)
+// Shaw's order (2026-07-07): topic/US-states → FL zoom → County/ZIP flip → homeowners → millionaires
+const BEATS = [0.05, 0.24, 0.42, 0.60, 0.76];
 const T = { frameIn: [0.0, 0.05], reachAt: 0.02, generateAt: 0.78, dataReveal: [0.82, 0.99] };
 const BEAT_MIN_GAP_MS = 350; // catch-up throttle: one fly-in at a time, even on a fast flick
 
@@ -54,14 +55,31 @@ export default function MobileSentenceDemo() {
   const [mountIframe, setMountIframe] = useState(false);
   const [booted, setBooted] = useState(false);
   const [armed, setArmed] = useState(false); // scrim tapped → touch enabled
+  const [iframeDead, setIframeDead] = useState(false); // load never fired → poster fallback
+  const loadFiredRef = useRef(false);
+  const bootT0 = useRef(0);
 
   // idle-mount: boot the iframe ~2s after page load so ArkEmbed is ready long
   // before the visitor reaches the track (fast-flick approach previously beat
   // the boot and the first beats lagged pin-start).
   useEffect(() => {
-    const t = setTimeout(() => setMountIframe(true), 2000);
+    const t = setTimeout(() => { bootT0.current = performance.now(); setMountIframe(true); }, 2000);
     return () => clearTimeout(t);
   }, []);
+
+  // hard fallback: if the iframe load event hasn't fired in 10s (iOS Safari
+  // can refuse offscreen/sticky-parent iframes), swap to a poster + retry —
+  // the demo must NEVER hang blank.
+  useEffect(() => {
+    if (!mountIframe || iframeDead) return;
+    const t = setTimeout(() => {
+      if (!loadFiredRef.current) {
+        if (DEBUG) console.log('[boot] iframe load NOT fired after 10s — poster fallback');
+        setIframeDead(true);
+      }
+    }, 10000);
+    return () => clearTimeout(t);
+  }, [mountIframe, iframeDead]);
 
   const app = useCallback(() => {
     const w = iframeRef.current && iframeRef.current.contentWindow;
@@ -76,6 +94,7 @@ export default function MobileSentenceDemo() {
       const w = app();
       if (!w) { dbg('waiting for app'); return; }
       try {
+        if (DEBUG) console.log(`[boot] ArkEmbed ready +${Math.round(performance.now() - bootT0.current)}ms`);
         w.ArkEmbed.loadSnapshot('/builder/snapshot-pool.json');
         w.ArkEmbed.loadStages('/builder/stages-pool.json');
         w.ArkEmbed.holdGeo = true; // funnel: full FL density held until the last beat
@@ -117,34 +136,26 @@ export default function MobileSentenceDemo() {
     for (let i = 0; i < BEATS.length; i++) {
       if (p >= BEATS[i] && !appliedRef.current.has(i)) {
         if (now - lastBeatAtRef.current >= BEAT_MIN_GAP_MS) {
-          w.ArkEmbed.applyStep(i); appliedRef.current.add(i); lastBeatAtRef.current = now;
-          if (i === 0 && !generatedRef.current) { if (w.ArkEmbed.generate()) generatedRef.current = true; }
-          w.ArkEmbed.setStage(i);            // reach + state density + coverage for this stage
-          if (i === BEATS.length - 1) w.ArkEmbed.releaseGeo(); // FL: full density + county/ZIP + fit
-          if (DEBUG) console.log(`[beats] APPLY step ${i} at p=${p.toFixed(3)} innerH=${window.innerHeight} vv=${window.visualViewport ? Math.round(window.visualViewport.height) : 'n/a'}`);
+          // the map initializes ON Generate — so: generate first, then hold
+          // beat 0 until the map can actually paint (it's the star of beats 0-2)
+          if (i === 0 && !generatedRef.current) { generatedRef.current = !!w.ArkEmbed.generate(); if (!generatedRef.current) break; }
+          if (i === 0 && !w.ArkEmbed.mapReady()) break; // heartbeat retries until the map is up
+          w.ArkEmbed.beatOn(i); appliedRef.current.add(i); lastBeatAtRef.current = now;
+          if (DEBUG) console.log(`[beats] beatOn(${i}) p=${p.toFixed(3)}`);
           if (!rafKickRef.current) { rafKickRef.current = true; setTimeout(() => { rafKickRef.current = false; frameRef2.current && frameRef2.current(); }, BEAT_MIN_GAP_MS + 30); }
         }
         break; // never apply two beats in one frame
       }
     }
-    BEATS.forEach((at, i) => {
-      if (p < at && appliedRef.current.has(i) && !storyDoneRef.current) {
-        w.ArkEmbed.unapplyStep(i); appliedRef.current.delete(i);
-        if (appliedRef.current.size > 0) w.ArkEmbed.setStage(appliedRef.current.size - 1);
+    for (let i = BEATS.length - 1; i >= 0; i--) {
+      if (p < BEATS[i] && appliedRef.current.has(i) && !storyDoneRef.current) {
+        w.ArkEmbed.beatOff(i); appliedRef.current.delete(i);
+        if (DEBUG) console.log(`[beats] beatOff(${i}) p=${p.toFixed(3)}`);
       }
-    });
+    }
 
-    // generate retry: the beat-0 attempt can miss if the snapshot fetch hasn't
-    // resolved yet — keep trying each tick until it takes (heartbeat covers
-    // the stationary case)
-    if (!generatedRef.current && appliedRef.current.has(0)) {
-      if (w.ArkEmbed.generate()) generatedRef.current = true;
-    }
-    // re-assert the active stage (canned poll lands late and would otherwise
-    // stick stage-4 reach/density over an earlier stage)
-    if (generatedRef.current && appliedRef.current.size > 0 && !storyDoneRef.current) {
-      w.ArkEmbed.setStage(appliedRef.current.size - 1);
-    }
+    // cheap per-tick re-asserts (late canned poll stomps reach / nulls geo)
+    if (generatedRef.current && !storyDoneRef.current) w.ArkEmbed.reassert();
     let fadeDone = false;
     if (generatedRef.current) {
       const x = seg(p, T.dataReveal);
@@ -191,11 +202,31 @@ export default function MobileSentenceDemo() {
         <span ref={debugRef} className="ark-mono" style={{ position: 'absolute', top: '8px', left: '10px', zIndex: 9, color: '#FF8A9A', fontSize: '10px', background: 'rgba(0,0,0,0.6)', padding: '2px 7px', borderRadius: '6px' }}>boot: waiting…</span>
 
         <div ref={frameRef} style={{ opacity: 0, margin: '0 10px', flex: 1, minHeight: 0, borderRadius: '14px 14px 0 0', overflow: 'hidden', border: '1px solid #1B3050', borderBottom: 'none', boxShadow: '0 20px 60px rgba(0,0,0,0.55)', background: '#f8fafc', position: 'relative', touchAction: 'pan-y' }}>
-          {mountIframe && (
+          {/* boot skeleton — never a blank frame */}
+          {!booted && !iframeDead && (
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', gap: '12px', padding: '18px', background: '#f8fafc', zIndex: 2, pointerEvents: 'none' }}>
+              <div style={{ height: '44px', borderRadius: '10px', background: 'linear-gradient(90deg,#eef2f7 25%,#e2e8f0 50%,#eef2f7 75%)', backgroundSize: '200% 100%', animation: 'arkShimmer 1.2s linear infinite' }} />
+              <div style={{ height: '58px', borderRadius: '10px', background: 'linear-gradient(90deg,#eef2f7 25%,#e2e8f0 50%,#eef2f7 75%)', backgroundSize: '200% 100%', animation: 'arkShimmer 1.2s linear infinite' }} />
+              <div style={{ flex: 1, borderRadius: '10px', background: 'linear-gradient(90deg,#eef2f7 25%,#e2e8f0 50%,#eef2f7 75%)', backgroundSize: '200% 100%', animation: 'arkShimmer 1.2s linear infinite' }} />
+              <style>{`@keyframes arkShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
+            </div>
+          )}
+          {iframeDead && (
+            <button
+              onClick={() => { loadFiredRef.current = false; setIframeDead(false); setMountIframe(false); setTimeout(() => setMountIframe(true), 50); }}
+              style={{ position: 'absolute', inset: 0, zIndex: 2, border: 'none', cursor: 'pointer', background: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '14px' }}
+            >
+              <span className="ark-display" style={{ color: '#0f172a', fontSize: '17px', fontWeight: 700 }}>The live builder didn't load</span>
+              <span className="ark-mono" style={{ color: '#64748b', fontSize: '12px' }}>Tap to retry</span>
+            </button>
+          )}
+          {mountIframe && !iframeDead && (
             <iframe
               ref={iframeRef}
               src="/builder/index.html?script=1"
               title="ArkData Audience Builder"
+              loading="eager"
+              onLoad={() => { loadFiredRef.current = true; if (DEBUG) console.log(`[boot] iframe load +${Math.round(performance.now() - bootT0.current)}ms`); }}
               style={{ width: '100%', height: '100%', border: 'none', display: 'block', pointerEvents: armed ? 'auto' : 'none' }}
             />
           )}
