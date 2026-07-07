@@ -155,9 +155,15 @@
         tries++;
         var m = window._fullMap;
         if (!didFit && m && (!m.loaded || m.loaded())) {
-          // applyAll() ran pre-map, so its geo fit was dropped and the scope
-          // cache blocks retries — clear + re-fit once the map is live (FL).
-          try { _lastScopeKey = ''; updateMapScope(); didFit = true; } catch (e) { /* noop */ }
+          // The scripted geo is ALWAYS FL — fit a hardcoded bbox directly.
+          // updateMapScope's bbox math needs ZIP_LOOKUP/state lookups, and the
+          // mobile payload diet skips zip-lookup.js ≤1000px, so it silently
+          // no-opped on phones (Shaw bug A). A constant needs no lookup data.
+          var FL_BBOX = [-87.633, 25.121, -80.031, 31.003]; // from us-states.js geometry
+          try {
+            if (window.fitMapToScope) { window.fitMapToScope(FL_BBOX, 7); didFit = true; }
+            _lastScopeKey = 'embed:FL'; // mark consumed so free-play geo changes still re-fit
+          } catch (e) { /* retry next tick */ }
         }
         // once full density has landed, auto-select County/ZIP (Shaw 2026-07-07)
         if (!didFull && window._geoPullDone) {

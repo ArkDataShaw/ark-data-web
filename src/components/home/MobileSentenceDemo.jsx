@@ -35,6 +35,7 @@ const BEATS = [0.06, 0.27, 0.48, 0.69]; // topic, homeowner, networth, geo(FL)
 const T = { frameIn: [0.0, 0.05], reachAt: 0.02, generateAt: 0.78, dataReveal: [0.82, 0.99] };
 const BEAT_MIN_GAP_MS = 350; // catch-up throttle: one fly-in at a time, even on a fast flick
 
+const DEBUG = typeof window !== 'undefined' && /[?&]debugBeats=1/.test(window.location.search);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const seg = (p, [a, b]) => clamp((p - a) / (b - a), 0, 1);
 const easeOut = t => 1 - Math.pow(1 - t, 3);
@@ -96,6 +97,10 @@ export default function MobileSentenceDemo() {
     if (!mountIframe && r.top < vh * 4) { setMountIframe(true); return; } // fallback if the idle timer hasn't fired
     const p = clamp(-r.top / Math.max(r.height - vh, 1), 0, 1);
     const w = app();
+    if (DEBUG) {
+      const pct = Math.round(p * 50) * 2;
+      if (pct !== frame._dbgPct) { frame._dbgPct = pct; console.log(`[beats] p=${p.toFixed(3)} booted=${booted} ready=${!!w} applied=${appliedRef.current.size}`); }
+    }
 
     if (frameRef.current) {
       const t = easeOut(seg(p, T.frameIn));
@@ -105,7 +110,7 @@ export default function MobileSentenceDemo() {
     if (!w || !booted) return;
 
     // reach beat — the sentence's opening number
-    if (p >= T.reachAt && !reachSetRef.current) { w.ArkEmbed.setReach(REACH); reachSetRef.current = true; }
+    if (p >= T.reachAt && !reachSetRef.current) { w.ArkEmbed.setReach(REACH); reachSetRef.current = true; if (DEBUG) console.log(`[beats] REACH at p=${p.toFixed(3)}`); }
 
     // sentence beats: one S mutation per beat, renderer does the rest.
     // Catch-up is throttled to one beat per BEAT_MIN_GAP_MS so a fast flick
@@ -115,6 +120,7 @@ export default function MobileSentenceDemo() {
       if (p >= BEATS[i] && !appliedRef.current.has(i)) {
         if (now - lastBeatAtRef.current >= BEAT_MIN_GAP_MS) {
           w.ArkEmbed.applyStep(i); appliedRef.current.add(i); lastBeatAtRef.current = now;
+          if (DEBUG) console.log(`[beats] APPLY step ${i} at p=${p.toFixed(3)} innerH=${window.innerHeight} vv=${window.visualViewport ? Math.round(window.visualViewport.height) : 'n/a'}`);
           if (!rafKickRef.current) { rafKickRef.current = true; setTimeout(() => { rafKickRef.current = false; frameRef2.current && frameRef2.current(); }, BEAT_MIN_GAP_MS + 30); }
         }
         break; // never apply two beats in one frame
@@ -142,6 +148,17 @@ export default function MobileSentenceDemo() {
 
   useEffect(() => { frameRef2.current = frame; }, [frame]);
 
+  // heartbeat — drains pending beats even with zero scroll events
+  useEffect(() => {
+    const hb = setInterval(() => {
+      const track = trackRef.current;
+      if (!track || storyDoneRef.current) return;
+      const r = track.getBoundingClientRect();
+      if (r.top < window.innerHeight && r.bottom > 0) frameRef2.current && frameRef2.current();
+    }, 400);
+    return () => clearInterval(hb);
+  }, []);
+
   useEffect(() => {
     let raf = 0;
     const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(frame); };
@@ -157,7 +174,9 @@ export default function MobileSentenceDemo() {
 
   return (
     <section ref={trackRef} style={{ height: '520vh', position: 'relative', background: '#060D1A', borderTop: '1px solid #101E33' }}>
-      <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', paddingTop: '80px', boxSizing: 'border-box' }}>
+      {/* dvh-safe stage height: iOS address bar makes 100vh taller than the visible viewport */}
+      <style>{`.ark-msd-stage{height:100vh}@supports (height:100dvh){.ark-msd-stage{height:100dvh}}`}</style>
+      <div className="ark-msd-stage" style={{ position: 'sticky', top: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', paddingTop: '80px', boxSizing: 'border-box' }}>
         <span ref={debugRef} className="ark-mono" style={{ position: 'absolute', top: '8px', left: '10px', zIndex: 9, color: '#FF8A9A', fontSize: '10px', background: 'rgba(0,0,0,0.6)', padding: '2px 7px', borderRadius: '6px' }}>boot: waiting…</span>
 
         <div ref={frameRef} style={{ opacity: 0, margin: '0 10px', flex: 1, minHeight: 0, borderRadius: '14px 14px 0 0', overflow: 'hidden', border: '1px solid #1B3050', borderBottom: 'none', boxShadow: '0 20px 60px rgba(0,0,0,0.55)', background: '#f8fafc', position: 'relative', touchAction: 'pan-y' }}>
