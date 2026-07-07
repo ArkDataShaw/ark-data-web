@@ -198,6 +198,7 @@
   .stripchips{display:flex;flex-wrap:wrap;gap:6px;flex:1}
   .chip{display:inline-flex;align-items:center;gap:6px;background:var(--slate-100);border:1px solid var(--slate-200);border-radius:999px;padding:4px 9px;font-size:12px;color:var(--slate-700)}
   .chip b{font-weight:700}.chip .x{cursor:pointer;color:var(--slate-400);font-weight:700}.chip .x:hover{color:var(--rose)}
+  .chip.excl{background:#fef2f2;border-color:#fecaca;color:#dc2626}.chip.excl b{color:#dc2626}
   .emptychips{font-size:12.5px;color:var(--slate-400)}
   .clearall{font-size:12px;color:var(--violet);font-weight:600;cursor:pointer;border:0;background:none;white-space:nowrap}
   .strip-right{position:absolute;top:11px;right:18px;display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;z-index:2}
@@ -1357,9 +1358,13 @@ function checkRow(key,opt,pf){
 const chipsEl=document.getElementById("chips"),reachNum=document.getElementById("reachNum"),reachKind=document.getElementById("reachKind");
 // compact a merged range label for chip display: money fields → "$250–500K"/"$100K+"/"$1–25M"
 // (ssBandShort verbatim — UPPERCASE K/M/B, convention locked 2026-07-06: IBM Carbon/AP precedent,
-// lowercase m = SI milli); age → "25–54"/"65+"; headcount → "51–500"/"5001–10K".
+// lowercase m = SI milli); age → "25–54"/"65+"; headcount → clean K tiers ("5K–10K", "10K+", "501–1K").
+// headcount bound ≥1,000 → clean K tier; off-by-one rounds to the tier (1001→1K, 5001→5K); no $;
+// BOTH suffixes kept ("1K–5K", never "1–5K" — suffix collapse stays money-only). Addendum A2
+// (Shaw ruling 2026-07-07, arkdata countShort twin: b6faa14).
+function hcShort(n){var v=Number(n);return v>=1000?ssTrim1(v/1000)+"K":String(n);}
 function chipRangeShort(field,label){
-  if(field==="headcount")return label.replace(/ to /g,"\u2013").replace(/\b(\d+)000\b/g,"$1K");
+  if(field==="headcount")return label.replace(/ to /g,"\u2013").replace(/\d+/g,hcShort);
   if(field==="age")return label.replace(/ and older/i,"+").replace(/(\d)-(\d)/g,"$1\u2013$2"); // no money path — "55+" must not become "$55+"
   return ssBandShort(label);
 }
@@ -1384,7 +1389,7 @@ function gatherChips(){
   Object.keys(S.texts).forEach(k=>{if(S.texts[k])out.push({grp:LABELS[k]||k,v:S.texts[k],rm:()=>S.texts[k]=""});});
   Object.keys(S.ops).forEach(k=>{
     const op=S.ops[k],m=OP_META[op]?.mode;
-    if(m==="multi"){const excl=op==="not_in";(S.picks[k]?[...S.picks[k]]:[]).forEach(o=>out.push({grp:(LABELS[k]||k)+(excl?" (exclude)":""),v:o,rm:()=>S.picks[k].delete(o)}));}
+    if(m==="multi"){const excl=op==="not_in";(S.picks[k]?[...S.picks[k]]:[]).forEach(o=>out.push({grp:LABELS[k]||k,v:o,exclude:excl,rm:()=>S.picks[k].delete(o)}));} // exclusion carried by red style + ⊘ glyph, not a label suffix (addendum A3)
     else if(m==="single"){if(S.single[k])out.push({grp:LABELS[k]||k,v:`${OP_META[op].label} "${S.single[k]}"`,rm:()=>S.single[k]=""});}
     else if(m==="none"){out.push({grp:LABELS[k]||k,v:"has any value",rm:()=>{S.ops[k]="in";}});}
   });
@@ -1406,8 +1411,8 @@ function renderChips(){
   if(!all.length){chipsEl.innerHTML=`<div class="emptychips">No filters yet -- pick from the sidebar.</div>`;return;}
   chipsEl.innerHTML="";
   all.forEach(c=>{
-    const el=document.createElement("span");el.className="chip";
-    el.innerHTML=`<b>${c.grp}:</b> ${c.v}<span class="x">✕</span>`;
+    const el=document.createElement("span");el.className="chip"+(c.exclude?" excl":"");
+    el.innerHTML=`<b>${c.grp}:</b> ${c.exclude?"⊘ ":""}${c.v}<span class="x">✕</span>`;
     el.querySelector(".x").onclick=()=>{c.rm();renderSidebar();sync();};
     chipsEl.appendChild(el);
   });
@@ -2336,19 +2341,29 @@ function specSentence(){
     var indPart=ind.length?ssListAmp(ind.slice(0,2).map(ssIndustryAttr))+(ind.length>2?" +"+(ind.length-2):"")+" ":"";
     push("company",revPart+indPart+"companies",3,"at");
   }
-  if(size.length)push("headcount","("+size.map(function(b){return b.replace(/ to /g,"\u2013").replace(/\b(\d+)000\b/g,"$1K");}).join(", ")+" ppl)",5);
-  var geoParts=[],zipCount=0;
+  // headcount → clean K tiers, both suffixes kept: "(5K–10K ppl)", "(10K+ ppl)" (addendum A2 Shaw ruling; arkdata twin b6faa14)
+  if(size.length)push("headcount","("+size.map(function(b){return b.replace(/ to /g,"\u2013").replace(/\d+/g,hcShort);}).join(", ")+" ppl)",5);
+  var geoParts=[],zipCount=0,radiusPhrase="";
+  var exVals=function(v){return v?[...v]:[];}; // Set/array/undefined → array (embed mode may set plain arrays)
   ["personal","professional","company"].forEach(function(g){
     var l=S.loc[g];if(!l)return;
     l.state.forEach(function(s){geoParts.push(s);});
     l.city.forEach(function(c){geoParts.push(String(c).split("|")[0]);});
     if(l.metro)l.metro.forEach(function(m){geoParts.push(String(m).split("|")[0].replace(/\s+metro(\s+area)?$/i,"")+" metro");});
     zipCount+=l.zip.size;
+    // radius reads as the user's intent — NEVER enumerate its resolved zips (specSentence.ts:317-335)
+    if(l.radius&&!radiusPhrase)radiusPhrase="within "+l.radius.miles+"mi of "+String(l.radius.center).split("|")[0];
+    // geo exclusions → rail leftovers (always visible, never fold) — specSentence.ts:328-329
+    var exGeo=exVals(l.excludeState).concat(
+      exVals(l.excludeCity).map(function(c){return String(c).split("|")[0];}),
+      exVals(l.excludeMetro).map(function(m){return String(m).split("|")[0];}));
+    if(exGeo.length)leftover("exgeo-"+g,"Excl.",summarize(exGeo));
   });
   var uniqGeo=[...new Set(geoParts)];
   if(uniqGeo.length>4)push("geo",uniqGeo.length+" areas",3,"in");
   else if(uniqGeo.length)pushVals("geo",uniqGeo,3,"in");
   if(zipCount)push("geo-zips",zipCount+" ZIPs",5,uniqGeo.length?"+":"in");
+  if(radiusPhrase)push("geo-radius",radiusPhrase,3);
   var req=Object.keys(S.contactReq).filter(function(f){return S.contactReq[f]==="require";}).map(function(f){return SS_CONTACT_SHORT[f]||f;});
   var cexcl=Object.keys(S.contactReq).filter(function(f){return S.contactReq[f]==="exclude";}).map(function(f){return SS_CONTACT_SHORT[f]||f;});
   if(req.length)pushVals("contact",req,5,"w/");
