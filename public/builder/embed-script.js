@@ -25,6 +25,7 @@
     '#reachNum.ark-hidden{visibility:hidden}',
     '#saveBtn{display:none}', // no Save in the scripted homepage embed
     '#audname{display:none}', // no name input in the demo (Shaw 2026-07-07)
+    '#viewSeg{display:none}', // no 500-row preview in the embed — Map & insights only
     // chips stay inline with the reach number — never wrap to their own row
     '.strip.wrapchips .stripchips{flex:1;margin-top:0}',
   ].join('\n');
