@@ -290,7 +290,17 @@
   .card{background:#fff;border:1px solid var(--slate-200);border-radius:14px;padding:15px 17px}
   .cardh{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--slate-500);text-transform:uppercase;margin:0 0 13px}
   .statrow{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-  .stat{background:var(--slate-50);border-radius:11px;padding:11px}.stat .n{font-size:21px;font-weight:800}.stat .l{font-size:11px;color:var(--slate-500);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+  .stat{background:var(--slate-50);border-radius:11px;padding:11px}.stat .n{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums}.stat .l{font-size:11px;color:var(--slate-500);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+  .stat .stat-ico{display:block;color:var(--slate-400);margin-bottom:5px}.stat .stat-ico svg{width:15px;height:15px;display:block}
+  /* homeownership donut: centered ring + 2-col legend below (in-app Donut.tsx style) */
+  .donut2{display:flex;justify-content:center}
+  .donut-leg2{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;margin-top:10px;font-size:11.5px;color:var(--slate-600)}
+  .donut-leg2-item{display:flex;align-items:center;justify-content:space-between;gap:6px}
+  .donut-leg2 .nm{display:inline-flex;align-items:center;gap:6px;min-width:0}
+  .donut-leg2 .nm i{width:10px;height:10px;border-radius:3px;display:inline-block;flex-shrink:0}
+  .donut-leg2 .pc{font-variant-numeric:tabular-nums;color:var(--slate-900)}
+  /* cursor-follow spinner — the only insights-update feedback (in-app parity, pill removed) */
+  .cursor-spinner{position:fixed;width:14px;height:14px;border:2px solid rgba(124,58,237,.25);border-top-color:var(--violet);border-radius:50%;animation:spin .7s linear infinite;pointer-events:none;z-index:99999}
   .bar{display:flex;align-items:center;gap:9px;margin-bottom:8px;font-size:12.5px}
   .bar .lab{width:92px;color:var(--slate-600);flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bar .track{flex:1;background:var(--slate-100);border-radius:999px;height:17px;overflow:hidden}
@@ -552,7 +562,7 @@
               <div class="card" id="card-headcount"><div class="cardh">Company size</div><div class="vbars" id="headcountBars"></div></div>
               <div class="card" id="card-revenue"><div class="cardh">Company revenue</div><div class="vbars" id="revenueBars"></div></div>
             </div>
-            <div class="card" id="card-home"><div class="cardh">Homeownership</div><div class="vbars" id="homeownerBars"></div></div>
+            <div class="card" id="card-home"><div class="cardh">Homeownership</div><div id="homeownerBars"></div></div>
             <div class="card" id="card-family"><div class="cardh">Family dynamics</div><div class="donut-wrap" id="familyDonut"></div></div>
             <div class="card" id="card-seniority"><div class="cardh">Seniority</div><div id="seniorityBars"></div></div>
             <div class="card" id="card-department"><div class="cardh">Department</div><div id="departmentBars"></div></div>
@@ -1400,7 +1410,14 @@ function gatherChips(){
   Object.keys(S.contactReq).forEach(id=>out.push({grp:"Contact",v:`${CONTACT_LABELS[id]||id} -- ${S.contactReq[id]==='exclude'?'Excluded':'Required'}`,rm:()=>{delete S.contactReq[id];}}));
   const LOC_LABEL={personal:"Location",professional:"Business loc",company:"Company HQ"};
   ["personal","professional","company"].forEach(g=>{const L=S.loc[g];
-    if(L.state.size)out.push({grp:LOC_LABEL[g],v:[...L.state].join(", "),rm:()=>L.state.clear()}); // WEBSITE-EMBED PATCH: comma-separated multi-state chip (Shaw 2026-07-07)
+    // A6: ALL include-states in a group → ONE chip; >3 folds to ", and {n} more".
+    // Removing the chip clears every state in the group. Excludes stay one-per-chip (red ⊘).
+    if(L.state.size){
+      const sts=[...L.state];
+      const v=sts.length<=3?sts.join(", "):sts.slice(0,3).join(", ")+", and "+(sts.length-3)+" more";
+      out.push({grp:LOC_LABEL[g],v,rm:()=>L.state.clear()});
+    }
+    if(L.excludeState)[...L.excludeState].forEach(v=>out.push({grp:LOC_LABEL[g],v,exclude:true,rm:()=>{if(L.excludeState.delete)L.excludeState.delete(v);}}));
     L.city.forEach(v=>out.push({grp:LOC_LABEL[g],v,rm:()=>L.city.delete(v)}));
     if(L.metro)L.metro.forEach(v=>{var dName=v;if(typeof US_METROS!=="undefined"){var found=US_METROS.find(function(x){return x.n===v;});if(found)dName=found.n;}out.push({grp:LOC_LABEL[g],v:dName,rm:()=>L.metro.delete(v)});});
     L.zip.forEach(v=>out.push({grp:LOC_LABEL[g],v,rm:()=>L.zip.delete(v)}));
@@ -1893,6 +1910,50 @@ function renderFamily(A,est){
     `<div class="donut-leg">${segs.map(([l,v,c])=>`<div><i style="background:${c}"></i>${l}<b>${est?D:Math.round(v/tot*100)+'%'}</b></div>`).join("")}</div>`;
   return true;
 }
+// ---- coverage stats: 2×2 counts with icons (in-app StatRow parity) ----
+// null/missing metric = "not computed" → "—" with the save tooltip — NEVER a fake 0
+// and never a scaled lie. The free preview CSV carries only hem+company, so the three
+// contact-fill metrics stay "—" until a snapshot/agg supplies them.
+var STAT_ICONS={
+  "Business email":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>',
+  "Mobile phone":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>',
+  "LinkedIn URLs":'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>',
+  "Unique companies":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>'
+};
+function coverageEntries(A){
+  var c=(A&&A.coverage)||{};
+  var nn=function(v){return v==null?null:v;}; // undefined AND null → "—" (mockup aggs genuinely don't compute these)
+  return [
+    ["Business email",nn(c.businessEmail)],
+    ["Mobile phone",nn(c.mobilePhone)],
+    ["LinkedIn URLs",nn(c.linkedinPresent!=null?c.linkedinPresent:c.linkedin)],
+    ["Unique companies",c.uniqueCompanies!=null?c.uniqueCompanies:nn(c.hasCompany)] // in-app fallback: uniqueCompanies || hasCompany
+  ];
+}
+function renderCoverage(A,est){
+  var cov=document.getElementById("coverageStats");if(!cov)return;
+  var D='<span class="dots">\u00b7\u00b7\u00b7</span>';
+  cov.innerHTML=coverageEntries(A).map(function(e){
+    var v=e[1];
+    var txt=est?D:(v==null?"\u2014":v.toLocaleString());
+    var tip=(!est&&v==null)?' title="Save the audience to compute contact coverage"':'';
+    return '<div class="stat"><span class="stat-ico">'+(STAT_ICONS[e[0]]||"")+'</span><div class="n"'+tip+'>'+txt+'</div><div class="l">'+e[0]+'</div></div>';
+  }).join("");
+}
+// ---- homeownership donut (in-app Donut.tsx style: ring + center % + 2-col legend) ----
+var HOME_COLORS={Homeowner:"#6d28d9",Probable:"#a78bfa",Renter:"#94a3b8"};
+function renderHomeDonut(A,est){
+  var el=document.getElementById("homeownerBars");if(!el)return false;
+  var segs=[["Homeowner",A.homeowner.Y||0],["Probable",A.homeowner.P||0],["Renter",A.homeowner.N||0]].filter(function(e){return e[1]>0;});
+  if(!segs.length){el.innerHTML='<div class="pk-empty">No data</div>';return false;}
+  var tot=segs.reduce(function(a,e){return a+e[1];},0)||1;
+  var ownPct=Math.round((A.homeowner.Y||0)/tot*100);
+  var D='<span class="dots">\u00b7\u00b7\u00b7</span>';
+  var acc=0;var stops=segs.map(function(e){var a=acc/tot*360,b=(acc+e[1])/tot*360;acc+=e[1];return HOME_COLORS[e[0]]+" "+a+"deg "+b+"deg";}).join(",");
+  el.innerHTML='<div class="donut2"><div class="donut" style="background:conic-gradient('+stops+')"><div class="donut-c"><div class="n">'+(est?D:ownPct+"%")+'</div><div class="l">Owners</div></div></div></div>'
+    +'<div class="donut-leg2">'+segs.map(function(e){return '<div class="donut-leg2-item"><span class="nm"><i style="background:'+HOME_COLORS[e[0]]+'"></i>'+e[0]+'</span><b class="pc">'+(est?D:Math.round(e[1]/tot*100)+"%")+'</b></div>';}).join("")+'</div>';
+  return true;
+}
 // Build a sample aggregate from the 500-row preview for estimate rendering
 function buildSampleAgg(rows){
   var ageG={},income={},networth={},homeowner={},seniority={},department={},
@@ -1965,7 +2026,7 @@ function snapshotCharts(){
   if(cov){
     var stats=cov.querySelectorAll('.stat .n');
     snap._covNums=Array.prototype.map.call(stats,function(s){
-      var t=s.textContent.trim().replace('%','');
+      var t=s.textContent.trim().replace(/[%,]/g,''); // strip commas too — counts are locale-formatted now
       return isNaN(parseInt(t,10))?0:parseInt(t,10);
     });
   }
@@ -2015,7 +2076,7 @@ function animateCharts(fromZero){
     for(var k=0;k<stats.length;k++){(function(stat,idx){
       var txt=stat.textContent.trim();
       var hasPct=txt.indexOf('%')>=0;
-      var toVal=parseInt(txt.replace('%',''),10);
+      var toVal=parseInt(txt.replace(/[%,]/g,''),10); // comma-aware ("12,345" must not parse as 12); "—"/dots → NaN → skipped
       if(isNaN(toVal))return;
       var fromVal=idx<oldNums.length?oldNums[idx]:0;
       if(fromVal===toVal){return;} // no change
@@ -2024,10 +2085,10 @@ function animateCharts(fromZero){
         var t=Math.min(1,(now-start)/dur);
         var e=_chartEase(t);
         var v=Math.round(fromVal+(toVal-fromVal)*e);
-        stat.textContent=v+(hasPct?'%':'');
+        stat.textContent=hasPct?v+'%':v.toLocaleString(); // counts keep comma grouping through the count-up
         if(t<1){_chartAnimIds.push(requestAnimationFrame(tick));}
       }
-      stat.textContent=fromVal+(hasPct?'%':'');
+      stat.textContent=hasPct?fromVal+'%':fromVal.toLocaleString();
       _chartAnimIds.push(requestAnimationFrame(tick));
     })(stats[k],k);}
   }
@@ -2042,7 +2103,7 @@ function renderCharts(){
     var SA=buildSampleAgg(window._mapRows);
     var E=true; // estimate mode
     var D='<span class="dots">\u00b7\u00b7\u00b7</span>';
-    if(cov){cov.innerHTML=['Email present','Homeowner','High intent','Has company'].map(function(l){return '<div class="stat"><div class="n">'+D+'</div><div class="l">'+l+'</div></div>';}).join('');}
+    renderCoverage(SA,true);
     recomputeGeo();
     var ets=Object.entries(_counts).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
     var etmx=Math.max(1,...ets.map(function(t){return t[1];}));
@@ -2055,7 +2116,7 @@ function renderCharts(){
     SHOW("card-income",vbars("incomeBars",incE,{fmt:incLabel,est:E}));
     var nwE=Object.entries(SA.networth).filter(function(e){return e[1]>0;}).sort(function(a,b){return nwRank(a[0])-nwRank(b[0]);});
     SHOW("card-networth",vbars("networthBars",nwE,{fmt:nwLabel,est:E}));
-    SHOW("card-home",vbars("homeownerBars",[["Homeowner",SA.homeowner.Y||0],["Probable",SA.homeowner.P||0],["Renter",SA.homeowner.N||0]],{est:E}));
+    SHOW("card-home",renderHomeDonut(SA,true));
     SHOW("card-family",renderFamily(SA,E));
     // Intent strength: mock proportional estimate from reach, filtered by selected levels
     var _scoreSel=(typeof S!=="undefined"&&S.checks&&S.checks.score&&S.checks.score.size)?S.checks.score:null;
@@ -2088,9 +2149,8 @@ function renderCharts(){
   }
   const T=A.total||1, pc=v=>Math.round(100*(v||0)/T);
 
-  // Coverage -- full audience (fields present in the free preview pull)
-  if(cov){const cell=(v,l)=>`<div class="stat"><div class="n">${v==null?"\u2014":pc(v)+"%"}</div><div class="l">${l}</div></div>`; // null = not computed → "—", never a fake 0%
-    cov.innerHTML=cell(A.coverage.emailPresent,"Email present")+cell(A.coverage.homeowner,"Homeowner")+cell(A.coverage.highIntent,"High intent")+cell(A.coverage.hasCompany,"Has company");}
+  // Coverage -- absolute counts w/ icons (StatRow parity); null = not computed → "—"
+  renderCoverage(A,false);
 
   // Top states -- basis-aware full counts
   recomputeGeo();
@@ -2107,7 +2167,7 @@ function renderCharts(){
   SHOW("card-income",vbars("incomeBars",incEntries,{fmt:incLabel}));
   const nwEntries=Object.entries(A.networth).filter(e=>e[1]>0).sort((a,b)=>nwRank(a[0])-nwRank(b[0]));
   SHOW("card-networth",vbars("networthBars",nwEntries,{fmt:nwLabel}));
-  SHOW("card-home",vbars("homeownerBars",[["Homeowner",A.homeowner.Y||0],["Probable",A.homeowner.P||0],["Renter",A.homeowner.N||0]]));
+  SHOW("card-home",renderHomeDonut(A,false));
   SHOW("card-family",renderFamily(A));
   var _scoreSel2=(typeof S!=="undefined"&&S.checks&&S.checks.score&&S.checks.score.size)?S.checks.score:null;
   var _intentFull=[["Low",A.score.low||0],["Medium",A.score.medium||0],["High",A.score.high||0]];
@@ -2583,6 +2643,34 @@ function setTableStale(v){
 }
 window.setTableStale=setTableStale;
 document.getElementById("refreshTableBtn").onclick=function(){document.getElementById("generateBtn").click();};
+
+// ================= cursor-follow insights spinner =================
+// The ONLY insights-update feedback (in-app parity — the floating pill was removed, arkdata ffe4fd7).
+// Shown only while BOTH: (a) the builder is visible in the viewport (site embeds this in a scroll
+// page — IntersectionObserver on #shell; the mousemove listener is never attached while scrolled
+// away) and (b) an insights re-agg is in flight. NOT shown during Generate.
+(function(){
+  var csEl=null,csMove=null,builderVisible=true,insightsBusy=false;
+  var shell=document.getElementById("shell");
+  if("IntersectionObserver" in window&&shell){
+    builderVisible=false; // trust the observer's first callback
+    new IntersectionObserver(function(en){builderVisible=!!(en[0]&&en[0].isIntersecting);syncSpinner();},{threshold:0.05}).observe(shell);
+  }
+  function syncSpinner(){
+    var want=insightsBusy&&builderVisible;
+    if(want&&!csEl){
+      csEl=document.createElement("div");csEl.className="cursor-spinner";
+      csEl.style.left="-99px";csEl.style.top="-99px"; // offscreen until first mousemove
+      document.body.appendChild(csEl);
+      csMove=function(e){if(csEl){csEl.style.left=(e.clientX+14)+"px";csEl.style.top=(e.clientY+14)+"px";}};
+      document.addEventListener("mousemove",csMove);
+    }else if(!want&&csEl){
+      document.removeEventListener("mousemove",csMove);csMove=null;
+      csEl.remove();csEl=null;
+    }
+  }
+  window.setInsightsBusy=function(on){insightsBusy=!!on;syncSpinner();};
+})();
 
 // ================= generating UI state (P4) =================
 window.setGenerating=function(on,txt){
@@ -3214,6 +3302,10 @@ renderSidebar();sync();
     return Object.assign({},cov,{
       emailPresent:scale(ref.emailPresent),
       hasCompany:scale(ref.hasCompany),
+      businessEmail:scale(ref.businessEmail),
+      mobilePhone:scale(ref.mobilePhone),
+      linkedinPresent:scale(ref.linkedinPresent),
+      uniqueCompanies:scale(ref.uniqueCompanies),
       total:count
     });
   }
@@ -3296,8 +3388,24 @@ renderSidebar();sync();
     if(!window._rec&&!window._recCapped)return;          // nothing generated yet
     const cur=window.buildSpec?window.buildSpec():null; if(!cur)return;
     const reason=regenReason(cur,window._pulledSpec);
-    if(reason){ showRegen(reason); }                      // additive/widening → must regenerate
-    else { clearRegen(); clientAggregate(); }             // subtractive narrowing → live update
+    if(reason){                                           // additive/widening → must regenerate
+      showRegen(reason);
+      clearTimeout(window._reaggTimer);                   // a pending narrow re-agg must not run on the widened spec
+      if(window.setInsightsBusy)window.setInsightsBusy(false);
+    }
+    else {
+      // subtractive narrowing → live update. Deferred one tick behind the cursor spinner so the
+      // spinner paints before the (potentially heavy) synchronous re-agg; removal tied to finally
+      // so a throwing aggregate can never strand the spinner. Single pending timer — rapid filter
+      // toggles coalesce into the last one.
+      clearRegen();
+      if(window.setInsightsBusy)window.setInsightsBusy(true);
+      clearTimeout(window._reaggTimer);
+      window._reaggTimer=setTimeout(function(){
+        try{ clientAggregate(); }
+        finally{ if(window.setInsightsBusy)window.setInsightsBusy(false); }
+      },30);
+    }
     // table staleness: the 500-row sample is from the pull; any spec drift makes it stale
     if(window.setTableStale&&window.specDrifted)window.setTableStale(window.specDrifted());
   };
