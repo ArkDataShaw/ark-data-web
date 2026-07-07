@@ -24,6 +24,9 @@
     '#previewArea .card, #previewArea #map{transition:opacity .55s ease}',
     '#reachNum.ark-hidden{visibility:hidden}',
     '#saveBtn{display:none}', // no Save in the scripted homepage embed
+    '#audname{display:none}', // no name input in the demo (Shaw 2026-07-07)
+    // chips stay inline with the reach number — never wrap to their own row
+    '.strip.wrapchips .stripchips{flex:1;margin-top:0}',
   ].join('\n');
   document.head.appendChild(css);
 
