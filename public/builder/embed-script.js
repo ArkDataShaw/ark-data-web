@@ -157,15 +157,35 @@
       var self = this;
       return fetch(url).then(function (r) { return r.json(); }).then(function (j) { self._stages = j.stages; });
     },
+    _fullFlipped: false,
+    _flipToFull: function () {
+      // Shaw's order of operations: stage 1 opens on STATES, then flips to
+      // County/ZIP and STAYS there for every later stage.
+      if (this._fullFlipped) return;
+      var full = document.querySelector('#mapMode input[value="full"]');
+      if (full && !full.checked) { full.checked = true; full.dispatchEvent(new Event('change')); }
+      this._fullFlipped = true;
+    },
     setStage: function (i) {
       if (!this._stages || !this._stages[i]) return;
-      this._stageIdx = i;
+      var self = this;
       var st = this._stages[i];
+      var stageChanged = this._stageIdx !== i;
+      this._stageIdx = i;
       try { setReach(st.reach); if (window.renderSentence) renderSentence(); } catch (e) { /* noop */ }
-      // state choropleth via the builder's own estimate path (idempotent setter)
+      // per-stage density through the builder's own painters
       if (!this._geoReleased) {
-        window._geoData = { people: { states: st.states }, professional: null, company: null };
-        try { if (window.applyStateWithPhase1Anim) window.applyStateWithPhase1Anim(); } catch (e) { /* map not up yet — heartbeat re-asserts */ }
+        var g = { people: { states: st.states, counties: st.counties || [], zips: st.zips || [] }, professional: null, company: null };
+        try {
+          if (window._setEmbedGeoData) window._setEmbedGeoData(g); else window._geoData = g;
+          if (window.applyStateWithPhase1Anim) window.applyStateWithPhase1Anim(); // state layer (visible pre-flip; harmless after)
+        } catch (e) { /* map not up yet — heartbeat re-asserts */ }
+        // stage 1: open on states, then flip to County/ZIP once and stay
+        if (i === 0 && stageChanged && !this._fullFlipped) {
+          setTimeout(function () { self._flipToFull(); }, 1400);
+        } else if (i > 0) {
+          this._flipToFull(); // guarantee full mode from stage 2 on
+        }
       }
       // coverage card counts (labels/icons are the builder's own render)
       var cov = document.getElementById('coverageStats');
@@ -211,30 +231,30 @@
       // dropped (fitMapToScope guards !map||!ready) and _lastScopeKey now
       // blocks a retry. Once the map is live, clear the cache and re-fit so
       // the view frames the scripted geo (FL).
-      var tries = 0;
-      var didFit = false, didFull = false;
-      var iv = setInterval(function () {
-        tries++;
-        var m = window._fullMap;
-        if (!didFit && m && (!m.loaded || m.loaded())) {
-          // The scripted geo is ALWAYS FL — fit a hardcoded bbox directly.
-          // updateMapScope's bbox math needs ZIP_LOOKUP/state lookups, and the
-          // mobile payload diet skips zip-lookup.js ≤1000px, so it silently
-          // no-opped on phones (Shaw bug A). A constant needs no lookup data.
-          var FL_BBOX = [-87.633, 25.121, -80.031, 31.003]; // from us-states.js geometry
-          try {
-            if (window.fitMapToScope) { window.fitMapToScope(FL_BBOX, 7); didFit = true; }
-            _lastScopeKey = 'embed:FL'; // mark consumed so free-play geo changes still re-fit
-          } catch (e) { /* retry next tick */ }
-        }
-        // once full density has landed, auto-select County/ZIP (Shaw 2026-07-07)
-        if (!didFull && window._geoPullDone) {
-          var full = document.querySelector('#mapMode input[value="full"]');
-          if (full && !full.checked) { full.checked = true; full.dispatchEvent(new Event('change')); }
-          didFull = true;
-        }
-        if ((didFit && didFull) || tries > 60) clearInterval(iv); // ~30s cap
-      }, 500);
+      // Funnel mode (holdGeo): releaseGeo() owns the FL fit + mode flip at the
+      // FINAL stage — fitting here caused the premature FL zoom Shaw saw
+      // (fit-on-map-load → nationwide stage pulled it back → FL again).
+      if (!this.holdGeo) {
+        var tries = 0;
+        var didFit = false, didFull = false;
+        var iv = setInterval(function () {
+          tries++;
+          var m = window._fullMap;
+          if (!didFit && m && (!m.loaded || m.loaded())) {
+            var FL_BBOX = [-87.633, 25.121, -80.031, 31.003]; // from us-states.js geometry (no ZIP_LOOKUP needed on mobile)
+            try {
+              if (window.fitMapToScope) { window.fitMapToScope(FL_BBOX, 7); didFit = true; }
+              _lastScopeKey = 'embed:FL';
+            } catch (e) { /* retry next tick */ }
+          }
+          if (!didFull && window._geoPullDone) {
+            var full = document.querySelector('#mapMode input[value="full"]');
+            if (full && !full.checked) { full.checked = true; full.dispatchEvent(new Event('change')); }
+            didFull = true;
+          }
+          if ((didFit && didFull) || tries > 60) clearInterval(iv);
+        }, 500);
+      }
       return true;
     },
 

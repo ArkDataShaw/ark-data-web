@@ -3229,6 +3229,7 @@ renderSidebar();sync();
   window.applyStateEstimate=applyStateEstimate;
   window.applyStateWithPhase1Anim=applyStateWithPhase1Anim;
   window.transitionToFullData=transitionToFullData;
+  window._setEmbedGeoData=function(g){geoData=g;window._geoData=g;if(ready&&map){try{applyDensity();}catch(e){}}}; // WEBSITE-EMBED PATCH: Shaw 2026-07-07 funnel stages
   window.hideStateFill=hideStateFill;
   window.startPull=startPull;
   // city/metro/zip selection → auto-fit the map to the selected area (P5)
