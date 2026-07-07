@@ -27,13 +27,12 @@
   ].join('\n');
   document.head.appendChild(css);
 
+  // generic: group = the chip's <b>Label:</b> slug — works for ANY filter the
+  // user selects, not just the scripted solar set
   var GROUP_OF = function (chipEl) {
-    var t = chipEl.textContent || '';
-    if (t.indexOf('Topic:') === 0) return 'topic';
-    if (t.indexOf('Homeowner:') === 0) return 'homeowner';
-    if (t.indexOf('Household Income:') === 0) return 'income';
-    if (t.indexOf('Location:') === 0) return 'geo';
-    return 'other';
+    var b = chipEl.querySelector('b');
+    var g = (b ? b.textContent : '').replace(/:\s*$/, '').trim().toLowerCase();
+    return g ? g.replace(/\s+/g, '-') : 'other';
   };
 
   var canned = null;       // snapshot, once loaded
@@ -97,7 +96,7 @@
         var label = b ? b.textContent : '';
         // chip text = "<b>Group:</b> value ✕" — value is everything after the label, minus the ✕
         var value = (el.textContent || '').replace(label, '').replace(/✕\s*$/, '').trim();
-        out.push({ group: el.dataset.arkGroup, rect: { x: r.left, y: r.top, w: r.width, h: r.height }, label: label, value: value });
+        out.push({ group: el.dataset.arkGroup, rect: { x: r.left, y: r.top, w: r.width, h: r.height }, label: label, value: value, exclude: el.classList.contains('excl') });
       });
       return out;
     },
@@ -112,6 +111,10 @@
         if (el.dataset.arkGroup === group) el.classList.add('ark-hidden');
       });
     },
+
+    // re-tag + hide the CURRENT chips (whatever the user selected) so the
+    // story can replay with them after a scroll-back-up
+    retag: function () { tagChips(); },
 
     loadSnapshot: function (url) {
       return fetch(url).then(function (r) { return r.json(); }).then(function (j) { canned = j; });

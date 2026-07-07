@@ -4,45 +4,34 @@ import { createPageUrl } from '../../utils';
 import { ArrowRight } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BuilderScrollDemo v3 — pixel-perfect scripted story on the REAL builder.
+// BuilderScrollDemo v4 — pixel-perfect scripted story on the REAL builder,
+// now with dynamic replay.
 //
-// The vendored builder (/builder/index.html?script=1) exposes window.ArkEmbed.
-// On iframe boot we applyAll() the solar filters; the real strip chips exist
-// but are visibility:hidden. We clone their exact DOM (same markup, same
-// computed style) into a parent overlay at ~2.6x scale — the "big bold"
-// chips ARE the builder's chips. Scroll FLIPs each clone from center stage to
-// its chip's precise rect (ending at scale(1) on the exact pixel), the real
-// chip is revealed, the clone removed: an undetectable handoff.
-// Generate is the app's real button served from a baked snapshot (same
-// numbers, charts and colored ZIPs for every visitor, zero upstream cost);
-// map + cards fade in with scroll depth, then the iframe unlocks — the user
-// is inside a genuinely interactive builder whose NEXT Generate runs live.
+// Boot: iframe (/builder/index.html?script=1) applies the solar filters; the
+// real strip chips are hidden; exact DOM clones fly in from center stage and
+// land on the chips' true rects. Generate replays a frozen snapshot; map +
+// charts fade with scroll depth; then the iframe unlocks for free-play.
+//
+// REPLAY: if the user scrolls back above the story after interacting, we
+// re-capture whatever chips are CURRENTLY selected (their filters, not the
+// script's), rebuild the clones, and the story replays with their audience.
+// Replay never re-clicks Generate (no live upstream builds from scrolling) —
+// it re-animates the chips and re-fades the data already on screen.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const GREEN_BORDER = 'rgba(25,195,125,0.35)';
-
-// narrative order → chip groups in the builder strip
-const STORY = [
-  { group: 'homeowner', caption: null },
-  { group: 'income', caption: null },
-  { group: 'geo', caption: null },
-  { group: 'topic', caption: 'SEARCHING FOR' },
-];
-
-const T = {
-  chipIn: i => [0.04 + i * 0.05, 0.11 + i * 0.05],
-  fly: i => [0.34 + i * 0.035, 0.47 + i * 0.035],
-  builderIn: [0.24, 0.34],
-  generateAt: 0.64,
-  dataReveal: [0.68, 0.90],
-  interactiveAt: 0.93,
-};
 const BIG_SCALE = 2.6;
+const REPLAY_AT = 0.28; // scrolling above this after unlock re-arms the story
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const seg = (p, [a, b]) => clamp((p - a) / (b - a), 0, 1);
 const easeOut = t => 1 - Math.pow(1 - t, 3);
 const easeInOut = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+// timing windows distributed across N steps
+const chipInT = (i, n) => { const s = 0.05 + i * (0.18 / Math.max(n, 1)); return [s, s + 0.07]; };
+const flyT = (i, n) => { const s = 0.34 + i * (0.15 / Math.max(n, 1)); return [s, s + 0.12]; };
+const T = { builderIn: [0.24, 0.34], generateAt: 0.64, dataReveal: [0.68, 0.90], interactiveAt: 0.93 };
 
 // exact .chip styles from the builder's stylesheet, applied inline to clones
 const CHIP_STYLE = {
@@ -52,6 +41,8 @@ const CHIP_STYLE = {
   fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif',
   whiteSpace: 'nowrap', lineHeight: 'normal', boxSizing: 'border-box',
 };
+// red exclusion chips (⊘) — match .chip.excl
+const CHIP_STYLE_EXCL = { background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626' };
 
 export default function BuilderScrollDemo() {
   const trackRef = useRef(null);
@@ -60,13 +51,12 @@ export default function BuilderScrollDemo() {
   const overlayRef = useRef(null);
   const captionRef = useRef(null);
   const hintRef = useRef(null);
+  const debugRef = useRef(null);
+  const stepsRef = useRef([]);       // [{group, caption}]
   const cloneRefs = useRef({});      // group -> [clone els]
-  const chipData = useRef(null);     // ArkEmbed.chipInfo() result
-  const homesRef = useRef({});       // clone el -> {hx, hy} overlay home position
   const revealedRef = useRef(new Set());
   const generatedRef = useRef(false);
   const interactiveRef = useRef(false);
-  const debugRef = useRef(null);
   const [mountIframe, setMountIframe] = useState(false);
   const [booted, setBooted] = useState(false);
   const [isDesktop, setIsDesktop] = useState(true);
@@ -81,49 +71,26 @@ export default function BuilderScrollDemo() {
 
   const app = useCallback(() => {
     const w = iframeRef.current && iframeRef.current.contentWindow;
-    return (w && w.ArkEmbed && w.ArkEmbed.ready) ? w : null;
+    try { return (w && w.ArkEmbed && w.ArkEmbed.ready) ? w : null; } catch { return null; }
   }, []);
 
-  // boot: wait for the app, apply filters, load snapshot, build clones
-  useEffect(() => {
-    if (!mountIframe || booted) return;
-    let tries = 0;
-    const dbg = (msg) => { if (debugRef.current) debugRef.current.textContent = 'boot: ' + msg; };
-    const iv = setInterval(() => {
-      tries++;
-      const ifr = iframeRef.current;
-      const w = ifr && ifr.contentWindow;
-      if (!w) { dbg(`no iframe window (t${tries})`); return; }
-      let emb;
-      try { emb = w.ArkEmbed; } catch (e) { dbg('cross-origin? ' + e.message); return; }
-      if (!emb) { dbg(`no ArkEmbed — embed-script not loaded? (t${tries})`); return; }
-      if (!emb.ready) { dbg(`app not ready (t${tries})`); return; }
-      try {
-        emb.applyAll();
-        emb.loadSnapshot('/builder/snapshot-solar.json');
-        chipData.current = emb.chipInfo();
-        if (!chipData.current || !chipData.current.length) { dbg(`applied but 0 chips found (t${tries})`); return; }
-        buildClones(chipData.current);
-        setBooted(true);
-        dbg(`OK — ${chipData.current.length} chips`);
-        setTimeout(() => { if (debugRef.current) debugRef.current.style.display = 'none'; }, 4000);
-        clearInterval(iv);
-      } catch (e) { dbg('ERR ' + (e && e.message)); }
-    }, 250);
-    return () => clearInterval(iv);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mountIframe, booted]);
-
-  const buildClones = (info) => {
+  // build story steps + overlay clones from the CURRENT chip set
+  const buildStory = useCallback((info) => {
     const overlay = overlayRef.current;
-    if (!overlay || !info) return;
+    if (!overlay || !info || !info.length) return false;
+
+    // step order: every non-topic group in DOM order, topic last (with caption)
+    const groups = [];
+    info.forEach(c => { if (c.group !== 'topic' && !groups.includes(c.group)) groups.push(c.group); });
+    const steps = groups.map(g => ({ group: g, caption: null }));
+    if (info.some(c => c.group === 'topic')) steps.push({ group: 'topic', caption: 'SEARCHING FOR' });
+    stepsRef.current = steps;
+
     overlay.innerHTML = '';
     cloneRefs.current = {};
-    homesRef.current = new Map();
+    captionRef.current = null;
 
-    STORY.forEach((step, si) => {
-      const row = document.createElement('div');
-      row.style.cssText = 'display:flex;gap:10px;justify-content:center;align-items:center;';
+    steps.forEach((step, si) => {
       if (step.caption) {
         const cap = document.createElement('div');
         cap.textContent = step.caption;
@@ -132,11 +99,12 @@ export default function BuilderScrollDemo() {
         captionRef.current = cap;
         overlay.appendChild(cap);
       }
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;max-width:38vw;';
       const clones = [];
       info.filter(c => c.group === step.group).forEach(c => {
         const el = document.createElement('span');
-        Object.assign(el.style, CHIP_STYLE);
-        // chip markup is always "<b>Group:</b> value" — rebuild it safely
+        Object.assign(el.style, CHIP_STYLE, c.exclude ? CHIP_STYLE_EXCL : {});
         const b = document.createElement('b');
         b.style.fontWeight = '700';
         b.textContent = c.label;
@@ -144,8 +112,8 @@ export default function BuilderScrollDemo() {
         el.appendChild(document.createTextNode(' ' + c.value));
         el.style.opacity = '0';
         el.style.boxShadow = '0 12px 44px rgba(0,0,0,0.45)';
-        el.dataset.w = c.rect.w; el.dataset.h = c.rect.h;
         el.dataset.rx = c.rect.x; el.dataset.ry = c.rect.y;
+        el._home = null; el._t = null;
         row.appendChild(el);
         clones.push(el);
       });
@@ -155,7 +123,49 @@ export default function BuilderScrollDemo() {
       row.style.transformOrigin = 'center';
       row.style.margin = `${si === 0 ? 0 : 26}px 0`;
     });
-  };
+    return true;
+  }, []);
+
+  // boot: wait for the app, apply solar filters, load snapshot, build clones
+  useEffect(() => {
+    if (!mountIframe || booted) return;
+    let tries = 0;
+    const dbg = (msg) => { if (debugRef.current) debugRef.current.textContent = 'boot: ' + msg; };
+    const iv = setInterval(() => {
+      tries++;
+      const w = app();
+      if (!w) { dbg(`waiting for app (t${tries})`); return; }
+      try {
+        w.ArkEmbed.applyAll();
+        w.ArkEmbed.loadSnapshot('/builder/snapshot-solar.json');
+        const info = w.ArkEmbed.chipInfo();
+        if (!info || !info.length) { dbg(`applied but 0 chips (t${tries})`); return; }
+        buildStory(info);
+        setBooted(true);
+        dbg(`OK — ${info.length} chips`);
+        setTimeout(() => { if (debugRef.current) debugRef.current.style.display = 'none'; }, 4000);
+        clearInterval(iv);
+      } catch (e) { dbg('ERR ' + (e && e.message)); }
+    }, 250);
+    return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mountIframe, booted]);
+
+  // re-arm the story with the user's CURRENT filters
+  const replay = useCallback((w) => {
+    let info;
+    try {
+      w.ArkEmbed.retag();          // tag + hide whatever chips exist now
+      info = w.ArkEmbed.chipInfo();
+    } catch { return; }
+    if (!info || !info.length) return; // no filters left — nothing to replay; stay live
+    if (!buildStory(info)) return;
+    revealedRef.current = new Set();
+    interactiveRef.current = false;
+    if (iframeRef.current) iframeRef.current.style.pointerEvents = 'none';
+    if (overlayRef.current) overlayRef.current.style.display = 'flex';
+    if (hintRef.current) hintRef.current.style.opacity = '0';
+  }, [buildStory]);
 
   const frame = useCallback(() => {
     const track = trackRef.current;
@@ -166,47 +176,50 @@ export default function BuilderScrollDemo() {
     const p = clamp(-r.top / Math.max(r.height - vh, 1), 0, 1);
     const w = app();
 
-    // builder frame reveal
+    // scrolled back above the story after interacting → replay with current filters
+    if (interactiveRef.current && p < REPLAY_AT && w) replay(w);
+
     if (frameRef.current) {
       const t = easeOut(seg(p, T.builderIn));
       frameRef.current.style.opacity = String(t);
       frameRef.current.style.transform = `translateY(${(1 - t) * 48}px)`;
     }
+    if (interactiveRef.current) return; // free-play: hands off the iframe
 
-    // chips: pop in big → FLIP to their exact rects
+    const steps = stepsRef.current;
+    const n = steps.length;
     const iframeBox = iframeRef.current ? iframeRef.current.getBoundingClientRect() : null;
-    STORY.forEach((step, i) => {
+
+    steps.forEach((step, i) => {
       const clones = cloneRefs.current[step.group] || [];
-      const tIn = seg(p, T.chipIn(i));
-      const fly = seg(p, T.fly(i));
+      const tIn = seg(p, chipInT(i, n));
+      const fly = seg(p, flyT(i, n));
 
       clones.forEach(el => {
         if (fly <= 0) {
           const pop = easeOut(tIn);
           el.style.opacity = String(pop);
           el.style.transform = `translateY(${(1 - pop) * 14}px)`;
+          el._home = null; el._t = null;
           if (revealedRef.current.has(step.group) && w) {
-            w.ArkEmbed.hideGroup(step.group); // scrolled back up
+            w.ArkEmbed.hideGroup(step.group);
             revealedRef.current.delete(step.group);
           }
         } else if (iframeBox) {
-          // FLIP: from overlay home (scaled by row) to exact chip rect, ending scale(1/BIG_SCALE) within the scaled row = real size
           const t = easeInOut(fly);
           const b = el.getBoundingClientRect();
           const prev = el._t || { x: 0, y: 0, s: 1 };
-          // overlay home = current rect minus the transform we last applied (stable across frames)
           if (!el._home) el._home = { x: b.left - prev.x, y: b.top - prev.y };
           const targetX = iframeBox.left + parseFloat(el.dataset.rx);
           const targetY = iframeBox.top + parseFloat(el.dataset.ry);
           const dx = (targetX - el._home.x) * t;
           const dy = (targetY - el._home.y) * t;
-          const s = 1 + (1 / BIG_SCALE - 1) * t; // row is scaled BIG_SCALE; net ends at exactly 1.0
+          const s = 1 + (1 / BIG_SCALE - 1) * t;
           el._t = { x: dx, y: dy, s };
           el.style.transformOrigin = 'top left';
           el.style.transform = `translate(${dx / BIG_SCALE}px, ${dy / BIG_SCALE}px) scale(${s})`;
           el.style.opacity = String(1 - seg(fly, [0.93, 1]));
           el.style.boxShadow = `0 ${12 * (1 - t)}px ${44 * (1 - t)}px rgba(0,0,0,${0.45 * (1 - t)})`;
-
           if (fly >= 0.97 && w && !revealedRef.current.has(step.group)) {
             w.ArkEmbed.reveal(step.group);
             revealedRef.current.add(step.group);
@@ -215,18 +228,18 @@ export default function BuilderScrollDemo() {
       });
     });
 
-    if (captionRef.current) {
-      const t = seg(p, T.chipIn(3));
-      const gone = seg(p, T.fly(3));
+    if (captionRef.current && n) {
+      const t = seg(p, chipInT(n - 1, n));
+      const gone = seg(p, flyT(n - 1, n));
       captionRef.current.style.opacity = String(easeOut(t) * (1 - gone));
     }
 
-    // real Generate from snapshot
-    if (p >= T.generateAt && !generatedRef.current && w && revealedRef.current.size === 4) {
+    // real Generate from snapshot — FIRST run only; replays never re-fire it
+    if (p >= T.generateAt && !generatedRef.current && w && revealedRef.current.size === stepsRef.current.length) {
       if (w.ArkEmbed.generate()) generatedRef.current = true;
     }
 
-    // scroll-driven data fade
+    // scroll-driven data fade (works on replays too — data is already rendered)
     if (generatedRef.current && w) {
       w.ArkEmbed.setDataReveal(seg(p, T.dataReveal));
     }
@@ -238,7 +251,7 @@ export default function BuilderScrollDemo() {
       if (overlayRef.current) overlayRef.current.style.display = 'none';
       if (hintRef.current) hintRef.current.style.opacity = '1';
     }
-  }, [mountIframe, app]);
+  }, [mountIframe, app, replay]);
 
   useEffect(() => {
     if (!isDesktop) return;
@@ -284,7 +297,6 @@ export default function BuilderScrollDemo() {
           </p>
           <span ref={debugRef} className="ark-mono" style={{ position: 'absolute', top: '8px', left: '10px', zIndex: 9, color: '#FF8A9A', fontSize: '11px', background: 'rgba(0,0,0,0.6)', padding: '3px 8px', borderRadius: '6px' }}>boot: waiting for iframe…</span>
 
-          {/* the REAL builder */}
           <div ref={frameRef} style={{ opacity: 0, width: 'min(1240px, calc(100vw - 40px))', flex: 1, minHeight: 0, borderRadius: '14px 14px 0 0', overflow: 'hidden', border: '1px solid #1B3050', borderBottom: 'none', boxShadow: '0 30px 80px rgba(0,0,0,0.55)', background: '#f8fafc', position: 'relative' }}>
             {mountIframe && (
               <iframe
@@ -299,7 +311,6 @@ export default function BuilderScrollDemo() {
             </div>
           </div>
 
-          {/* overlay: exact clones of the real chips, scaled up */}
           <div ref={overlayRef} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 3 }} />
         </div>
       </section>
