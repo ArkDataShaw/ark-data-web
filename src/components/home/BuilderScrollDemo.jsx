@@ -91,11 +91,17 @@ export default function BuilderScrollDemo() {
     captionRef.current = null;
 
     steps.forEach((step, si) => {
+      const capBleed = Math.ceil((BIG_SCALE - 1) * 13);
       if (step.caption) {
         const cap = document.createElement('div');
         cap.textContent = step.caption;
         cap.className = 'ark-mono';
-        cap.style.cssText = 'opacity:0;color:#A9C1DC;font-size:15px;letter-spacing:0.22em;text-align:center;margin:14px 0 6px;text-shadow:0 2px 12px rgba(0,0,0,0.6);';
+        // symmetric gaps that already account for the painted chip bleed of the
+        // rows above/below, so the caption sits visually centered between them
+        // painted gap above = top margin (row above's bottom margin exactly absorbs its bleed)
+        // painted gap below = bottom margin + (next row's top margin − its top bleed)
+        // next row top margin is capBleed*2+14 → contributes capBleed+14 → bottom = top − capBleed − 14
+        cap.style.cssText = `opacity:0;color:#C9DBEE;font-size:24px;font-weight:600;letter-spacing:0.26em;text-align:center;margin:${capBleed + 30}px 0 ${30 - 14}px;text-shadow:0 2px 16px rgba(0,0,0,0.7);`;
         captionRef.current = cap;
         overlay.appendChild(cap);
       }
