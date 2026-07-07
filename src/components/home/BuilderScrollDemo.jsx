@@ -121,7 +121,11 @@ export default function BuilderScrollDemo() {
       overlay.appendChild(row);
       row.style.transform = `scale(${BIG_SCALE})`;
       row.style.transformOrigin = 'center';
-      row.style.margin = `${si === 0 ? 0 : 26}px 0`;
+      // rows are laid out at 1x but painted at BIG_SCALE — each chip (~26px)
+      // overflows its layout box by ~(BIG_SCALE-1)*13px top and bottom, so the
+      // margin must absorb that overflow plus a real visual gap
+      const bleed = Math.ceil((BIG_SCALE - 1) * 13);
+      row.style.margin = `${si === 0 ? bleed : bleed * 2 + 14}px 0 ${bleed}px`;
     });
     return true;
   }, []);
