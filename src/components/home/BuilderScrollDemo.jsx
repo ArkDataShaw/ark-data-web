@@ -31,7 +31,9 @@ const easeInOut = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 
 // timing windows distributed across N steps
 const chipInT = (i, n) => { const s = 0.05 + i * (0.18 / Math.max(n, 1)); return [s, s + 0.07]; };
 const flyT = (i, n) => { const s = 0.34 + i * (0.15 / Math.max(n, 1)); return [s, s + 0.12]; };
-const T = { builderIn: [0.24, 0.34], generateAt: 0.64, dataReveal: [0.68, 0.90], interactiveAt: 0.93 };
+// interactiveAt hugs the end of dataReveal — anything between "fade done" and
+// "unlock + pin release" is dead scrolling (Shaw-reported 2026-07-07)
+const T = { builderIn: [0.24, 0.34], generateAt: 0.64, dataReveal: [0.68, 0.94], interactiveAt: 0.955 };
 
 // exact .chip styles from the builder's stylesheet, applied inline to clones
 const CHIP_STYLE = {
@@ -186,6 +188,39 @@ export default function BuilderScrollDemo() {
     const p = clamp(-r.top / Math.max(r.height - vh, 1), 0, 1);
     const w = app();
 
+    // ── debug: page-state + scroll % (throttled to 1% steps) ────────────────
+    const pct = Math.round(p * 100);
+    if (pct !== frame._lastPct) {
+      frame._lastPct = pct;
+      const els = [];
+      Object.entries(cloneRefs.current).forEach(([g, cs]) => {
+        cs.forEach(el => { if (parseFloat(el.style.opacity || 0) > 0.02) els.push(`clone:${g}(o=${(+el.style.opacity).toFixed(2)})`); });
+      });
+      if (captionRef.current && parseFloat(captionRef.current.style.opacity || 0) > 0.02) els.push('caption');
+      if (frameRef.current && parseFloat(frameRef.current.style.opacity || 0) > 0.02) els.push(`builder(o=${(+frameRef.current.style.opacity).toFixed(2)})`);
+      let iframeState = 'unmounted';
+      if (w) {
+        try {
+          const revealed = [...revealedRef.current].join(',') || 'none';
+          const dataX = generatedRef.current ? seg(p, T.dataReveal).toFixed(2) : 'n/a';
+          iframeState = `chips-revealed=[${revealed}] generated=${generatedRef.current} dataReveal=${dataX} dataHidden=${w.document.body.classList.contains('ark-data-hidden')}`;
+        } catch { iframeState = 'inaccessible'; }
+      } else if (mountIframe) iframeState = 'mounted-not-ready';
+      const phase =
+        p < T.builderIn[0] ? 'P1/P2 chips' :
+        p < T.generateAt ? 'P3 fly+builder' :
+        p < T.dataReveal[0] ? 'P4 generate' :
+        p < T.dataReveal[1] ? 'P4 data-fade' :
+        p < T.interactiveAt ? 'DEAD ZONE (fade done, not yet unlocked)' :
+        'P5 interactive';
+      // eslint-disable-next-line no-console
+      console.log(
+        `[scrollDemo] ${pct}% | phase=${phase} | pin=${p < 1 ? 'HELD' : 'released'} | interactive=${interactiveRef.current}\n` +
+        `  overlay: ${els.length ? els.join(' ') : '(empty)'}\n` +
+        `  iframe: ${iframeState}`
+      );
+    }
+
     // scrolled back above the story after interacting → replay with current filters
     if (interactiveRef.current && p < REPLAY_AT && w) replay(w);
 
@@ -300,7 +335,7 @@ export default function BuilderScrollDemo() {
 
   return (
     <>
-      <section ref={trackRef} style={{ height: '480vh', position: 'relative', background: '#060D1A', borderTop: '1px solid #101E33' }}>
+      <section ref={trackRef} style={{ height: '440vh', position: 'relative', background: '#060D1A', borderTop: '1px solid #101E33' }}>
         <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <p className="ark-mono" style={{ color: '#6FE3B0', fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', margin: '24px 0 12px', flexShrink: 0 }}>
             THE FLAGSHIP · AUDIENCE BUILDER
