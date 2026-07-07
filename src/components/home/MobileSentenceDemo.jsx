@@ -56,6 +56,14 @@ export default function MobileSentenceDemo() {
   const [booted, setBooted] = useState(false);
   const [armed, setArmed] = useState(false); // scrim tapped → touch enabled
 
+  // idle-mount: boot the iframe ~2s after page load so ArkEmbed is ready long
+  // before the visitor reaches the track (fast-flick approach previously beat
+  // the boot and the first beats lagged pin-start).
+  useEffect(() => {
+    const t = setTimeout(() => setMountIframe(true), 2000);
+    return () => clearTimeout(t);
+  }, []);
+
   const app = useCallback(() => {
     const w = iframeRef.current && iframeRef.current.contentWindow;
     try { return (w && w.ArkEmbed && w.ArkEmbed.ready) ? w : null; } catch { return null; }
@@ -85,7 +93,7 @@ export default function MobileSentenceDemo() {
     if (!track) return;
     const r = track.getBoundingClientRect();
     const vh = window.innerHeight;
-    if (!mountIframe && r.top < vh * 4) { setMountIframe(true); return; }
+    if (!mountIframe && r.top < vh * 4) { setMountIframe(true); return; } // fallback if the idle timer hasn't fired
     const p = clamp(-r.top / Math.max(r.height - vh, 1), 0, 1);
     const w = app();
 
