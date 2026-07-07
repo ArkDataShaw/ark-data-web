@@ -30,6 +30,8 @@
     '#viewSeg{display:none}', // no 500-row preview in the embed — Map & insights only
     // chips stay inline with the reach number — never wrap to their own row
     '.strip.wrapchips .stripchips{flex:1;margin-top:0}',
+    // funnel hold: everything is pre-baked — never show "Building full density"
+    'body.ark-funnel-hold #mapLoading{display:none!important}',
   ].join('\n');
   document.head.appendChild(css);
 
@@ -55,6 +57,7 @@
         if (payload.action === 'cleanup') return { status: 200, body: { ok: true } };
         // funnel mode: hold full density until the final stage releases it
         if (payload.action === 'geoPoll' && window.ArkEmbed.holdGeo && !window.ArkEmbed._geoReleased) {
+          document.body.classList.add('ark-funnel-hold'); // all data is baked — suppress loading theater
           await new Promise(function (res) { setTimeout(res, 300); });
           return { status: 200, body: { ready: false, status: 'building' } };
         }
@@ -202,6 +205,7 @@
       // county/ZIP flip + FL fit handled by the poll below.
       if (this._geoReleased) return;
       this._geoReleased = true;
+      document.body.classList.remove('ark-funnel-hold');
       var tries = 0; var didFit = false, didFull = false;
       var iv = setInterval(function () {
         tries++;
