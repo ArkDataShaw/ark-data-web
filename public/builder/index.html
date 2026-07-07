@@ -270,8 +270,8 @@
   @keyframes dotpulse{0%,100%{opacity:.3}50%{opacity:1}}
   .mapcol{display:flex;flex-direction:column;gap:14px}
   .maprail{display:flex;flex-direction:column;gap:14px}
-  /* Insights below the map -- explicit 12-column layout (Shaw's row spec). Cards flow in renderCharts' ORDER; spans below make each row total 12: third=4, half=6, quarter=3, firmo pair=12. align-items:start keeps every card at its NATURAL height (no row-stretch whitespace; honors vbar congruence). */
-  .insights{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:18px;align-items:start}
+  /* Insights below the map -- explicit 12-column layout (Shaw's row spec). Cards flow in renderCharts' ORDER; spans below make each row total 12: third=4, half=6, quarter=3, firmo pair=12. align-items:stretch so side-by-side cards match heights and hbars rows can spread to align top/bottom borders with neighbors (Goal 10 rule 3; react parity). */
+  .insights{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:18px;align-items:stretch}
   .insights .card{min-height:214px}          /* baseline floor for the shortest tiles (e.g. donut) */
   .insights .card .cardh{margin-bottom:14px}
   .insights .span2 .bar .lab{width:150px}     /* wide cards (e.g. Top industries) give long labels room */
@@ -287,13 +287,28 @@
     .insights #card-home,.insights #card-family{grid-column:auto}
     .insights .card-pair{grid-template-columns:1fr}
   }
-  .card{background:#fff;border:1px solid var(--slate-200);border-radius:14px;padding:15px 17px}
+  .card{background:#fff;border:1px solid var(--slate-200);border-radius:14px;padding:15px 17px;display:flex;flex-direction:column}/* flex column so chart bodies can flex:1-fill (hbars vmode / space-evenly rows) */
   .cardh{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--slate-500);text-transform:uppercase;margin:0 0 13px}
   .statrow{display:grid;grid-template-columns:1fr 1fr;gap:11px}
   .stat{background:var(--slate-50);border-radius:11px;padding:11px}.stat .n{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums}.stat .l{font-size:11px;color:var(--slate-500);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
   .stat .stat-ico{display:block;color:var(--slate-400);margin-bottom:5px}.stat .stat-ico svg{width:15px;height:15px;display:block}
   /* cursor-follow spinner — the only insights-update feedback (in-app parity, pill removed) */
   .cursor-spinner{position:fixed;width:14px;height:14px;border:2px solid rgba(124,58,237,.25);border-top-color:var(--violet);border-radius:50%;animation:spin .7s linear infinite;pointer-events:none;z-index:99999}
+  /* hbars container: rows spread across the FULL card height so top/bottom borders align with neighbors (Goal 10 rule 3) */
+  .hbars-wrap{display:flex;flex-direction:column;justify-content:space-evenly;flex:1;gap:4px;position:relative}
+  .hbars-wrap .bar{margin-bottom:0}/* space-evenly owns the vertical rhythm, not per-row margins */
+  /* Thicker tracks when fewer rows — 4 rows 22px, 5 rows 19px, 6 stays 17px (react index.css:1734-1736 verbatim; pure-CSS row count) */
+  .hbars-wrap:has(> .bar:nth-child(4):last-child) .track{height:22px;min-height:22px}
+  .hbars-wrap:has(> .bar:nth-child(5):last-child) .track{height:19px;min-height:19px}
+  /* ≤3 entries: full-height VERTICAL bars driven by flex-grow — NEVER inline height %
+     (the "percentage-of-nothing" bug: height:% resolves against nothing in an auto-height
+     flex column → 2px bars; flex-grow is also the animated property) */
+  .vbars.hbars-vmode{height:auto;flex:1;min-height:120px;padding:10px 20px 10px;gap:24px;align-items:stretch;position:relative}
+  .insights .card:not(.span2) .hbars-wrap .bar{margin-bottom:0}/* space-evenly owns rhythm in the narrow-card grid variant too */
+  .vbars.hbars-vmode .vbar{height:auto}
+  .vbars.hbars-vmode .vbar .vb{max-width:72px;width:100%;min-height:4px;transition:flex-grow var(--chart-dur,500ms) cubic-bezier(.16,1,.3,1)}
+  .vbars.hbars-vmode .vbar .vbv{font-size:12px}
+  .vbars.hbars-vmode .vbar .vl{font-size:12px}
   .bar{display:flex;align-items:center;gap:9px;margin-bottom:8px;font-size:12.5px}
   .bar .lab{width:92px;color:var(--slate-600);flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bar .track{flex:1;background:var(--slate-100);border-radius:999px;height:17px;overflow:hidden}
@@ -1912,11 +1927,35 @@ const revRank=v=>{const s=String(v).toLowerCase();if(s.startsWith('under'))retur
 function hbars(id,entries,{mode='pct',fmt,top=6,est=false}={}){
   const el=document.getElementById(id);if(!el)return false;
   entries=(entries||[]).filter(e=>e[1]>0).slice(0,top);
-  if(!entries.length){el.innerHTML=`<div class="pk-empty">No data</div>`;return false;}
+  if(!entries.length){el.className="";el.innerHTML=`<div class="pk-empty">No data</div>`;return false;}
   const mx=Math.max(...entries.map(e=>e[1])),tot=entries.reduce((a,e)=>a+e[1],0)||1;
   const D='<span class="dots">\u00b7\u00b7\u00b7</span>';
-  el.innerHTML=entries.map(([l,v])=>{const lab=fmt?fmt(l):l;const val=est?D:(mode==='count'?v.toLocaleString():Math.round(v/tot*100)+'%');return `<div class="bar"><span class="lab" title="${String(lab).replace(/"/g,'&quot;')}">${lab}</span><span class="track"><span class="fill" style="width:${v/mx*100}%"></span></span><span class="val">${val}</span></div>`;}).join("");
-  el.classList.remove("few");
+  const valOf=v=>est?D:(mode==='count'?v.toLocaleString():Math.round(v/tot*100)+'%');
+  const escA=s=>String(s).replace(/"/g,'&quot;');
+  // ≤3 entries → full-height VERTICAL bars (Shaw-locked "hbars-vmode"). Bars are driven by
+  // flex-grow — NEVER inline height % (percentage-of-nothing bug: in an auto-height flex
+  // column, height:100% resolves against nothing → 2px slivers). Mount animation = the
+  // flex-grow transition: start at 0, force reflow, set v/mx.
+  if(entries.length<=3){
+    el.className="vbars few hbars-vmode";
+    el.innerHTML=entries.map(([l,v])=>{const lab=fmt?fmt(l):l;
+      return `<div class="vbar"><div class="vbv">${valOf(v)}</div><div class="vb" data-l="${escA(lab)}" data-v="${v}" style="flex-grow:0"></div><div class="vl">${lab}</div></div>`;}).join("");
+    const ctl=chartTipCtl(el);
+    el.querySelectorAll(".vb").forEach(b=>{
+      b.addEventListener("mouseenter",()=>ctl.enter({label:b.dataset.l,value:+b.dataset.v,total:tot}));
+    });
+    el.offsetHeight; // reflow so the 0→target flex-grow transition runs
+    el.querySelectorAll(".vb").forEach(b=>{b.style.flexGrow=(+b.dataset.v)/mx;});
+    return true;
+  }
+  // 4-6 entries → horizontal rows; track thickness graduates via the CSS :has() ladder
+  el.className="hbars-wrap";
+  el.innerHTML=entries.map(([l,v])=>{const lab=fmt?fmt(l):l;
+    return `<div class="bar"><span class="lab" title="${escA(lab)}">${lab}</span><span class="track"><span class="fill" data-l="${escA(lab)}" data-v="${v}" style="width:${v/mx*100}%"></span></span><span class="val">${valOf(v)}</span></div>`;}).join("");
+  const ctl=chartTipCtl(el);
+  el.querySelectorAll(".fill").forEach(f=>{
+    f.addEventListener("mouseenter",()=>ctl.enter({label:f.dataset.l,value:+f.dataset.v,total:tot}));
+  });
   return true;
 }
 // vertical bars (histogram) -- value on top, label below. entries already in display order (left→right)
@@ -2226,12 +2265,10 @@ function renderCharts(){
     var D='<span class="dots">\u00b7\u00b7\u00b7</span>';
     renderCoverage(SA,true);
     recomputeGeo();
-    var ets=Object.entries(_counts).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
-    var etmx=Math.max(1,...ets.map(function(t){return t[1];}));
+    var ets=Object.entries(_counts).sort(function(a,b){return b[1]-a[1];});
     document.getElementById("topStatesH").textContent=company?"Top states (HQ)":"Top states";
-    document.getElementById("topStates").innerHTML=ets.length
-      ? ets.map(function(e){return '<div class="bar"><span class="lab">'+(CODE2NAME[e[0]]||e[0])+'</span><span class="track"><span class="fill" style="width:'+e[1]/etmx*100+'%"></span></span><span class="val">'+D+'</span></div>';}).join("")
-      : '<div class="pk-empty">No geographic data</div>';
+    if(!hbars("topStates",ets,{mode:'count',fmt:function(c){return CODE2NAME[c]||c;},est:true}))
+      document.getElementById("topStates").innerHTML='<div class="pk-empty">No geographic data</div>';
     SHOW("card-age",renderPyramid(SA,E));
     var incE=Object.entries(SA.income).filter(function(e){return e[1]>0;}).sort(function(a,b){return incRank(a[0])-incRank(b[0]);});
     SHOW("card-income",vbars("incomeBars",incE,{fmt:incLabel,est:E}));
@@ -2275,12 +2312,10 @@ function renderCharts(){
 
   // Top states -- basis-aware full counts
   recomputeGeo();
-  const ts=Object.entries(_counts).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  const tmx=Math.max(1,...ts.map(t=>t[1]));
+  const ts=Object.entries(_counts).sort((a,b)=>b[1]-a[1]);
   document.getElementById("topStatesH").textContent=company?"Top states (HQ)":"Top states";
-  document.getElementById("topStates").innerHTML=ts.length
-    ? ts.map(([code,v])=>`<div class="bar"><span class="lab">${CODE2NAME[code]||code}</span><span class="track"><span class="fill" style="width:${v/tmx*100}%"></span></span><span class="val">${v.toLocaleString()}</span></div>`).join("")
-    : `<div class="pk-empty">No geographic data</div>`;
+  if(!hbars("topStates",ts,{mode:'count',fmt:c=>CODE2NAME[c]||c}))
+    document.getElementById("topStates").innerHTML=`<div class="pk-empty">No geographic data</div>`;
 
   // Demographics -- ordinal distributions as VERTICAL histograms (low→high, left→right)
   SHOW("card-age",renderPyramid(A));
