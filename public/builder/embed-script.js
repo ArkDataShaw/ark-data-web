@@ -127,8 +127,24 @@
       var rn = document.getElementById('reachNum');
       if (rn) rn.classList.remove('ark-hidden');
       var btn = document.getElementById('generateBtn');
-      if (btn) { btn.click(); return true; }
-      return false;
+      if (!btn) return false;
+      btn.click();
+      // applyAll() ran before the map existed, so its geo fit was silently
+      // dropped (fitMapToScope guards !map||!ready) and _lastScopeKey now
+      // blocks a retry. Once the map is live, clear the cache and re-fit so
+      // the view frames the scripted geo (FL).
+      var tries = 0;
+      var iv = setInterval(function () {
+        tries++;
+        var m = window._fullMap;
+        if (m && (!m.loaded || m.loaded())) {
+          try { _lastScopeKey = ''; updateMapScope(); } catch (e) { /* noop */ }
+          clearInterval(iv);
+          return;
+        }
+        if (tries > 40) clearInterval(iv); // give up after ~20s
+      }, 500);
+      return true;
     },
 
     // x: 0..1 — staggered fade of map first, then cards
