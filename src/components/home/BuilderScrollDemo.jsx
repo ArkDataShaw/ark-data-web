@@ -114,11 +114,14 @@ export default function BuilderScrollDemo() {
       info.filter(c => c.group === step.group).forEach(c => {
         const el = document.createElement('span');
         Object.assign(el.style, CHIP_STYLE, c.exclude ? CHIP_STYLE_EXCL : {});
-        const b = document.createElement('b');
-        b.style.fontWeight = '700';
-        b.textContent = c.label;
-        el.appendChild(b);
-        el.appendChild(document.createTextNode(' ' + c.value));
+        if (c.label) {
+          const b = document.createElement('b');
+          b.style.fontWeight = '700';
+          b.textContent = c.label;
+          el.appendChild(b);
+          el.appendChild(document.createTextNode(' '));
+        }
+        el.appendChild(document.createTextNode(c.value));
         el.style.opacity = '0';
         el.style.boxShadow = '0 12px 44px rgba(0,0,0,0.45)';
         el.dataset.rx = c.rect.x; el.dataset.ry = c.rect.y;
@@ -325,8 +328,8 @@ export default function BuilderScrollDemo() {
             Describe your buyer.<br />Watch the audience build itself.
           </h2>
           <p style={{ color: '#A9C1DC', fontSize: '15px', lineHeight: 1.7, margin: '0 0 24px' }}>
-            Homeowners in Florida with $100K+ income researching{' '}
-            <span style={{ color: '#6FE3B0', fontWeight: 600 }}>Solar Panel Installation</span> — built into an
+            Millionaire homeowners in Florida searching for{' '}
+            <span style={{ color: '#6FE3B0', fontWeight: 600 }}>FIFA World Cup</span> — built into an
             ad-ready audience in seconds. Try the full builder on desktop, or open the live demo.
           </p>
           <Link to={createPageUrl('Demo')}>

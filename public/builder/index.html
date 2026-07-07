@@ -1386,6 +1386,7 @@ function gatherChips(){
       // Age chips label as "Age". Removing the merged chip clears the whole field.
       var chipGrp=k==="age"?"Age":(LABELS[k]||k);
       mergeRanges(k,[...S.checks[k]]).forEach(merged=>out.push({grp:chipGrp,v:chipRangeShort(k,merged),rm:()=>S.checks[k].clear()}));
+    }else if(k==="homeowner"){const HOMEOWNER_PLURAL={"Homeowner":"Homeowners","Renter":"Renters","Probable Homeowner":"Probable Homeowners"};S.checks[k].forEach(o=>out.push({grp:"",v:HOMEOWNER_PLURAL[o]||o,rm:()=>S.checks[k].delete(o)})); // WEBSITE-EMBED PATCH: Shaw 2026-07-07 — bare plural chip, no label prefix
     }else{S.checks[k].forEach(o=>out.push({grp:LABELS[k]||k,v:o,rm:()=>S.checks[k].delete(o)}));}
   });
   Object.keys(S.texts).forEach(k=>{if(S.texts[k])out.push({grp:LABELS[k]||k,v:S.texts[k],rm:()=>S.texts[k]=""});});
@@ -1414,7 +1415,7 @@ function renderChips(){
   chipsEl.innerHTML="";
   all.forEach(c=>{
     const el=document.createElement("span");el.className="chip"+(c.exclude?" excl":"");
-    el.innerHTML=`<b>${c.grp}:</b> ${c.exclude?"⊘ ":""}${c.v}<span class="x">✕</span>`;
+    el.innerHTML=(c.grp?`<b>${c.grp}:</b> `:"")+`${c.exclude?"⊘ ":""}${c.v}<span class="x">✕</span>`;
     el.querySelector(".x").onclick=()=>{c.rm();renderSidebar();sync();};
     chipsEl.appendChild(el);
   });

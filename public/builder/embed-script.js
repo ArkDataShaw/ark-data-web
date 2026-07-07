@@ -32,6 +32,7 @@
   var GROUP_OF = function (chipEl) {
     var b = chipEl.querySelector('b');
     var g = (b ? b.textContent : '').replace(/:\s*$/, '').trim().toLowerCase();
+    if (!g) g = (chipEl.textContent || '').replace(/\u2715\s*$/, '').trim().toLowerCase(); // prefix-less chips (e.g. "Homeowners")
     return g ? g.replace(/\s+/g, '-') : 'other';
   };
 
@@ -77,10 +78,10 @@
 
     applyAll: function () {
       S.checks.homeowner = new Set(['Homeowner']);
-      S.checks.income = new Set(['$100,000 to $149,999', '$150,000 to $199,999', '$200,000 to $249,999', '$250,000+']);
+      S.checks.networth = new Set(['more than $1,000,000']);
       S.loc.personal.state.add('FL');
-      S.topics.add('Solar Panel Installation');
-      S.topicMeta['Solar Panel Installation'] = { id: 7270, kind: 'b2c' };
+      S.topics.add('FIFA World Cup');
+      S.topicMeta['FIFA World Cup'] = { id: 6099, kind: 'b2c' };
       renderSidebar(); sync();
       tagChips();
       var rn = document.getElementById('reachNum');
