@@ -31,9 +31,10 @@ const easeInOut = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 
 // timing windows distributed across N steps
 const chipInT = (i, n) => { const s = 0.05 + i * (0.18 / Math.max(n, 1)); return [s, s + 0.07]; };
 const flyT = (i, n) => { const s = 0.34 + i * (0.15 / Math.max(n, 1)); return [s, s + 0.12]; };
-// interactiveAt hugs the end of dataReveal — anything between "fade done" and
-// "unlock + pin release" is dead scrolling (Shaw-reported 2026-07-07)
-const T = { builderIn: [0.24, 0.34], generateAt: 0.64, dataReveal: [0.68, 0.94], interactiveAt: 0.955 };
+// dataReveal runs to the very end of the track; the unlock fires the moment
+// the fade completes (not at a fixed offset) — there is no scroll range where
+// nothing changes (Shaw-reported dead zone, 2026-07-07)
+const T = { builderIn: [0.24, 0.34], generateAt: 0.62, dataReveal: [0.66, 0.985], interactiveAt: 0.985 };
 
 // exact .chip styles from the builder's stylesheet, applied inline to clones
 const CHIP_STYLE = {
@@ -285,12 +286,15 @@ export default function BuilderScrollDemo() {
     }
 
     // scroll-driven data fade (works on replays too — data is already rendered)
+    let fadeDone = false;
     if (generatedRef.current && w) {
-      w.ArkEmbed.setDataReveal(seg(p, T.dataReveal));
+      const x = seg(p, T.dataReveal);
+      w.ArkEmbed.setDataReveal(x);
+      fadeDone = x >= 1;
     }
 
-    // unlock
-    if (p >= T.interactiveAt && !interactiveRef.current) {
+    // unlock the moment the fade completes (fixed-offset fallback kept)
+    if ((fadeDone || p >= T.interactiveAt) && !interactiveRef.current) {
       interactiveRef.current = true;
       if (iframeRef.current) iframeRef.current.style.pointerEvents = 'auto';
       if (overlayRef.current) overlayRef.current.style.display = 'none';
