@@ -214,7 +214,7 @@
       if (k === 0) { this.applyStep(0); this._setStageMeta(0); this._paintStage(0, false); }
       if (k === 1) {
         this.applyStep(1); this._setStageMeta(1); this._paintStage(1, false);
-        try { if (window.fitMapToScope) window.fitMapToScope(this.FL_BBOX, 7); _lastScopeKey = 'FL|'; // EXACT key updateMapScope computes for FL-only — later sync()s see no change and skip (a sentinel key caused a US-view bounce) } catch (e) { /* noop */ }
+        try { if (window.fitMapToScope) window.fitMapToScope(this.FL_BBOX, 7); _lastScopeKey = 'FL|'; /* exact updateMapScope key for FL-only — later syncs no-op (sentinel key caused US-view bounce) */ } catch (e) { /* noop */ }
       }
       if (k === 2) { this._flipToFull(); this._paintStage(1, true); this._setStageMeta(1); }
       if (k === 3) { this.applyStep(2); this._setStageMeta(2); this._paintStage(2, true); }
@@ -251,7 +251,7 @@
         var m = window._fullMap;
         if (!didFit && m && (!m.loaded || m.loaded()) && window._geoPullDone) {
           var FL_BBOX = [-87.633, 25.121, -80.031, 31.003];
-          try { if (window.fitMapToScope) { window.fitMapToScope(FL_BBOX, 7); didFit = true; } _lastScopeKey = 'FL|'; // EXACT key updateMapScope computes for FL-only — later sync()s see no change and skip (a sentinel key caused a US-view bounce) } catch (e) { /* retry */ }
+          try { if (window.fitMapToScope) { window.fitMapToScope(FL_BBOX, 7); didFit = true; } _lastScopeKey = 'FL|'; /* exact updateMapScope key for FL-only — later syncs no-op (sentinel key caused US-view bounce) */ } catch (e) { /* retry */ }
         }
         if (!didFull && window._geoPullDone) {
           var full = document.querySelector('#mapMode input[value="full"]');
@@ -287,7 +287,7 @@
             var FL_BBOX = [-87.633, 25.121, -80.031, 31.003]; // from us-states.js geometry (no ZIP_LOOKUP needed on mobile)
             try {
               if (window.fitMapToScope) { window.fitMapToScope(FL_BBOX, 7); didFit = true; }
-              _lastScopeKey = 'FL|'; // EXACT key updateMapScope computes for FL-only — later sync()s see no change and skip (a sentinel key caused a US-view bounce)
+              _lastScopeKey = 'FL|'; /* exact updateMapScope key for FL-only — later syncs no-op (sentinel key caused US-view bounce) */
             } catch (e) { /* retry next tick */ }
           }
           if (!didFull && window._geoPullDone) {
