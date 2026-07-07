@@ -343,10 +343,8 @@ export default function BuilderScrollDemo() {
   return (
     <>
       <section ref={trackRef} style={{ height: '440vh', position: 'relative', background: '#060D1A', borderTop: '1px solid #101E33' }}>
-        <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <p className="ark-mono" style={{ color: '#6FE3B0', fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', margin: '24px 0 12px', flexShrink: 0 }}>
-            THE FLAGSHIP · AUDIENCE BUILDER
-          </p>
+        {/* stage: builder frame rests 10px below the 70px fixed nav */}
+        <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '80px', boxSizing: 'border-box' }}>
           <span ref={debugRef} className="ark-mono" style={{ position: 'absolute', top: '8px', left: '10px', zIndex: 9, color: '#FF8A9A', fontSize: '11px', background: 'rgba(0,0,0,0.6)', padding: '3px 8px', borderRadius: '6px' }}>boot: waiting for iframe…</span>
 
           <div ref={frameRef} style={{ opacity: 0, width: 'min(1240px, calc(100vw - 40px))', flex: 1, minHeight: 0, borderRadius: '14px 14px 0 0', overflow: 'hidden', border: '1px solid #1B3050', borderBottom: 'none', boxShadow: '0 30px 80px rgba(0,0,0,0.55)', background: '#f8fafc', position: 'relative' }}>
