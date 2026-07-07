@@ -175,7 +175,11 @@
       var st = this._stages[i];
       var stageChanged = this._stageIdx !== i;
       this._stageIdx = i;
-      if (stageChanged) { try { setReach(st.reach); if (window.renderSentence) renderSentence(); } catch (e) { /* noop */ } }
+      // reach: cheap — correct it EVERY call (the canned poll/startPull land
+      // late and stomp stage reach; this re-assert is O(1))
+      try { if (window._reach !== st.reach) { setReach(st.reach); if (window.renderSentence) renderSentence(); } } catch (e) { /* noop */ }
+      // geo: if the builder nulled _geoData (startPull does at Generate), force a repaint
+      if (!window._geoData && this._paintedIdx === i) this._paintedIdx = -1;
       // per-stage density through the builder's own painters.
       // PERF: paint ONLY on stage change (the frame loop re-asserts every tick
       // — repainting ~3k county feature-states each 400ms froze phones), and
