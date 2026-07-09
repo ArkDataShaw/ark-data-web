@@ -23,6 +23,16 @@
     // funnel: the MAP and the COVERAGE card are visible from stage 1 — they
     // ARE the per-beat story; remaining cards fade in at the end.
     'body.ark-data-hidden #previewArea .maprail .card:first-child{opacity:1}',
+    // full-height mobile demo: the ENTIRE maprail triple chart (Coverage + Top states +
+    // Intent) is the live narration — visible the whole story, updating per stage. Only the
+    // insights grid below fades in at the reveal. Desktop (no ark-fullheight) keeps the
+    // coverage-only rule above. Shaw 2026-07-08.
+    'body.ark-fullheight.ark-data-hidden #previewArea .maprail .card{opacity:1}',
+    // full-height demo: Age & Gender + Homeownership + Family Dynamics are all live per-stage —
+    // show them in their normal insights-grid slots the whole story (Shaw 2026-07-08 / -07-09).
+    'body.ark-fullheight.ark-data-hidden #previewArea #card-age{opacity:1}',
+    'body.ark-fullheight.ark-data-hidden #previewArea #card-home{opacity:1}',
+    'body.ark-fullheight.ark-data-hidden #previewArea #card-family{opacity:1}',
     '#previewArea .card, #previewArea #map{transition:opacity .55s ease}',
     '#reachNum.ark-hidden{visibility:hidden}',
     '#saveBtn{display:none}', // no Save in the scripted homepage embed
@@ -98,6 +108,7 @@
       { id: 'topic', apply: function () { S.topics.add('Pool Construction'); S.topicMeta['Pool Construction'] = { id: 7676, kind: 'b2c' }; }, unapply: function () { S.topics.clear(); S.topicMeta = {}; } },
       { id: 'geo', apply: function () { S.loc.personal.state.add('FL'); }, unapply: function () { S.loc.personal.state.clear(); } },
       { id: 'homeowner', apply: function () { S.checks.homeowner = new Set(['Homeowner']); }, unapply: function () { delete S.checks.homeowner; } },
+      { id: 'metros', apply: function () { ['Miami Metro', 'Fort Lauderdale Metro'].forEach(function (m) { S.loc.personal.metro.add(m); }); }, unapply: function () { S.loc.personal.metro.clear(); } },
       { id: 'networth', apply: function () { S.checks.networth = new Set(['more than $1,000,000']); }, unapply: function () { delete S.checks.networth; } },
     ],
     applyStep: function (i) { this.STEPS[i].apply(); renderSidebar(); sync(); tagChips(); },
@@ -143,6 +154,29 @@
     // story can replay with them after a scroll-back-up
     retag: function () { tagChips(); },
 
+    // ── mobile native-scroll demo ───────────────────────────────────────────
+    // enableFullHeight: drop the shell/main internal scrollers (body class,
+    //   CSS in index.html) so the builder lays out at full content height. The
+    //   parent then hosts a full-height, position:sticky iframe: the map+strip
+    //   pin through the scripted story, then the whole builder scrolls with the
+    //   page natively (real momentum) through the charts/records.
+    // fullHeight: the builder's full content height, for the parent to size the iframe.
+    enableFullHeight: function () { document.body.classList.add('ark-fullheight'); },
+    fullHeight: function () { return document.documentElement.scrollHeight; },
+    // Per-bar tooltip on TAP, forwarded from the parent (the demo iframe is pointer-events:none
+    // so page scroll passes through — direct touch never reaches the bars). x,y are in THIS
+    // iframe's viewport space. Walk up from the hit element to a bar carrying _tapTip (stashed
+    // by tipBind) and fire it. Returns true if a bar tooltip was shown. Shaw 2026-07-08.
+    tapTooltipAt: function (x, y) {
+      try {
+        var el = document.elementFromPoint(x, y);
+        for (var i = 0; el && i < 5; i++) { if (el._tapTip) { el._tapTip(); return true; } el = el.parentElement; }
+      } catch (e) { /* noop */ }
+      if (typeof ChartTip !== 'undefined' && ChartTip._open) ChartTip._open.leave(); // tapped empty space → dismiss
+      return false;
+    },
+    dismissTip: function () { try { if (typeof ChartTip !== 'undefined' && ChartTip._open) ChartTip._open.leave(); } catch (e) { /* noop */ } },
+
     loadSnapshot: function (url) {
       return fetch(url).then(function (r) { return r.json(); }).then(function (j) { canned = j; });
     },
@@ -174,6 +208,23 @@
       this._fullFlipped = false;
     },
     FL_BBOX: [-87.633, 25.121, -80.031, 31.003],
+    SFL_BBOX: [-80.491, 25.558, -80.091, 26.315], // Miami+FtLaud metro zips union (WPB dropped 2026-07-08 → tighter zoom)
+    SFL_OFFSET: [0, 10], // scoot the framed area ~20px DOWN in the view. NOTE: MapLibre's fitBounds `offset` lands at 2× on-screen (measured), so 10 → 20px. Shaw 2026-07-08
+    // The exact key updateMapScope() computes once the metros are on S (states
+    // {FL} + the metros' resolved zips). Pinning _lastScopeKey to this BEFORE the
+    // metro beat's sync() makes updateMapScope a no-op, so the ONLY fit that runs
+    // is our explicit SFL_BBOX one — no all-FL bounce (ZIP_LOOKUP is absent on
+    // mobile, so updateMapScope would otherwise fall back to the FL state bbox).
+    _metroScopeKey: function () {
+      var z = new Set();
+      if (typeof US_METROS !== 'undefined') {
+        ['Miami Metro', 'Fort Lauderdale Metro'].forEach(function (n) {
+          var mm = US_METROS.find(function (x) { return x.n === n; });
+          if (mm && mm.z) mm.z.forEach(function (zz) { z.add(zz); });
+        });
+      }
+      return 'FL|' + [...z].sort().join(',');
+    },
     mapReady: function () { var m = window._fullMap; return !!(m && (!m.loaded || m.loaded())); },
     _paintedKey: '',
     _paintStage: function (idx, counties) {
@@ -213,36 +264,127 @@
       } catch (e) { /* noop */ }
       var cov = document.getElementById('coverageStats');
       if (cov) {
+        // build the 4 stat tiles ONCE (the estimate-mode renderCharts that used to build them
+        // is now skipped during the scripted funnel), then update values per tick idempotently.
+        if (!cov.querySelector('.stat') && typeof renderCoverage === 'function') renderCoverage({ coverage: st.coverage }, false);
         var vals = [st.coverage.businessEmail, st.coverage.mobilePhone, st.coverage.linkedinPresent, st.coverage.uniqueCompanies];
         var ns = cov.querySelectorAll('.stat .n');
         for (var k = 0; k < ns.length && k < vals.length; k++) ns[k].textContent = vals[k] == null ? '\u2014' : Number(vals[k]).toLocaleString();
       }
+      this._paintStageCharts(idx);
     },
-    // ── Shaw's beat order (2026-07-07): the map is the star of beats 0-2 ──
-    //  b0 topic  → nationwide STATE choropleth (reach visible)
-    //  b1 FL     → map auto-zooms Florida (still state view)
-    //  b2 flip   → County/ZIP mode (no filter change, same FL stage)
-    //  b3 homeowners  → counties narrow
-    //  b4 millionaires → counties narrow to 48 + full density release
+    _paintedMetaKey: -1,
+    // Scale an age/gender split to a target reach (keeps the real per-stage SHAPE, makes the
+    // absolute counts consistent with the stage's reach). Falls back to the snapshot's final
+    // split if a stage has no baked ageGender.
+    _snapAgeGender: function () {
+      try { return canned && canned.responses && canned.responses.geoPoll && canned.responses.geoPoll.body && canned.responses.geoPoll.body.agg && canned.responses.geoPoll.body.agg.ageGender; }
+      catch (e) { return null; }
+    },
+    _scaledAgeGender: function (base, reach) {
+      if (!base) return null;
+      var tot = 0, kk;
+      for (kk in base) { if (base[kk]) tot += (base[kk].m || 0) + (base[kk].f || 0) + (base[kk].u || 0); }
+      if (!tot) return null;
+      var s = (reach || tot) / tot, out = {};
+      for (kk in base) { if (base[kk]) out[kk] = { m: Math.round((base[kk].m || 0) * s), f: Math.round((base[kk].f || 0) * s), u: Math.round((base[kk].u || 0) * s) }; }
+      return out;
+    },
+    // Paint the maprail's Top States AND the Age & Gender pyramid for a stage so both are LIVE
+    // the entire story (not just at the final geo release) — Top states = the stage's baked
+    // per-state counts; Age & Gender = the snapshot's real split scaled to the stage's reach,
+    // rendered into its normal insights-grid slot (#card-age). (Intent Strength was dropped
+    // per Shaw 2026-07-08.) Guarded by _paintedMetaKey so per-tick reasserts don't re-trigger
+    // the bar-grow animation.
+    _paintStageCharts: function (idx) {
+      if (this._paintedMetaKey === idx) return;
+      var st = this._stages && this._stages[idx];
+      if (!st) return;
+      try {
+        if (typeof hbars === 'function') {
+          // Mirror the live logic: applyStep already mutated S, so hasStateSel() reflects this
+          // stage's filters. State selected → Top CITIES (this stage's baked cities); else Top
+          // STATES. Keeps the maprail geo card the most relevant breakdown (Shaw 2026-07-08).
+          var h = document.getElementById('topStatesH');
+          var citiesPromoted = typeof hasStateSel === 'function' && hasStateSel() && st.cities && st.cities.length;
+          if (citiesPromoted) {
+            hbars('topStates', st.cities, { mode: 'count' });
+            if (h) h.textContent = 'Top cities';
+          } else {
+            var ts = (st.states || []).map(function (s) { return [s.state, s.total]; }).sort(function (a, b) { return b[1] - a[1]; });
+            hbars('topStates', ts, { mode: 'count', fmt: function (c) { return (typeof CODE2NAME !== 'undefined' && CODE2NAME[c]) || c; } });
+            if (h) h.textContent = 'Top states';
+          }
+          // Hide the insights-grid Top Cities card during the story unless it's promoted-free AND
+          // actually has data — else it sat below the map empty/loading, then vanished at the
+          // reveal (the loading-then-disappear flash). Promoted (state selected) → maprail owns it,
+          // hide the grid card. Nationwide (stage 0) → no grid cities data, so also hide (never a
+          // blank card). Keep the cities-promoted reflow (seniority/dept → halves) in sync too.
+          var citiesBars = document.getElementById('citiesBars');
+          var citiesHasData = citiesBars && citiesBars.children.length > 0 && !citiesBars.querySelector('.pk-empty');
+          if (typeof SHOW === 'function') SHOW('card-cities', !citiesPromoted && citiesHasData);
+          var grid = document.getElementById('insightsGrid');
+          if (grid) grid.classList.toggle('cities-promoted', !!citiesPromoted);
+        }
+        if (typeof renderPyramid === 'function') {
+          // real per-stage age/gender shape (baked into the stage) scaled to its reach — so
+          // the pyramid genuinely CHANGES per chapter (e.g. millionaires skew older + more
+          // male), not just a re-scaled copy of one distribution. Snapshot is the fallback.
+          var ag = this._scaledAgeGender(st.ageGender || this._snapAgeGender(), st.reach);
+          if (ag) renderPyramid({ ageGender: ag }, false);
+        }
+        // Homeownership + Family Dynamics — real per-stage shapes so they update every chapter
+        // like Age & Gender (Shaw 2026-07-09). Both render as % distributions, so raw baked
+        // counts are fine (no reach-scaling needed). The homeowner donut visibly flips to 100%
+        // owners at the homeowner beat; family mix shifts each stage.
+        if (typeof renderHomeDonut === 'function' && st.homeowner) renderHomeDonut({ homeowner: st.homeowner }, false);
+        if (typeof renderFamily === 'function' && st.family) renderFamily({ family: st.family }, false);
+        // apply the insights grid order NOW (the story skips renderCharts) so Home/Family sit in
+        // their row-1 slots beside Age from the start — not Household Income (Shaw 2026-07-09).
+        if (typeof applyInsightsOrder === 'function') applyInsightsOrder();
+        this._paintedMetaKey = idx;
+      } catch (e) { /* charts not ready — reassert retries */ }
+    },
+    // ── Shaw's beat order v4 (2026-07-08): the map is the star of every beat ──
+    //  b0 topic       → nationwide STATE choropleth (reach visible)
+    //  b1 FL          → select FL + zoom to Florida + flip to County/ZIP view (one beat)
+    //  b2 homeowners  → counties narrow
+    //  b3 METROS      → Miami/FtLaud filters + map zooms to South-FL
+    //  b4 millionaires→ narrows within South-FL + full density release (stays framed on SFL)
     BEAT_COUNT: 5,
+    _stageOfBeat: function (k) { return k; }, // beat index == stage index (FL zoom + County/ZIP flip merged into b1)
     beatOn: function (k) {
       this._lastBeatT = performance.now();
       if (k === 0) { this._preSetReach(0); this.applyStep(0); this._setStageMeta(0); this._paintStage(0, false); }
       if (k === 1) {
+        // combined: select FL + zoom to Florida + flip to County/ZIP view, one beat.
+        // paint the FL STATE choropleth first so the zoom + the state→County/ZIP
+        // cross-fade (flipToFull) both animate from a proper FL source, then land on counties.
         this._preSetReach(1); this.applyStep(1); this._setStageMeta(1); this._paintStage(1, false);
         try { if (window.fitMapToScope) window.fitMapToScope(this.FL_BBOX, 7); _lastScopeKey = 'FL|'; /* exact updateMapScope key for FL-only */ } catch (e) { /* noop */ }
+        this._flipToFull(); this._paintStage(1, true);
       }
-      if (k === 2) { this._flipToFull(); this._paintStage(1, true); this._setStageMeta(1); }
-      if (k === 3) { this._preSetReach(2); this.applyStep(2); this._setStageMeta(2); this._paintStage(2, true); }
-      if (k === 4) { this._preSetReach(3); this.applyStep(3); this._setStageMeta(3); this._paintStage(3, true); this.releaseGeo(); }
+      if (k === 2) { this._preSetReach(2); this.applyStep(2); this._setStageMeta(2); this._paintStage(2, true); }
+      if (k === 3) {
+        this._preSetReach(3);
+        _lastScopeKey = this._metroScopeKey(); // pin BEFORE applyStep's sync() so updateMapScope no-ops (only our SFL fit runs)
+        this.applyStep(3); this._setStageMeta(3); this._paintStage(3, true);
+        try { if (window.fitMapToScope) window.fitMapToScope(this.SFL_BBOX, 9, this.SFL_OFFSET); } catch (e) { /* noop */ }
+      }
+      if (k === 4) { this._preSetReach(4); this.applyStep(4); this._setStageMeta(4); this._paintStage(4, true); this.releaseGeo(); }
       this._stageIdx = k;
     },
     beatOff: function (k) {
       this._lastBeatT = performance.now();
-      if (k === 4) { this._preSetReach(2); this.unapplyStep(3); this._setStageMeta(2); this._paintStage(2, true); }
-      if (k === 3) { this._preSetReach(1); this.unapplyStep(2); this._setStageMeta(1); this._paintStage(1, true); }
-      if (k === 2) { this._flipToState(); this._paintStage(1, false); }
+      if (k === 4) { this._preSetReach(3); this.unapplyStep(4); this._setStageMeta(3); this._paintStage(3, true); }
+      if (k === 3) {
+        this._preSetReach(2); this.unapplyStep(3); this._setStageMeta(2); this._paintStage(2, true);
+        try { if (window.fitMapToScope) window.fitMapToScope(this.FL_BBOX, 7); } catch (e) { /* noop */ }
+      }
+      if (k === 2) { this._preSetReach(1); this.unapplyStep(2); this._setStageMeta(1); this._paintStage(1, true); }
       if (k === 1) {
+        // combined reverse: flip back to State view + deselect FL + zoom back out to US
+        this._flipToState();
         this._preSetReach(0); this.unapplyStep(1); this._setStageMeta(0); this._paintStage(0, false);
         try { if (window.fitMapToScope) window.fitMapToScope(null); _lastScopeKey = ''; } catch (e) { /* noop */ }
       }
@@ -252,23 +394,45 @@
     // per-tick cheap re-asserts (late canned poll stomps reach / nulls geo)
     reassert: function () {
       if (this._stageIdx < 0 || this._geoReleased) return;
-      var stageIdx = this._stageIdx >= 2 ? this._stageIdx - 1 : this._stageIdx; // beats 2+ share stage idx-1
-      this._setStageMeta(Math.min(stageIdx, 3));
-      if (!window._geoData) { this._paintedKey = ''; this._paintStage(Math.min(stageIdx, 3), this._stageIdx >= 2); }
+      var si = Math.min(this._stageOfBeat(this._stageIdx), 4);
+      this._setStageMeta(si);
+      if (!window._geoData) { this._paintedKey = ''; this._paintStage(si, this._stageIdx >= 1); } // County/ZIP view from b1 (FL+flip merged)
+      // keep the per-stage charts alive if a stray render (generate/poll) blanked any of them
+      // mid-story. Check Top States, Age pyramid, Homeownership donut AND Family donut — a clear
+      // that hits one must repaint all (they're painted together in _paintStageCharts), else one
+      // goes stale while the others update ("age doesn't update", Shaw 2026-07-08 / -07-09).
+      var tsEl = document.getElementById('topStates');
+      var agEl = document.getElementById('agePyramid');
+      var hoEl = document.getElementById('homeownerBars');
+      var faEl = document.getElementById('familyDonut');
+      var tsBlank = tsEl && (tsEl.querySelector('.pk-empty') || !tsEl.children.length);
+      var agBlank = agEl && (agEl.querySelector('.pk-empty') || !agEl.querySelector('.pyrow'));
+      var hoBlank = hoEl && (hoEl.querySelector('.pk-empty') || !hoEl.querySelector('svg'));
+      var faBlank = faEl && (faEl.querySelector('.pk-empty') || !faEl.querySelector('svg'));
+      if (tsBlank || agBlank || hoBlank || faBlank) { this._paintedMetaKey = -1; this._paintStageCharts(si); }
     },
     releaseGeo: function () {
       // final stage: let the held canned geoPoll resolve → full FL density,
       // county/ZIP flip + FL fit handled by the poll below.
       if (this._geoReleased) return;
       this._geoReleased = true;
-      document.body.classList.remove('ark-funnel-hold');
+      // keep the loading-overlay suppressor until the pull actually lands —
+      // removing it at release start let the poll loop flash "Building full
+      // density..." for one cycle (Shaw, 2026-07-08)
+      var unhide = setInterval(function () {
+        if (window._geoPullDone) { document.body.classList.remove('ark-funnel-hold'); clearInterval(unhide); }
+      }, 200);
+      setTimeout(function () { clearInterval(unhide); document.body.classList.remove('ark-funnel-hold'); }, 15000);
+      // the final audience is South-FL (metros + millionaires), so frame SFL —
+      // NOT all of Florida — when the live density lands. captured out here since
+      // `this` is unavailable inside the interval closure.
+      var SFL_BBOX = this.SFL_BBOX, sflScopeKey = this._metroScopeKey(), sflOffset = this.SFL_OFFSET;
       var tries = 0; var didFit = false, didFull = false;
       var iv = setInterval(function () {
         tries++;
         var m = window._fullMap;
         if (!didFit && m && (!m.loaded || m.loaded()) && window._geoPullDone) {
-          var FL_BBOX = [-87.633, 25.121, -80.031, 31.003];
-          try { if (window.fitMapToScope) { window.fitMapToScope(FL_BBOX, 7); didFit = true; } _lastScopeKey = 'FL|'; /* exact updateMapScope key for FL-only — later syncs no-op (sentinel key caused US-view bounce) */ } catch (e) { /* retry */ }
+          try { if (window.fitMapToScope) { window.fitMapToScope(SFL_BBOX, 9, sflOffset); didFit = true; } _lastScopeKey = sflScopeKey; /* exact updateMapScope key for FL + the 2 metros — later live syncs no-op (avoids the SE-corner→all-FL bounce) */ } catch (e) { /* retry */ }
         }
         if (!didFull && window._geoPullDone) {
           var full = document.querySelector('#mapMode input[value="full"]');
@@ -287,6 +451,21 @@
       var btn = document.getElementById('generateBtn');
       if (!btn) return false;
       btn.click();
+      // Pre-warm the static below-the-fold insight charts from the baked snapshot agg now, so
+      // they're already rendered (just hidden by opacity) before the visitor scrolls past the
+      // story — no "Calculating…" flash then load (Shaw 2026-07-09). Retry until the chart
+      // helpers + snapshot are ready; guarded to run once.
+      var self = this;
+      if (!self._prewarmed) {
+        var pw = setInterval(function () {
+          var agg = null;
+          try { agg = canned && canned.responses && canned.responses.geoPoll && canned.responses.geoPoll.body && canned.responses.geoPoll.body.agg; } catch (e) {}
+          if (agg && typeof window.prewarmInsightCharts === 'function') {
+            window.prewarmInsightCharts(agg); self._prewarmed = true; clearInterval(pw);
+          }
+        }, 120);
+        setTimeout(function () { clearInterval(pw); }, 8000);
+      }
       // applyAll() ran before the map existed, so its geo fit was silently
       // dropped (fitMapToScope guards !map||!ready) and _lastScopeKey now
       // blocks a retry. Once the map is live, clear the cache and re-fit so
@@ -324,9 +503,15 @@
       document.body.classList.add('ark-data-hidden');
       var map = document.querySelector('#previewArea #map');
       if (map) map.style.opacity = '1'; // funnel: map visible from stage 1
+      var full = document.body.classList.contains('ark-fullheight');
       var cards = document.querySelectorAll('#previewArea .card');
       var n = cards.length || 1;
       cards.forEach(function (el, i) {
+        // full-height mobile demo: the maprail chart (Coverage/Top states) AND Age & Gender +
+        // Homeownership + Family Dynamics are the live narration — leave them to CSS (opacity:1
+        // the whole story). Clearing the inline opacity is required because inline style wins
+        // over the reveal stylesheet.
+        if (full && (el.closest('.maprail') || el.id === 'card-age' || el.id === 'card-home' || el.id === 'card-family')) { el.style.opacity = ''; return; }
         var start = 0.15 + (i / n) * 0.7;
         var o = Math.min(1, Math.max(0, (x - start) / 0.18));
         el.style.opacity = String(o);

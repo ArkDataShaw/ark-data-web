@@ -186,6 +186,12 @@
 
   /* ---- main ---- */
   .main{overflow-y:auto;display:flex;flex-direction:column;isolation:isolate;position:relative;z-index:1}/* contain Leaflet's z-indexes so the map can't paint over the bars; z-index:1 lifts the whole column (and the density tooltip that overflows left) above the sidebar */
+  /* mobile native-scroll demo: the parent sets body.ark-fullheight (via ArkEmbed.enableFullHeight)
+     so the shell/main stop being their own internal scrollers and lay out at full content height.
+     The parent then sizes a full-height, position:sticky iframe — pinned map+strip through the story,
+     then a native page scroll through charts/records. Class-gated: desktop/standalone are untouched. */
+  body.ark-fullheight .shell{height:auto}
+  body.ark-fullheight .main{overflow:visible;height:auto}
   .strip{display:flex;align-items:center;gap:16px;padding:12px 80px 12px 20px;background:#fff;border-bottom:1px solid var(--slate-200);flex-wrap:wrap;position:sticky;top:0;z-index:1001}
   .reachbox{display:flex;align-items:center;gap:12px}
   .reachnum{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -278,6 +284,21 @@
   .insights .span2 .bar .lab{width:150px}     /* wide cards (e.g. Top industries) give long labels room */
   .insights .span2{grid-column:span 6}                                                              /* half: Industries, Job Titles, Age & Gender, Household Income, Net Worth */
   .insights #card-seniority,.insights #card-department,.insights #card-cities{grid-column:span 4}   /* thirds: top row */
+  /* When Top Cities is promoted to the maprail (a state is selected), card-cities is hidden from
+     this row, leaving Seniority + Department as two narrow thirds with a gap. Reflow them to
+     halves (span 6) so the row reads as 2 even columns, matching the Industries/Job-titles row
+     below it (Shaw 2026-07-09). Scoped >820px only — below that the grid is single-column
+     (media query below), so this must NOT override it. */
+  @media(min-width:821px){
+    .insights.cities-promoted #card-seniority,.insights.cities-promoted #card-department{grid-column:span 6}
+    /* Sparse-vbars rebalance (JS: balanceSparseRows): in a 2-column row, a vertical-bar chart
+       with only 1-3 bars (e.g. Net Worth = just "$1M+") wastes half the width while its dense
+       neighbor (e.g. Household Income, 9 bars) is cramped. Shrink the sparse one to a quarter and
+       grow the neighbor to three-quarters. Only when EXACTLY one is sparse — both sparse stay
+       half/half (Shaw 2026-07-09). >820px only (single-column below). */
+    .insights .card.ins-narrow{grid-column:span 3}
+    .insights .card.ins-wide{grid-column:span 9}
+  }
   .insights #card-home,.insights #card-family{grid-column:span 3}                                   /* quarters: paired on the left of the Age & Gender row */
   .insights .card-pair{grid-column:span 12;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}  /* full-width split (Company size + revenue) */
   /* small screens: single column */
@@ -291,16 +312,18 @@
   .card{background:#fff;border:1px solid var(--slate-200);border-radius:14px;padding:15px 17px;display:flex;flex-direction:column}/* flex column so chart bodies can flex:1-fill (hbars vmode / space-evenly rows) */
   .cardh{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--slate-500);text-transform:uppercase;margin:0 0 13px}
   .statrow{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-  .stat{background:var(--slate-50);border-radius:11px;padding:11px}.stat .n{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums}.stat .l{font-size:11px;color:var(--slate-500);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
-  .stat .stat-ico{display:block;color:var(--slate-400);margin-bottom:5px}.stat .stat-ico svg{width:15px;height:15px;display:block}
+  .stat{position:relative;background:var(--slate-50);border-radius:11px;padding:11px}.stat .n{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums}.stat .l{font-size:11px;color:var(--slate-500);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+  .stat .stat-ico{position:absolute;bottom:11px;right:11px;color:var(--slate-400)}.stat .stat-ico svg{width:15px;height:15px;display:block}/* bottom-right, clear of the large numbers (top-right clipped over them — Shaw 2026-07-08) */
   /* cursor-follow spinner — the only insights-update feedback (in-app parity, pill removed) */
   .cursor-spinner{position:fixed;width:14px;height:14px;border:2px solid rgba(124,58,237,.25);border-top-color:var(--violet);border-radius:50%;animation:spin .7s linear infinite;pointer-events:none;z-index:99999}
   /* hbars container: rows spread across the FULL card height so top/bottom borders align with neighbors (Goal 10 rule 3) */
   .hbars-wrap{display:flex;flex-direction:column;justify-content:space-evenly;flex:1;gap:4px;position:relative}
   .hbars-wrap .bar{margin-bottom:0}/* space-evenly owns the vertical rhythm, not per-row margins */
-  /* Thicker tracks when fewer rows — 4 rows 22px, 5 rows 19px, 6 stays 17px (react index.css:1734-1736 verbatim; pure-CSS row count) */
-  .hbars-wrap:has(> .bar:nth-child(4):last-child) .track{height:22px;min-height:22px}
-  .hbars-wrap:has(> .bar:nth-child(5):last-child) .track{height:19px;min-height:19px}
+  /* Thicker tracks when fewer rows — 4 rows 22px, 5 rows 19px, 6 stays 17px (react index.css:1734-1736 verbatim; pure-CSS row count).
+     Count bars via "has Nth bar AND not has (N+1)th bar" rather than :last-child — the hover tooltip (.charttip) is appended INTO
+     .hbars-wrap as a trailing child, which broke the 4th bar's :last-child and snapped the tracks thinner on hover (Shaw 2026-07-08). */
+  .hbars-wrap:has(> .bar:nth-child(4)):not(:has(> .bar:nth-child(5))) .track{height:22px;min-height:22px}
+  .hbars-wrap:has(> .bar:nth-child(5)):not(:has(> .bar:nth-child(6))) .track{height:19px;min-height:19px}
   /* ≤3 entries: full-height VERTICAL bars driven by flex-grow — NEVER inline height %
      (the "percentage-of-nothing" bug: height:% resolves against nothing in an auto-height
      flex column → 2px bars; flex-grow is also the animated property) */
@@ -349,24 +372,22 @@
   .donut-leg2 .nm{display:flex;align-items:center;gap:7px;white-space:nowrap}
   .donut-leg2 .nm i{width:9px;height:9px;border-radius:3px;flex-shrink:0}
   .donut-leg2 .pc{text-align:right;color:var(--slate-900);font-variant-numeric:tabular-nums}
-  /* family-dynamics grouped legend — adapts to the CARD's own width (react index.css:1968-2053) */
+  /* family-dynamics grouped legend — 2 COLUMNS (Married | Single), each stacking +kids/no kids
+     beneath its header → 3 rows tall. Adapts to the CARD's own width (Shaw 2026-07-09). */
   .famdo{container-type:inline-size}
-  .famdo-leg{margin:4px auto 0;max-width:290px;display:flex;flex-direction:column;gap:7px;font-size:11px;color:var(--slate-600)}
-  .famdo-row{display:flex;align-items:center;gap:8px}
-  .famdo-row .lbl{width:46px;flex-shrink:0;font-weight:700;color:var(--slate-700)}
-  .famdo-items{display:flex;flex:1;min-width:0;justify-content:space-between;gap:10px}
+  .famdo-leg{margin:6px auto 0;width:fit-content;max-width:100%;display:flex;justify-content:center;gap:22px;font-size:11px;color:var(--slate-600)}
+  .famdo-col{display:flex;flex-direction:column;gap:5px;min-width:0}
+  .famdo-col .lbl{font-weight:700;color:var(--slate-700);white-space:nowrap;margin-bottom:1px}
   .famdo-item{display:flex;align-items:center;gap:5px;white-space:nowrap}
   .famdo-item i{width:9px;height:9px;border-radius:2px;flex-shrink:0}
-  .famdo-item b{color:var(--slate-900);font-variant-numeric:tabular-nums}
-  @container (max-width:255px){
-    .famdo-leg{width:fit-content;max-width:100%;margin-left:auto;margin-right:auto;font-size:9.5px;gap:6px}
-    .famdo-row{gap:4px}
-    .famdo-row .lbl{width:38px}
-    .famdo-items{flex:0 1 auto;flex-wrap:wrap;justify-content:center;gap:4px 8px}
+  .famdo-item span{flex:1;min-width:0}
+  .famdo-item b{color:var(--slate-900);font-variant-numeric:tabular-nums;margin-left:4px}
+  @container (max-width:230px){
+    .famdo-leg{gap:14px;font-size:9.5px}
+    .famdo-col{gap:4px}
     .famdo-item{gap:3px}
     .famdo-item i{width:8px;height:8px}
   }
-  @container (max-width:178px){.famdo-row{align-items:flex-start}}
   /* vertical bar charts (histograms) -- value on top, angled label below */
   .vbars{display:flex;align-items:flex-end;gap:7px;height:150px;padding:14px 4px 32px}
   .vbar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative}
@@ -435,8 +456,9 @@
     .stripsentence{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;min-width:0;font-size:15px;line-height:1.6;color:var(--slate-700)}
     .stripsentence.small{font-size:13px}
     .stripsentence .ss-reach{font-size:1.25em;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-right:3px}
-    .stripsentence .ss-frag{display:inline;background:var(--violet-50);color:var(--violet);font-weight:600;border-radius:6px;padding:1.5px 5px;white-space:nowrap;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-    .stripsentence .ss-frag.wrapok{white-space:normal}
+    /* inline-block ALWAYS (not just while animating): switching inline↔inline-block on fly-in made the chip's vertical padding count toward line-height only while entering, jumping the strip ~3px on load (Shaw 2026-07-08). line-height 1.2 keeps the chip box inside the strip's 1.6 line box in both normal (15px) and .small (13px) modes, so it never grows the line. */
+    .stripsentence .ss-frag{display:inline-block;line-height:1.2;vertical-align:baseline;background:var(--violet-50);color:var(--violet);font-weight:600;border-radius:6px;padding:1.5px 5px;white-space:nowrap;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+    .stripsentence .ss-frag.wrapok{display:inline;line-height:inherit;white-space:normal}
     .stripsentence .ss-join{color:var(--slate-700);font-weight:500}
     .stripsentence .ss-unit{white-space:nowrap}
     .stripsentence .ss-empty{color:var(--slate-400);font-weight:500}
@@ -469,7 +491,36 @@
     #modeSwitch{display:none}          /* Standard/Custom moves into the filters menu */
     .nameinput{display:none}            /* audience/intent name display */
     .account{display:none}              /* Ark Data badge */
+    .pvtop{display:none}                /* auto-name preview title ("FL Homeowners — Pool Construction Intent") + its bar/margin — dead weight on mobile (Shaw 2026-07-08) */
     .modeswitch-mobile{display:grid;margin:12px 14px 2px}
+    body.ark-fullheight #card-intent{display:none}   /* Intent strength dropped from the scroll-demo maprail — Coverage + Top states only (Shaw 2026-07-08) */
+    body.ark-fullheight .notebar{display:none}       /* map caption ("County (zoom out) → ZIP … · contact address") — removed from the scroll demo (Shaw 2026-07-08) */
+    /* iPad / tall-mobile: the scripted story shows only the map + the Coverage card, which
+       left blank space below the 360px map. The parent measures the card's exact top and,
+       ONLY when there's genuine room below the map (tall screen), sets its min-height inline
+       and adds .ark-cov-fill. These rules shape only that FILLED card: the 2×2 grid stretches
+       to fill and the 4 numbers enlarge so they read as the hero as the audience narrows
+       (Shaw 2026-07-08). Phones get no room → no class → the card stays its compact default,
+       unchanged. Gated on body.ark-fullheight = the mobile scroll demo ONLY. */
+    body.ark-fullheight .maprail .card.ark-cov-fill .statrow{flex:1;grid-auto-rows:1fr}
+    body.ark-fullheight .maprail .card.ark-cov-fill .stat{display:flex;flex-direction:column;justify-content:center}
+    body.ark-fullheight .maprail .card.ark-cov-fill .stat .n{font-size:28px}
+  }
+  /* iPad / tablet (portrait ≥680px iframe width): the maprail's 2 cards — Coverage and Top
+     states — lay out as a horizontal 2-column row filling the space below the map, instead
+     of stacking vertically (Shaw 2026-07-08). Intent strength is dropped from this row (Shaw
+     2026-07-08). The embed paints both per-stage (Coverage counts, Top-state counts) so the
+     row is LIVE the ENTIRE demo. Gated on body.ark-fullheight = the mobile scroll demo ONLY
+     (never standalone/desktop). */
+  @media (min-width:680px) and (max-width:1000px){
+    body.ark-fullheight .maprail{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch}/* minmax(0,1fr) = TRUE equal halves (plain 1fr lets Coverage's wider content claim more) */
+    /* (per-stage visibility of the maprail cards during the story is handled in the embed's
+       reveal CSS + setDataReveal, which keep the row live the whole demo.) */
+    /* match the maprail row to the insight cards below it — the parent measures one and sets
+       --ark-cardh, so the 2-col row is the same height as the stacked cards it sits above
+       (no longer towering; Shaw 2026-07-08). Fixed height → both columns uniform; the chart
+       bodies flex/adapt within it. */
+    body.ark-fullheight .maprail .card{height:var(--ark-cardh,182px);min-height:0}
   }
 </style>
 </head>
@@ -477,7 +528,7 @@
 
 <!-- ===== TOP BAR ===== -->
 <div class="topbar">
-  <div class="crumb">Audiences › <b>Create New</b></div>
+  <div class="crumb">Audiences › <b>Create</b></div>
   <button class="mobile-filters-btn" id="mobileFiltersBtn"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> Filters</button>
   <div class="modeswitch" id="modeSwitch">
     <button data-mode="standard" class="active">Standard</button>
@@ -1804,6 +1855,10 @@ function renderLive(d){
   if(d.listRows)window._listRows=d.listRows;
   if(d.mapRows)window._mapRows=d.mapRows; // 500-row geo sample -> instant State-map estimate
   if(d.topics)window._audTopics=d.topics;
+  // scripted funnel: the embed owns the map (_paintStage) and the maprail charts (_paintStageCharts)
+  // per stage. The estimate-mode renderCharts below paints dots/sample data that STOMPS the baked
+  // per-stage Top states / Intent (Shaw 2026-07-08). Skip it — the final reveal comes via onFullData.
+  if(window.__arkScripted)return;
   // MapLibre is the only map now -- apply state estimate from the 500-row sample
   // Call immediately + retry after a short delay in case tiles aren't loaded yet.
   // Phase 1->2 animation: interpolate from all-zeros to preview densities over 100ms.
@@ -1875,6 +1930,14 @@ function geoCounts(){
 }
 let _counts={},_max=1,_total=0;
 function recomputeGeo(){_counts=geoCounts();const vals=Object.values(_counts);_max=Math.max(1,...vals);_total=vals.reduce((a,b)=>a+b,0);}
+// A state filter is active on ANY geo group (personal/professional/company). When so, the
+// prominent maprail geo card swaps Top States → Top Cities — with a state chosen, "top states"
+// is trivial (just that state), so cities is the more useful breakdown to surface up top
+// (Shaw 2026-07-08). Applies to live/armed use as well as the scripted demo.
+function hasStateSel(){
+  try{ return ['personal','professional','company'].some(function(g){return S.loc&&S.loc[g]&&S.loc[g].state&&S.loc[g].state.size>0;}); }
+  catch(e){ return false; }
+}
 const RAMP=['#ede9fe','#d6bcfa','#b794f6','#9461f0','#7c3aed','#6d28d9','#4c1d95'];
 function colorFor(v){if(!v)return '#f1f5f9';const t=v/_max;const i=Math.min(RAMP.length-1,Math.floor(t*RAMP.length));return RAMP[i];}
 function countForFeature(f){const code=NAME2CODE[(f.properties.name||"").toLowerCase()];return code?(_counts[code]||0):0;}
@@ -1959,7 +2022,7 @@ function hbars(id,entries,{mode='pct',fmt,top=6,est=false}={}){
       return `<div class="vbar"><div class="vbv">${valOf(v)}</div><div class="vb" data-l="${escA(lab)}" data-v="${v}" style="flex-grow:0"></div><div class="vl">${lab}</div></div>`;}).join("");
     const ctl=chartTipCtl(el);
     el.querySelectorAll(".vb").forEach(b=>{
-      b.addEventListener("mouseenter",()=>ctl.enter({label:b.dataset.l,value:+b.dataset.v,total:tot}));
+      tipBind(b,ctl,()=>({label:b.dataset.l,value:+b.dataset.v,total:tot}));
     });
     el.offsetHeight; // reflow so the 0→target flex-grow transition runs
     el.querySelectorAll(".vb").forEach(b=>{b.style.flexGrow=(+b.dataset.v)/mx;});
@@ -1971,7 +2034,7 @@ function hbars(id,entries,{mode='pct',fmt,top=6,est=false}={}){
     return `<div class="bar"><span class="lab" title="${escA(lab)}">${lab}</span><span class="track"><span class="fill" data-l="${escA(lab)}" data-v="${v}" style="width:${v/mx*100}%"></span></span><span class="val">${valOf(v)}</span></div>`;}).join("");
   const ctl=chartTipCtl(el);
   el.querySelectorAll(".fill").forEach(f=>{
-    f.addEventListener("mouseenter",()=>ctl.enter({label:f.dataset.l,value:+f.dataset.v,total:tot}));
+    tipBind(f,ctl,()=>({label:f.dataset.l,value:+f.dataset.v,total:tot}));
   });
   return true;
 }
@@ -1983,7 +2046,9 @@ function vbars(id,entries,{fmt,est=false}={}){
   el.classList.toggle("few",entries.length<=4);
   const mx=Math.max(...entries.map(e=>e[1])),tot=entries.reduce((a,e)=>a+e[1],0)||1;
   const D='<span class="dots">\u00b7\u00b7\u00b7</span>';
-  el.innerHTML=entries.map(([l,v])=>{const p=Math.round(v/tot*100);return `<div class="vbar"><div class="vbv">${est?D:p+'%'}</div><div class="vb" style="height:${v/mx*100}%" title="${(fmt?fmt(l):l)}: ${est?'...':v.toLocaleString()}"></div><div class="vl">${fmt?fmt(l):l}</div></div>`;}).join("");
+  const escA=s=>String(s).replace(/"/g,'&quot;'); // local (hbars' escA is not in scope here)
+  el.innerHTML=entries.map(([l,v])=>{const p=Math.round(v/tot*100),lab=fmt?fmt(l):l;return `<div class="vbar"><div class="vbv">${est?D:p+'%'}</div><div class="vb" data-l="${escA(lab)}" data-v="${v}" style="height:${v/mx*100}%" title="${lab}: ${est?'...':v.toLocaleString()}"></div><div class="vl">${lab}</div></div>`;}).join("");
+  if(!est){const ctl=chartTipCtl(el);el.querySelectorAll(".vb").forEach(b=>{tipBind(b,ctl,()=>({label:b.dataset.l,value:+b.dataset.v,total:tot}));});}
   return true;
 }
 const ORD={income:["less than $20,000","$20,000 to $44,999","$45,000 to $59,999","$60,000 to $74,999","$75,000 to $99,999","$100,000 to $149,999","$150,000 to $199,999","$200,000 to $249,999","$250,000+"],
@@ -1993,19 +2058,37 @@ const ordered=(obj,order)=>order.map(k=>[k,obj[k]||0]).filter(e=>e[1]>0); // cas
 // ---- shared dark chart tooltip (Shaw-locked: every bar/segment, native title= not acceptable) ----
 function chartTipCtl(root){
   if(root._tipCtl)return root._tipCtl;
-  var tip=null;
+  var tip=null,hideT=0,anchor=null;
+  var place=function(){ // position the tip over the anchored bar (touch has no mousemove)
+    if(!tip||!anchor)return;var rr=root.getBoundingClientRect(),ar=anchor.getBoundingClientRect();
+    tip.style.left=(ar.left-rr.left+ar.width/2)+"px";tip.style.top=(ar.top-rr.top)+"px";
+  };
   root.addEventListener("mousemove",function(e){if(!tip||!tip.isConnected)return;var r=root.getBoundingClientRect();tip.style.left=(e.clientX-r.left)+"px";tip.style.top=(e.clientY-r.top)+"px";});
   root.addEventListener("mouseleave",function(){if(tip){tip.remove();tip=null;}});
   var escT=function(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");};
   root._tipCtl={
-    enter:function(d){
+    enter:function(d,el){
       if(!tip||!tip.isConnected){tip=document.createElement("div");tip.className="charttip";root.appendChild(tip);}
       var pct=((d.value/(d.total||1))*100).toFixed(1);
       tip.innerHTML='<span style="font-weight:500">'+escT(d.label)+(d.extra?" \u00b7 "+escT(d.extra):"")+'</span><span class="sub">'+d.value.toLocaleString()+" ("+pct+"%)</span>";
+      // touch path: anchor over the tapped bar + auto-dismiss (no mouseleave on touch)
+      if(el){anchor=el;place();clearTimeout(hideT);hideT=setTimeout(root._tipCtl.leave,2600);ChartTip._open=root._tipCtl;}
     },
-    leave:function(){if(tip){tip.remove();tip=null;}}
+    leave:function(){clearTimeout(hideT);if(tip){tip.remove();tip=null;}anchor=null;if(ChartTip._open===root._tipCtl)ChartTip._open=null;}
   };
   return root._tipCtl;
+}
+// tap-tooltip helper: bind hover (mouseenter) for desktop AND stash a tap handler on the
+// element so the scripted demo can surface a per-bar tooltip on TAP without arming — mobile
+// has no hover (Shaw 2026-07-08). dFn returns the tip payload. The demo iframe is
+// pointer-events:none (so scroll passes through), so the PARENT forwards taps via
+// ArkEmbed.tapTooltipAt → el._tapTip(); direct touchstart is also bound for the armed case.
+var ChartTip={_open:null};
+function tipBind(el,ctl,dFn){
+  var cb=function(isTouch){var d=(typeof dFn==="function")?dFn():dFn;ctl.enter(d, isTouch?el:null);};
+  el.addEventListener("mouseenter",function(){cb(false);});
+  el._tapTip=function(){if(ChartTip._open&&ChartTip._open!==ctl)ChartTip._open.leave();cb(true);};
+  el.addEventListener("touchstart",function(){el._tapTip();},{passive:true});
 }
 // ---- SVG donut factory — Option H "soft top-light" (Shaw-locked from the 9-option demo):
 // per-segment diagonal linearGradient x1=.3,y1=0 → x2=.7,y2=1, stop0 = lighten(fill,+22),
@@ -2031,9 +2114,24 @@ function svgDonut(container,segments,opts){ // segments:[{name,value,fill}] (zer
   var ctl=chartTipCtl(container.querySelector(".sdonut"));
   var angles=[],acc=0;
   segments.forEach(function(s){angles.push([acc/total*2*Math.PI,(acc+s.value)/total*2*Math.PI]);acc+=s.value;});
+  // Segment-identity signature. If it matches the previous render of THIS container we TWEEN
+  // each segment's boundaries from its old size to the new one (segments grow/shrink in place)
+  // instead of re-running the clockwise sweep-in — the full re-sweep on every stage looked
+  // glitchy as the demo story updated the donuts (Shaw 2026-07-09). First render / changed
+  // segment set → sweep-in as before. Keep zero-value segments in the ring (renderHomeDonut)
+  // so identity stays stable across stages and they tween to/from zero width.
+  var sig=segments.map(function(s){return s.name;}).join("|");
+  var prev=container._donut;
+  var tween=!!(prev&&prev.sig===sig&&prev.angles.length===angles.length);
+  var from=tween?prev.angles:null;
+  container._donut={sig:sig,angles:angles}; // store target for the NEXT render's tween
+  if(container._donutRaf)cancelAnimationFrame(container._donutRaf); // stop any in-flight animation
   function draw(t){
     g.innerHTML=angles.map(function(a,i){
-      var p0=a[0]*t+pad/2,p1=Math.min(a[1]*t,2*Math.PI-0.0001)-pad/2;
+      var a0,a1;
+      if(tween){var f=from[i];a0=f[0]+(a[0]-f[0])*t;a1=f[1]+(a[1]-f[1])*t;} // interpolate boundaries
+      else{a0=a[0]*t;a1=a[1]*t;}                                            // sweep-in (first render)
+      var p0=a0+pad/2,p1=Math.min(a1,2*Math.PI-0.0001)-pad/2;
       if(p1<=p0)return "";
       return '<path d="'+donutArcPath(cx,cy,r0,r1,p0,p1)+'" fill="url(#'+uid+i+')" data-i="'+i+'" style="cursor:default"/>';
     }).join("");
@@ -2042,8 +2140,8 @@ function svgDonut(container,segments,opts){ // segments:[{name,value,fill}] (zer
   (function frame(now){
     var t=Math.min(1,((now||performance.now())-start)/420);
     draw(1-Math.pow(1-t,2)); // ease-out ≈ recharts' 420ms sweep
-    if(t<1)requestAnimationFrame(frame);
-    else g.querySelectorAll("path").forEach(function(p){p.addEventListener("mouseenter",function(){var s=segments[+p.dataset.i];ctl.enter({label:s.name,value:s.value,total:total});});});
+    if(t<1){container._donutRaf=requestAnimationFrame(frame);}
+    else{container._donutRaf=0;g.querySelectorAll("path").forEach(function(p){tipBind(p,ctl,function(){var s=segments[+p.dataset.i];return {label:s.name,value:s.value,total:total};});});}
   })(start);
 }
 function renderPyramid(A,est){
@@ -2058,7 +2156,7 @@ function renderPyramid(A,est){
     +`<div class="pyr-legend"><span><i style="background:#5a7aab"></i>Male</span><span><i style="background:#c07a80"></i>Female</span></div>`;
   const ctl=chartTipCtl(el);
   el.querySelectorAll(".pyr-bar").forEach(b=>{
-    b.addEventListener("mouseenter",()=>{const row=b.closest(".pyrow");ctl.enter({label:row.dataset.age,value:+b.dataset.v,total:tot,extra:b.classList.contains("m")?"Male":"Female"});});
+    tipBind(b,ctl,()=>{const row=b.closest(".pyrow");return {label:row.dataset.age,value:+b.dataset.v,total:tot,extra:b.classList.contains("m")?"Male":"Female"};});
   });
   return true;
 }
@@ -2076,12 +2174,14 @@ function renderFamily(A,est){
   ];
   const marriedPct=Math.round((f.mk+f.mn)/tot*100);
   const pctOf=v=>est?D:Math.round(v/tot*100)+"%";
-  // grouped-2-row legend: row word carries Married/Single, swatches carry +kids / no kids
+  // grouped-2-COLUMN legend (Shaw 2026-07-09): Married header top-left, Single header top-right,
+  // with "+kids" / "no kids" stacked beneath each → 3 rows tall (header + 2 items) instead of the
+  // old 2 wide rows that folded to 4+ lines in the narrow quarter-card.
   const legend='<div class="famdo-leg">'+[["Married",segs[0],segs[1]],["Single",segs[2],segs[3]]].map(g=>
-    '<div class="famdo-row"><span class="lbl">'+g[0]+'</span><div class="famdo-items">'
+    '<div class="famdo-col"><span class="lbl">'+g[0]+'</span>'
     +'<span class="famdo-item"><i style="background:'+g[1].fill+'"></i><span>+kids</span><b>'+pctOf(g[1].value)+'</b></span>'
     +'<span class="famdo-item"><i style="background:'+g[2].fill+'"></i><span>no kids</span><b>'+pctOf(g[2].value)+'</b></span>'
-    +'</div></div>').join("")+'</div>';
+    +'</div>').join("")+'</div>';
   svgDonut(el,segs,{centerValue:est?D:marriedPct+"%",centerLabel:"Married",legendHTML:legend});
   return true;
 }
@@ -2093,7 +2193,7 @@ var STAT_ICONS={
   "Business email":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>',
   "Mobile phone":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>',
   "LinkedIn URLs":'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>',
-  "Unique companies":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>'
+  "Companies":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>'
 };
 function coverageEntries(A){
   var c=(A&&A.coverage)||{};
@@ -2102,7 +2202,7 @@ function coverageEntries(A){
     ["Business email",nn(c.businessEmail)],
     ["Mobile phone",nn(c.mobilePhone)],
     ["LinkedIn URLs",nn(c.linkedinPresent!=null?c.linkedinPresent:c.linkedin)],
-    ["Unique companies",c.uniqueCompanies!=null?c.uniqueCompanies:nn(c.hasCompany)] // in-app fallback: uniqueCompanies || hasCompany
+    ["Companies",c.uniqueCompanies!=null?c.uniqueCompanies:nn(c.hasCompany)] // label "Companies" (was "Unique companies", Shaw 2026-07-08); value still uniqueCompanies || hasCompany
   ];
 }
 function renderCoverage(A,est){
@@ -2119,15 +2219,18 @@ function renderCoverage(A,est){
 var HOME_COLORS={Homeowner:"#6d28d9",Probable:"#a78bfa",Renter:"#94a3b8"};
 function renderHomeDonut(A,est){
   var el=document.getElementById("homeownerBars");if(!el)return false;
+  // Keep ALL three segments in the ring (even zeros) so segment identity stays stable across
+  // the demo's stages — svgDonut then tweens Renter/Probable smoothly to zero as the homeowner
+  // filter drives it to 100% owners, instead of re-sweeping (Shaw 2026-07-09). The legend still
+  // hides zero-value rows.
   var segs=[["Homeowner",A.homeowner.Y||0],["Probable",A.homeowner.P||0],["Renter",A.homeowner.N||0]]
-    .filter(function(e){return e[1]>0;})
     .map(function(e){return {name:e[0],value:e[1],fill:HOME_COLORS[e[0]]};});
-  if(!segs.length){el.innerHTML='<div class="pk-empty">No data</div>';return false;}
-  var tot=segs.reduce(function(a,s){return a+s.value;},0)||1;
+  var tot=segs.reduce(function(a,s){return a+s.value;},0);
+  if(!tot){el.innerHTML='<div class="pk-empty">No data</div>';return false;}
   var own=segs.find(function(s){return s.name==="Homeowner";});
   var ownPct=Math.round((own?own.value:0)/tot*100);
   var D='<span class="dots">\u00b7\u00b7\u00b7</span>';
-  var legend='<div class="donut-leg2">'+segs.map(function(s){return '<div class="donut-leg2-item"><span class="nm"><i style="background:'+s.fill+'"></i>'+s.name+'</span><b class="pc">'+(est?D:Math.round(s.value/tot*100)+"%")+'</b></div>';}).join("")+'</div>';
+  var legend='<div class="donut-leg2">'+segs.filter(function(s){return s.value>0;}).map(function(s){return '<div class="donut-leg2-item"><span class="nm"><i style="background:'+s.fill+'"></i>'+s.name+'</span><b class="pc">'+(est?D:Math.round(s.value/tot*100)+"%")+'</b></div>';}).join("")+'</div>';
   svgDonut(el,segs,{centerValue:est?D:ownPct+"%",centerLabel:"Owners",legendHTML:legend});
   return true;
 }
@@ -2226,7 +2329,12 @@ function animateCharts(fromZero){
     var targets=[];
     for(var i=0;i<bars.length;i++){
       targets.push(bars[i].style[prop]);
-      bars[i].style[prop]=i<old.length?old[i]:'0%';
+      // Update path (!fromZero): a bar WITHOUT a prior snapshot entry should simply APPEAR at
+      // its target, not grow from 0% — the grow-in read as a "loading phase" on prewarmed
+      // below-the-fold charts as the visitor scrolled to them (Shaw 2026-07-09). Only the intro
+      // (fromZero=true) grows everything from zero.
+      var startV=i<old.length?old[i]:(fromZero?'0%':targets[i]);
+      bars[i].style[prop]=startV;
       bars[i].style.transition='none'; // disable transition for the override
     }
     el.offsetHeight; // force reflow
@@ -2282,10 +2390,17 @@ function renderCharts(){
     var D='<span class="dots">\u00b7\u00b7\u00b7</span>';
     renderCoverage(SA,true);
     recomputeGeo();
-    var ets=Object.entries(_counts).sort(function(a,b){return b[1]-a[1];});
-    document.getElementById("topStatesH").textContent=company?"Top states (HQ)":"Top states";
-    if(!hbars("topStates",ets,{mode:'count',fmt:function(c){return CODE2NAME[c]||c;},est:true}))
-      document.getElementById("topStates").innerHTML='<div class="pk-empty">No geographic data</div>';
+    var _geoStateE=hasStateSel(); // same states→cities swap in the estimate (pre-full-data) view
+    if(_geoStateE){
+      document.getElementById("topStatesH").textContent=company?"Top cities (HQ)":"Top cities";
+      if(!hbars("topStates",(company?SA.citiesCompany:SA.citiesPeople)||[],{mode:'count',est:true}))
+        document.getElementById("topStates").innerHTML='<div class="pk-empty">No city data</div>';
+    }else{
+      var ets=Object.entries(_counts).sort(function(a,b){return b[1]-a[1];});
+      document.getElementById("topStatesH").textContent=company?"Top states (HQ)":"Top states";
+      if(!hbars("topStates",ets,{mode:'count',fmt:function(c){return CODE2NAME[c]||c;},est:true}))
+        document.getElementById("topStates").innerHTML='<div class="pk-empty">No geographic data</div>';
+    }
     SHOW("card-age",renderPyramid(SA,E));
     var incE=Object.entries(SA.income).filter(function(e){return e[1]>0;}).sort(function(a,b){return incRank(a[0])-incRank(b[0]);});
     SHOW("card-income",vbars("incomeBars",incE,{fmt:incLabel,est:E}));
@@ -2309,11 +2424,13 @@ function renderCharts(){
     var ervOn=vbars("revenueBars",rvE,{fmt:function(v){return REVD[String(v).toLowerCase()]||v;},est:E});SHOW("card-revenue",ervOn);
     SHOW("pair-firmo",ehcOn||ervOn);
     document.getElementById("topCitiesH").textContent=company?"Top cities (HQ)":"Top cities";
-    SHOW("card-cities",hbars("citiesBars",(company?SA.citiesCompany:SA.citiesPeople)||[],{mode:'count',est:E}));
+    var _eCitiesOn=hbars("citiesBars",(company?SA.citiesCompany:SA.citiesPeople)||[],{mode:'count',est:E});
+    SHOW("card-cities",!_geoStateE&&_eCitiesOn); // hidden in the insights grid when promoted to the maprail
+    document.getElementById("insightsGrid").classList.toggle("cities-promoted",_geoStateE&&_eCitiesOn); // Seniority+Department → span 6 when cities promoted
     var eb2b=(typeof S!=="undefined"&&S.cls==="business");
     var eORDER=eb2b
       ? ['card-seniority','card-department','card-cities','card-industry','card-titles','pair-firmo','card-home','card-family','card-age','card-income','card-networth']
-      : ['card-age','card-income','card-networth','card-home','card-family','card-cities','card-seniority','card-department','card-industry','card-titles','pair-firmo'];
+      : ['card-age','card-home','card-family','card-networth','card-income','card-cities','card-seniority','card-department','card-industry','card-titles','pair-firmo']; // B2C: Age+[Home|Family] on row 1, Net worth+Income on row 2 (income↔home/family swapped — same widths, Shaw 2026-07-09)
     eORDER.forEach(function(id,i){var el=document.getElementById(id);if(el)el.style.order=i;});
     return;
   }
@@ -2327,12 +2444,20 @@ function renderCharts(){
   // Coverage -- absolute counts w/ icons (StatRow parity); null = not computed → "—"
   renderCoverage(A,false);
 
-  // Top states -- basis-aware full counts
+  // Maprail geo card — TOP CITIES when a state filter is active (states is trivial then),
+  // else TOP STATES. Surfaces the most relevant geo breakdown up top (Shaw 2026-07-08).
   recomputeGeo();
-  const ts=Object.entries(_counts).sort((a,b)=>b[1]-a[1]);
-  document.getElementById("topStatesH").textContent=company?"Top states (HQ)":"Top states";
-  if(!hbars("topStates",ts,{mode:'count',fmt:c=>CODE2NAME[c]||c}))
-    document.getElementById("topStates").innerHTML=`<div class="pk-empty">No geographic data</div>`;
+  const _geoState=hasStateSel();
+  if(_geoState){
+    document.getElementById("topStatesH").textContent=company?"Top cities (HQ)":"Top cities";
+    if(!hbars("topStates",(company?A.citiesCompany:A.citiesPeople)||[],{mode:'count'}))
+      document.getElementById("topStates").innerHTML=`<div class="pk-empty">No city data</div>`;
+  }else{
+    const ts=Object.entries(_counts).sort((a,b)=>b[1]-a[1]);
+    document.getElementById("topStatesH").textContent=company?"Top states (HQ)":"Top states";
+    if(!hbars("topStates",ts,{mode:'count',fmt:c=>CODE2NAME[c]||c}))
+      document.getElementById("topStates").innerHTML=`<div class="pk-empty">No geographic data</div>`;
+  }
 
   // Demographics -- ordinal distributions as VERTICAL histograms (low→high, left→right)
   SHOW("card-age",renderPyramid(A));
@@ -2358,20 +2483,82 @@ function renderCharts(){
   const revOn=vbars("revenueBars",revEntries,{fmt:v=>REVD[String(v).toLowerCase()]||v}); SHOW("card-revenue",revOn);
   SHOW("pair-firmo",hcOn||revOn); // keep Company size + Company revenue together as one unit
 
-  // Top cities -- basis-aware (categorical ranking → horizontal)
+  // Top cities in the insights grid — HIDDEN when a state is selected, because it's been
+  // promoted to the maprail geo card above (avoid duplicating it). Shaw 2026-07-08.
   document.getElementById("topCitiesH").textContent=company?"Top cities (HQ)":"Top cities";
-  SHOW("card-cities",hbars("citiesBars",(company?A.citiesCompany:A.citiesPeople)||[],{mode:'count'}));
+  const _citiesOn=hbars("citiesBars",(company?A.citiesCompany:A.citiesPeople)||[],{mode:'count'});
+  SHOW("card-cities",!_geoState&&_citiesOn);
+  // cities promoted → Seniority+Department reflow to 2 even columns (span 6) instead of thirds
+  document.getElementById("insightsGrid").classList.toggle("cities-promoted",_geoState&&_citiesOn);
 
   // B2C vs B2B layout -- order the insights grid by what matters for the audience type
+  applyInsightsOrder();
+  balanceSparseRows();
+}
+// Pre-render the STATIC below-the-fold insight charts (income, net worth, seniority, department,
+// industries, job titles, company size, revenue) from a supplied agg — so the scripted demo can
+// populate them from the baked snapshot at generate, BEFORE the visitor scrolls to them. Without
+// this they sat in the "Calculating…" placeholder until releaseGeo at the final beat, then loaded
+// as you scrolled past (Shaw 2026-07-09). Only static/final-audience charts here — the per-stage
+// story charts (coverage, top states, age, home, family) are owned by the embed's beat painting.
+window.prewarmInsightCharts=function(A){
+  if(!A)return;
+  const incEntries=Object.entries(A.income||{}).filter(e=>e[1]>0).sort((a,b)=>incRank(a[0])-incRank(b[0]));
+  SHOW("card-income",vbars("incomeBars",incEntries,{fmt:incLabel}));
+  const nwEntries=Object.entries(A.networth||{}).filter(e=>e[1]>0).sort((a,b)=>nwRank(a[0])-nwRank(b[0]));
+  SHOW("card-networth",vbars("networthBars",nwEntries,{fmt:nwLabel}));
+  SHOW("card-seniority",hbars("seniorityBars",Object.entries(A.seniority||{}).sort((a,b)=>b[1]-a[1]),{mode:'count',fmt:v=>v==='cxo'?'CXO':v==='vp'?'VP':titleCase(v)}));
+  SHOW("card-department",hbars("departmentBars",Object.entries(A.department||{}).sort((a,b)=>b[1]-a[1]),{mode:'count',fmt:titleCase}));
+  SHOW("card-industry",hbars("industryBars",A.industry||[],{mode:'count'}));
+  SHOW("card-titles",hbars("titlesBars",(A.titles||[]).map(([t,n])=>[titleCase(t),n]),{mode:'count'}));
+  const hcEntries=Object.entries(A.headcount||{}).filter(e=>e[1]>0).sort((a,b)=>sizeRank(a[0])-sizeRank(b[0]));
+  const hcOn=vbars("headcountBars",hcEntries,{fmt:hcLabel}); SHOW("card-headcount",hcOn);
+  const revEntries=Object.entries(A.revenue||{}).filter(e=>e[1]>0).sort((a,b)=>revRank(a[0])-revRank(b[0]));
+  const revOn=vbars("revenueBars",revEntries,{fmt:v=>REVD[String(v).toLowerCase()]||v}); SHOW("card-revenue",revOn);
+  SHOW("pair-firmo",hcOn||revOn);
+  applyInsightsOrder();
+  balanceSparseRows();
+};
+// In a 2-column insights row, if EXACTLY ONE card is a sparse vertical-bar chart (1-3 bars) and
+// its neighbor isn't sparse, shrink the sparse one to a quarter (span 3) and grow the neighbor to
+// three-quarters (span 9) — so a lone bar (e.g. Net Worth "$1M+") doesn't waste half the row while
+// a dense neighbor (Household Income, 9 bars) is cramped. Both sparse → both stay half. Only fires
+// >820px (single-column below); idempotent — clears its own overrides and recomputes from the base
+// 6/6 layout each call (Shaw 2026-07-09).
+function balanceSparseRows(){
+  const grid=document.getElementById('insightsGrid');if(!grid)return;
+  const direct=[...grid.children].filter(c=>c.classList.contains('card')||c.classList.contains('card-pair'));
+  direct.forEach(c=>c.classList.remove('ins-narrow','ins-wide')); // reset → measure base spans
+  if(window.matchMedia&&window.matchMedia('(max-width:820px)').matches)return; // single-column: nothing to balance
+  const vis=direct.filter(c=>c.offsetParent!==null&&!c.classList.contains('hidden')&&getComputedStyle(c).display!=='none');
+  // group visible cards into rows by their (base-layout) top
+  const rows=[];
+  vis.forEach(c=>{const t=Math.round(c.getBoundingClientRect().top);const r=rows.find(r=>Math.abs(r.top-t)<6);if(r)r.cards.push(c);else rows.push({top:t,cards:[c]});});
+  const sparse=c=>{const v=c.querySelector('.vbars');if(!v)return false;const n=c.querySelectorAll('.vb').length;return n>=1&&n<=3;};
+  rows.forEach(r=>{
+    if(r.cards.length!==2)return; // only 2-column rows
+    const s0=sparse(r.cards[0]),s1=sparse(r.cards[1]);
+    if(s0&&!s1){r.cards[0].classList.add('ins-narrow');r.cards[1].classList.add('ins-wide');}
+    else if(s1&&!s0){r.cards[1].classList.add('ins-narrow');r.cards[0].classList.add('ins-wide');}
+    // both sparse or both dense → leave half/half
+  });
+}
+window.balanceSparseRows=balanceSparseRows;
+// Order the insights grid (CSS grid `order` per card). Factored out of renderCharts so the
+// scripted demo can apply it DURING the story too — the story skips renderCharts, so without
+// this the grid stayed in default DOM order (age+income on row 1, home/family far below), which
+// showed Household Income where Home/Family belong until the final frame (Shaw 2026-07-09).
+function applyInsightsOrder(){
   const b2b=(typeof S!=="undefined"&&S.cls==="business");
   // Explicit row layout (Shaw's spec). With the CSS spans (third=4 / half=6 / quarter=3 / pair=12) each line below totals 12 cols → one clean row:
   //   B2B: [Seniority|Department|Top Cities] · [Top Industries|Top Job Titles] · [Company size+revenue] · [Homeownership|Family|Age & Gender] · [Household Income|Net Worth]
   const ORDER=b2b
     ? ['card-seniority','card-department','card-cities','card-industry','card-titles','pair-firmo','card-home','card-family','card-age','card-income','card-networth']
-    : ['card-age','card-income','card-networth','card-home','card-family','card-cities','card-seniority','card-department','card-industry','card-titles','pair-firmo'];
+    : ['card-age','card-home','card-family','card-networth','card-income','card-cities','card-seniority','card-department','card-industry','card-titles','pair-firmo']; // B2C: Age+[Home|Family] on row 1, Net worth+Income on row 2 (income↔home/family swapped — same widths, Shaw 2026-07-09)
   // place cards in ORDER; CSS grid auto-flow + the per-card spans build the rows
   ORDER.forEach((id,i)=>{const el=document.getElementById(id);if(el)el.style.order=i;});
 }
+window.applyInsightsOrder=applyInsightsOrder;
 // ---- Insights masonry (CURRENTLY INACTIVE) -- kept for easy revert from the explicit 12-col layout back to dynamic packing ----
 // To re-enable: in renderCharts swap the `ORDER.forEach(...el.style.order...)` line for `window._insightsOrder=ORDER; layoutInsights(ORDER);`,
 // restore the resize listener below, the view-switch call, and change `.insights` CSS back to `position:relative`.
@@ -2585,9 +2772,13 @@ function specSentence(){
   var exVals=function(v){return v?[...v]:[];}; // Set/array/undefined → array (embed mode may set plain arrays)
   ["personal","professional","company"].forEach(function(g){
     var l=S.loc[g];if(!l)return;
-    l.state.forEach(function(s){geoParts.push(s);});
+    // when metros are selected they REPLACE the state chip in the sentence (the metro
+    // implies its state) — "in FL" → "in Miami & Ft. Lauderdale" (Shaw 2026-07-08).
+    // Map scoping still reads S.loc.state directly, so this is display-only.
+    if(!(l.metro&&l.metro.size))l.state.forEach(function(s){geoParts.push(s);});
     l.city.forEach(function(c){geoParts.push(String(c).split("|")[0]);});
-    if(l.metro)l.metro.forEach(function(m){geoParts.push(String(m).split("|")[0].replace(/\s+metro(\s+area)?$/i,"")+" metro");});
+    // metros render as the bare place name (no trailing "metro"); abbreviate "Fort " → "Ft. "
+    if(l.metro)l.metro.forEach(function(m){geoParts.push(String(m).split("|")[0].replace(/\s+metro(\s+area)?$/i,"").replace(/^Fort\s+/i,"Ft. "));});
     zipCount+=l.zip.size;
     // radius reads as the user's intent — NEVER enumerate its resolved zips (specSentence.ts:317-335)
     if(l.radius&&!radiusPhrase)radiusPhrase="within "+l.radius.miles+"mi of "+String(l.radius.center).split("|")[0];
@@ -2719,7 +2910,7 @@ function renderSentence(){
   _ssLastReach=reach;
 }
 window.renderSentence=renderSentence;
-window.addEventListener("resize",function(){_ssKey="";renderSentence();});
+window.addEventListener("resize",function(){_ssKey="";renderSentence();if(window.balanceSparseRows)balanceSparseRows();});
 document.getElementById("ssCol").onclick=function(){sbEl.classList.add("mobile-open");mobOverlay.classList.add("show");};
 
 // ================= title auto-name (P7) =================
@@ -2879,7 +3070,7 @@ window.setGenerating=function(on,txt){
   window._generating=!!on;
   var sp=document.getElementById("pvGenSpin");if(sp)sp.classList.toggle("hidden",!on);
   if(txt){var t=document.getElementById("pvGenTxt");if(t)t.textContent=txt;}
-  var gb=document.getElementById("generateBtn");if(gb)gb.textContent=on?"\u25cc Generating\u2026":"\u25b6 Generate";
+  var gb=document.getElementById("generateBtn");if(gb)gb.textContent=on?"Generating\u2026":"\u25b6 Generate";
   updateSaveState();
 };
 
@@ -2932,10 +3123,14 @@ renderSidebar();sync();
     const p=new pmtiles.Protocol();maplibregl.addProtocol("pmtiles",p.tile);window._pmAdded=true;return true;
   }
 
+  // Continental-US bounds — fit to these so the WHOLE country is visible on the nationwide
+  // view regardless of the map container's size/shape. A fixed zoom (3.3) cropped the US on
+  // shorter viewports (mobile 360px map); fitBounds adapts (Shaw 2026-07-09).
+  var US_BOUNDS=[[-124.8,24.4],[-66.9,49.5]];
   function initFullMap(){
     if(map)return;
     if(!ensureProtocol())return;
-    map=window._fullMap=new maplibregl.Map({container:"mapFull",style:DARK_STYLE,center:[-96,39.5],zoom:3.3,attributionControl:false});
+    map=window._fullMap=new maplibregl.Map({container:"mapFull",style:DARK_STYLE,bounds:US_BOUNDS,fitBoundsOptions:{padding:24},attributionControl:false});
     map.addControl(new maplibregl.NavigationControl({showCompass:false}),"bottom-right");
     map.on("load",()=>{
       map.addSource("counties",{type:"vector",url:`pmtiles://${TILES}/counties.pmtiles`,promoteId:{counties:"GEOID"}});
@@ -2952,6 +3147,9 @@ renderSidebar();sync();
       ready=true;
       // Ensure canvas matches container (may have been hidden when map was created)
       map.resize();
+      // Re-fit the whole US now the container has its real size (bounds at creation used the
+      // pre-resize dimensions). Skip if a scope fit already ran (state selected before load).
+      if(!_lastScopeKey||_lastScopeKey==="|")map.fitBounds(US_BOUNDS,{padding:24,duration:0});
       // Apply any pending data
       if(window._mapRows&&window._mapRows.length)applyStateWithPhase1Anim();
       if(geoData)applyDensity();
@@ -3235,10 +3433,10 @@ renderSidebar();sync();
   window.hideStateFill=hideStateFill;
   window.startPull=startPull;
   // city/metro/zip selection → auto-fit the map to the selected area (P5)
-  window.fitMapToScope=function(bbox,maxZoom){
+  window.fitMapToScope=function(bbox,maxZoom,offset){
     if(!map||!ready)return;
-    if(bbox)map.fitBounds([[bbox[0],bbox[1]],[bbox[2],bbox[3]]],{padding:40,maxZoom:maxZoom||7,duration:800});
-    else map.easeTo({center:[-96,39.5],zoom:3.3,duration:800});
+    if(bbox)map.fitBounds([[bbox[0],bbox[1]],[bbox[2],bbox[3]]],{padding:40,maxZoom:maxZoom||7,duration:800,offset:offset||[0,0]});
+    else map.fitBounds(US_BOUNDS,{padding:24,duration:800}); // nationwide → fit the whole US (was a fixed zoom that cropped)
   };
 
   // note under the map -- only meaningful in Full mode (state mode's note is set by repaintMap in the main script)
@@ -3322,7 +3520,13 @@ renderSidebar();sync();
       // pull was in flight, do NOT paint the unfiltered full data over the user's current
       // view — publish the records (done above), then re-run the filter path over them.
       var stale=(geoSeq!==pullGeoSeq)||(window.specDrifted&&window.specDrifted());
-      if(stale){
+      // Scripted funnel: the canned data IS the baked full audience, so even though
+      // the spec "drifted" (beats narrowed S after Generate) we want the full charts
+      // painted straight from _geoAgg. onFilterChange is suppressed while scripted
+      // (keeps the reach reversible) and used to be what rendered the charts, so
+      // route to the full-data path here instead — otherwise the charts stay stuck in
+      // estimate/dots mode (Shaw 2026-07-08).
+      if(stale&&!window.__arkScripted){
         console.log("[insights] geo seq mismatch — keeping instant update");
         if(window.onFilterChange)window.onFilterChange(); // re-narrow over the fresh records (or keep regen glow)
       }else{
@@ -3593,6 +3797,7 @@ renderSidebar();sync();
 
   // called from the main script's sync() on every filter change
   window.onFilterChange=function(){
+    if(window.__arkScripted)return;                      // scripted funnel owns reach/coverage: live re-agg over the 142-row snapshot was stomping the baked stage reaches on scroll-up (Shaw 2026-07-08 — "number keeps changing / must be fully reversible")
     if(!window._rec&&!window._recCapped)return;          // nothing generated yet
     const cur=window.buildSpec?window.buildSpec():null; if(!cur)return;
     const reason=regenReason(cur,window._pulledSpec);

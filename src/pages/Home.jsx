@@ -169,8 +169,10 @@ export default function Home() {
       <ProtoTag n="A" label="AUDIENCE BUILDER SCROLL SEQUENCE (chips -> builder -> live data; freezes on top half, cross-fades to live embed later)" />
       <BuilderScrollDemo />
 
-      {/* FEATURE GRID — light */}
-      <section className="sp ark-light">
+      {/* FEATURE GRID — light. position:relative + z-index lifts it above the builder's
+          sticky frame (a positioned element) so the frame's box-shadow doesn't spill onto
+          this section at the builder→feature transition. */}
+      <section className="sp ark-light" style={{ position: 'relative', zIndex: 2 }}>
         <div className="sc">
           <div style={{ maxWidth: '620px', margin: '0 auto 56px', textAlign: 'center' }}>
             <p className="ark-mono" style={{ color: '#C8102E', fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', marginBottom: '14px' }}>THE PLATFORM</p>
