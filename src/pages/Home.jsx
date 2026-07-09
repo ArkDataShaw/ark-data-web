@@ -5,6 +5,14 @@ import { ArrowRight, CheckCircle } from 'lucide-react';
 import IntentGlobe from '../components/home/IntentGlobe';
 import ResolutionCard from '../components/home/ResolutionCard';
 import DataPipeline from '../components/home/DataPipeline';
+import BuilderScrollDemo from '../components/home/BuilderScrollDemo';
+import IntentShowcase from '../components/home/IntentShowcase';
+import IntentPulse from '../components/home/IntentPulse';
+const ProtoTag = ({ n, label }) => (
+  <div style={{ background: '#1A0B0B', borderTop: '1px solid #C8102E', borderBottom: '1px solid #3A1520', padding: '7px 0', textAlign: 'center' }}>
+    <span className="ark-mono" style={{ color: '#FF8A9A', fontSize: '11px', letterSpacing: '0.14em' }}>▼ SANDBOX PROTOTYPE {n} — {label}</span>
+  </div>
+);
 
 const APP_URL = 'https://app.arkdata.io';
 
@@ -158,8 +166,13 @@ export default function Home() {
       {/* HOW IT WORKS — unified pipeline scroll animation */}
       <DataPipeline />
 
-      {/* FEATURE GRID — light */}
-      <section className="sp ark-light">
+      <ProtoTag n="A" label="AUDIENCE BUILDER SCROLL SEQUENCE (chips -> builder -> live data; freezes on top half, cross-fades to live embed later)" />
+      <BuilderScrollDemo />
+
+      {/* FEATURE GRID — light. position:relative + z-index lifts it above the builder's
+          sticky frame (a positioned element) so the frame's box-shadow doesn't spill onto
+          this section at the builder→feature transition. */}
+      <section className="sp ark-light" style={{ position: 'relative', zIndex: 2 }}>
         <div className="sc">
           <div style={{ maxWidth: '620px', margin: '0 auto 56px', textAlign: 'center' }}>
             <p className="ark-mono" style={{ color: '#C8102E', fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', marginBottom: '14px' }}>THE PLATFORM</p>
@@ -182,6 +195,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <ProtoTag n="B" label="INTENT USE-CASE SHOWCASE (live signal feed by industry)" />
+      <IntentShowcase />
 
       {/* VISITOR ID SPOTLIGHT — dark */}
       <section className="sp" style={{ background: '#060D1A' }}>
@@ -235,6 +251,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <ProtoTag n="C" label="INTENT PULSE — INDUSTRY INSIGHTS + NEWSLETTER" />
+      <IntentPulse />
 
       {/* FAQ — light */}
       <section className="sp ark-light">

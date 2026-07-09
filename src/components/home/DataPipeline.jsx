@@ -240,7 +240,7 @@ export default function DataPipeline() {
   useScrollProgress(containerRef, 0.55, handleScrollUpdate);
 
   return (
-    <section style={{ background: '#060D1A', padding: '96px 0' }}>
+    <section style={{ background: '#060D1A', padding: '96px 0', overflowX: 'clip' }}>
       <div className="sc">
         <div style={{ textAlign: 'center', marginBottom: '64px' }}>
           <p className="ark-mono" style={{ color: '#6FE3B0', fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', marginBottom: '14px' }}>
@@ -307,8 +307,12 @@ export default function DataPipeline() {
             </div>
           </div>
 
-          {/* Content */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '96px', padding: '40px 0' }}>
+          {/* Content — minWidth:0 lets this flex column shrink below its content's intrinsic
+              width. Without it, the DualSources grid (repeat(auto-fit, minmax(190px,1fr)) = two
+              190px cols ≈ 390px) forced the column wide, overflowing the mobile viewport → text
+              clipped right + zoom-out black bar (Shaw 2026-07-09). With minWidth:0 the grid
+              auto-fit collapses to one column and everything fits. */}
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '96px', padding: '40px 0' }}>
             {STEPS.map((step, i) => (
               <div
                 key={step.id}

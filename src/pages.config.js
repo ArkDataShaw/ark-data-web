@@ -56,6 +56,7 @@ import BookADemo from './pages/BookADemo';
 
 import Contact from './pages/Contact';
 import Cookies from './pages/Cookies';
+import Demo from './pages/Demo';
 import FAQ from './pages/FAQ';
 import Home from './pages/Home';
 import HowItWorks from './pages/HowItWorks';
@@ -82,6 +83,7 @@ export const PAGES = {
 
     "Contact": Contact,
     "Cookies": Cookies,
+    "Demo": Demo,
     "FAQ": FAQ,
     "Home": Home,
     "HowItWorks": HowItWorks,
