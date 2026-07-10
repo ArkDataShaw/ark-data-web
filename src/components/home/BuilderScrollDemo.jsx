@@ -28,12 +28,22 @@ import MobileSentenceDemo from './MobileSentenceDemo';
 
 const GREEN_BORDER = 'rgba(25,195,125,0.35)';
 const NAV_PX = 80; // pin the builder 10px below the 70px fixed nav (matches mobile)
+// The sentence lives on the DARK PAGE surface, in its own band ABOVE the builder (NOT inside the
+// app — natural-language-to-audience isn't a builder feature yet; it'll live on a separate surface
+// like a chat bubble). We reserve this band by pinning the builder SENTENCE_ZONE px lower, so the
+// sentence has room to display, the filters fly out of it into the strip, and the rest fades.
+const SENTENCE_ZONE = 168;
 
-// beat thresholds over the pinned range. Beat 0 fires ~immediately; last ~0.72 so
-// the density release + settle fit before the pin releases to native scroll.
-const BEATS = [0.06, 0.28, 0.50, 0.72];
-const T = { frameIn: [0.0, 0.05] };
+// beat thresholds over the pinned range. Beat 0 is held back a bit so the HERO sentence reads on
+// its own first (hero pre-displays from HERO_SHOW); last ~0.74 so the density release + settle fit
+// before the pin releases to native scroll.
+const HERO_SHOW = 0.02;
+const BEATS = [0.12, 0.32, 0.54, 0.74];
+// builder fades in AS beat 0 commits (the hero sentence is already on screen; the app arrives as
+// the filters fly and the connecting words fade).
+const T = { frameIn: [0.12, 0.24] };
 const BEAT_MIN_GAP_MS = 420; // one fly-in at a time, even on a fast flick
+const FLY_PAUSE_MS = 620;    // hold the full sentence readable before the chips fly + words fade
 
 // Caption per beat: ordered segments — plain strings are connectors, {chip} slots are
 // filled from the beat's NEW strip chips (chipInfo diff), matched by value-substring hint
@@ -169,81 +179,88 @@ export default function BuilderScrollDemo() {
     return owner;
   };
 
-  const renderAndFly = useCallback((w, k) => {
-    const cap = captionRef.current, fly = flyRef.current, ifr = iframeRef.current;
-    if (!cap || !fly || !ifr) return;
-    const chips = readChips(w);
-    // re-reveal chips that already landed (tagChips re-hid them this beat)
-    chips.forEach(c => { if (landedRef.current.has(c.key)) c.el.classList.remove('ark-hidden'); });
-    const fresh = chips.filter(c => !landedRef.current.has(c.key));
+  // Build the FULL caption for beat k in the sentence zone: connectors (white) + inline purple
+  // chip spans (using the beat's `show` wording — works even before the strip chips exist, so the
+  // hero can pre-display before the builder arrives). Returns the chip spans + their hint, for
+  // flying. Does NOT fly — that's a separate phase so the sentence stays readable first.
+  const buildCaption = useCallback((k) => {
+    const cap = captionRef.current;
+    if (!cap) return [];
     const spec = CAPTIONS[k] || { segs: [] };
-
-    // Build the caption: connectors as faded spans, chip slots filled from fresh chips by hint.
     cap.innerHTML = '';
     cap.style.opacity = '1';
     cap.className = 'bsd-cap ark-display' + (spec.hero ? ' bsd-hero' : '');
-    const usedIdx = new Set();
-    const chipSpans = []; // {span, chip}
+    const chipSpans = []; // {span, hint}
     spec.segs.forEach(sgm => {
       if (sgm.t != null) {
         const s = document.createElement('span');
         s.textContent = sgm.t; s.className = 'bsd-join';
         cap.appendChild(s);
       } else if (sgm.chip != null) {
-        const hint = sgm.chip.toLowerCase();
-        let fi = fresh.findIndex((c, i) => !usedIdx.has(i) && (c.value + ' ' + c.label).toLowerCase().includes(hint));
-        if (fi < 0) fi = fresh.findIndex((c, i) => !usedIdx.has(i));
-        if (fi < 0) return;
-        usedIdx.add(fi);
-        const chip = fresh[fi];
         const span = document.createElement('span');
         Object.assign(span.style, CHIP_CSS); span.className = 'bsd-chip';
-        if (sgm.show) {
-          span.appendChild(document.createTextNode(sgm.show)); // Shaw's exact caption wording
-        } else {
-          if (chip.label) { const b = document.createElement('b'); b.style.opacity = '0.75'; b.textContent = chip.label; span.appendChild(b); span.appendChild(document.createTextNode(' ')); }
-          span.appendChild(document.createTextNode(chip.value));
-        }
+        span.textContent = sgm.show || sgm.chip;
         cap.appendChild(span);
-        chipSpans.push({ span, chip });
+        chipSpans.push({ span, hint: sgm.chip.toLowerCase() });
       }
     });
-
-    // Fly each caption chip → its real strip rect, reveal the real chip on landing.
-    const ifrBox = ifr.getBoundingClientRect();
-    requestAnimationFrame(() => {
-      chipSpans.forEach(({ span, chip }) => {
-        const from = span.getBoundingClientRect();
-        const tr = chip.el.getBoundingClientRect();     // iframe-viewport space
-        const tx = ifrBox.left + tr.left, ty = ifrBox.top + tr.top;
-        const clone = span.cloneNode(true);
-        Object.assign(clone.style, CHIP_CSS, {
-          position: 'fixed', left: from.left + 'px', top: from.top + 'px', margin: 0,
-          zIndex: 6, transition: 'transform .62s cubic-bezier(.22,.61,.36,1), box-shadow .62s',
-          boxShadow: '0 12px 40px rgba(124,58,237,0.35)', pointerEvents: 'none',
-        });
-        fly.appendChild(clone);
-        span.style.visibility = 'hidden';
-        requestAnimationFrame(() => {
-          clone.style.transform = `translate(${tx - from.left}px, ${ty - from.top}px)`;
-          clone.style.boxShadow = '0 2px 10px rgba(124,58,237,0.12)';
-        });
-        const done = () => {
-          landedRef.current.add(chip.key);
-          // renderChips rebuilds #chips on every sync → reveal by key from the CURRENT DOM
-          readChips(w).forEach(rc => { if (rc.key === chip.key) rc.el.classList.remove('ark-hidden'); });
-          clone.remove();
-          clone.removeEventListener('transitionend', done);
-        };
-        clone.addEventListener('transitionend', done);
-        setTimeout(done, 950); // safety if transitionend is missed
-      });
-      setTimeout(() => {
-        if (topBeatRef.current !== k) return;
-        cap.querySelectorAll('.bsd-join').forEach(el => { el.style.transition = 'opacity .5s'; el.style.opacity = '0'; });
-      }, 520);
-    });
+    return chipSpans;
   }, []);
+
+  // Fly the caption's chip spans down into their real strip rects, then fade the connectors.
+  // Real strip chips must already exist (beatOnDesktop applied) — matched by hint.
+  const flyChips = useCallback((w, k, chipSpans) => {
+    const cap = captionRef.current, fly = flyRef.current, ifr = iframeRef.current;
+    if (!cap || !fly || !ifr) return;
+    if (topBeatRef.current !== k) return; // scrolled away during the readable pause — skip
+    const chips = readChips(w);
+    chips.forEach(c => { if (landedRef.current.has(c.key)) c.el.classList.remove('ark-hidden'); });
+    const fresh = chips.filter(c => !landedRef.current.has(c.key));
+    const used = new Set();
+    const ifrBox = ifr.getBoundingClientRect();
+    chipSpans.forEach(({ span, hint }) => {
+      let fi = fresh.findIndex((c, i) => !used.has(i) && (c.value + ' ' + c.label).toLowerCase().includes(hint));
+      if (fi < 0) fi = fresh.findIndex((c, i) => !used.has(i));
+      if (fi < 0) return;
+      used.add(fi);
+      const chip = fresh[fi];
+      const from = span.getBoundingClientRect();
+      const tr = chip.el.getBoundingClientRect();      // iframe-viewport space
+      const tx = ifrBox.left + tr.left, ty = ifrBox.top + tr.top;
+      const clone = span.cloneNode(true);
+      Object.assign(clone.style, CHIP_CSS, {
+        position: 'fixed', left: from.left + 'px', top: from.top + 'px', margin: 0,
+        zIndex: 6, transition: 'transform .62s cubic-bezier(.22,.61,.36,1), box-shadow .62s',
+        boxShadow: '0 12px 40px rgba(124,58,237,0.35)', pointerEvents: 'none',
+      });
+      fly.appendChild(clone);
+      span.style.visibility = 'hidden';
+      requestAnimationFrame(() => {
+        clone.style.transform = `translate(${tx - from.left}px, ${ty - from.top}px)`;
+        clone.style.boxShadow = '0 2px 10px rgba(124,58,237,0.12)';
+      });
+      const done = () => {
+        landedRef.current.add(chip.key);
+        readChips(w).forEach(rc => { if (rc.key === chip.key) rc.el.classList.remove('ark-hidden'); }); // renderChips rebuilds #chips
+        clone.remove();
+        clone.removeEventListener('transitionend', done);
+      };
+      clone.addEventListener('transitionend', done);
+      setTimeout(done, 950);
+    });
+    // the connecting words fade as the filters leave for the strip
+    cap.querySelectorAll('.bsd-join').forEach(el => { el.style.transition = 'opacity .55s'; el.style.opacity = '0'; });
+  }, []);
+
+  // A beat commits: show the full sentence, hold it readable, then fly the filters + fade words.
+  const renderAndFly = useCallback((w, k) => {
+    const chipSpans = buildCaption(k);
+    const pause = k === 0 ? FLY_PAUSE_MS : Math.round(FLY_PAUSE_MS * 0.7);
+    setTimeout(() => flyChips(w, k, chipSpans), pause);
+  }, [buildCaption, flyChips]);
+
+  // hero pre-display: the opening sentence on the dark surface BEFORE the builder arrives (no fly).
+  const renderHero = useCallback(() => { buildCaption(0); }, [buildCaption]);
 
   // scroll-up: hide chips owned by beats > k, keep the rest revealed, restore beat k's caption.
   const reverseTo = useCallback((w, k) => {
@@ -255,7 +272,7 @@ export default function BuilderScrollDemo() {
     renderCaptionOnly(k);
   }, []);
 
-  // restore beat k's caption text (chips shown inline, connectors faded) — used on reverse.
+  // restore beat k's caption text on reverse (connectors only — chips already landed in the strip).
   const renderCaptionOnly = useCallback((k) => {
     const cap = captionRef.current;
     if (!cap) return;
@@ -296,7 +313,15 @@ export default function BuilderScrollDemo() {
     }
     storyDoneRef.current = complete;
 
+    // the sentence lives on the page surface ONLY during the story — hide it once explored or once
+    // we scroll down past the beats into the charts.
+    if (captionRef.current && (collapsedRef.current || armedRef.current || p >= 0.90)) captionRef.current.style.opacity = '0';
     if (collapsedRef.current || armedRef.current) return; // frozen once explored
+
+    // hero pre-display: the opening sentence reads on the dark surface BEFORE the builder arrives
+    // (builder fade-in is held until beat 0 via T.frameIn). Re-shows when scrolled back above beat 0.
+    if (!appliedRef.current.has(0) && topBeatRef.current < 0 && p > HERO_SHOW && p < BEATS[0]
+        && captionRef.current && captionRef.current.childElementCount === 0) renderHero();
 
     // ── beats: apply forward (throttled), unapply on scroll-up (fully reversible) ──
     const now = performance.now();
@@ -335,7 +360,7 @@ export default function BuilderScrollDemo() {
     // keep all landed chips revealed — the builder's renderChips rebuilds + re-hides #chips on
     // every sync (per-stage repaint), which would otherwise drop already-flown chips for a frame.
     if (landedRef.current.size) { readChips(w).forEach(c => { if (landedRef.current.has(c.key)) c.el.classList.remove('ark-hidden'); }); }
-  }, [mountIframe, booted, app, renderAndFly, reverseTo]);
+  }, [mountIframe, booted, app, renderAndFly, reverseTo, renderHero]);
 
   const measure = useCallback(() => {
     const w = app();
@@ -401,21 +426,24 @@ export default function BuilderScrollDemo() {
   if (!isDesktop) return <MobileSentenceDemo />;
 
   const frameH = H > 0 ? `${H}px` : '100vh';
+  // expanded height also carries the SENTENCE_ZONE (the builder pins that much lower).
   const sectionH = collapsed
     ? `${(H > 0 ? H : 0) + NAV_PX}px`
-    : (H > 0 ? `calc(420vh + ${H + NAV_PX}px)` : 'calc(520vh)');
+    : (H > 0 ? `calc(420vh + ${H + NAV_PX + SENTENCE_ZONE}px)` : 'calc(520vh)');
 
   return (
     <>
       <style>{`
-        .bsd-cap{position:absolute;left:0;right:0;top:${NAV_PX + 12}px;z-index:5;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;padding:0 24px;text-align:center;pointer-events:none;transition:opacity .5s}
-        .bsd-cap .bsd-join{color:#C9DBEE;font-weight:500;font-size:22px;letter-spacing:-.01em}
-        .bsd-cap.bsd-hero .bsd-join{font-size:34px;font-weight:600}
-        .bsd-cap.bsd-hero .bsd-chip{font-size:16px !important;padding:7px 14px !important}
+        /* the sentence band: FIXED in the viewport, on the dark page surface, ABOVE the builder
+           (between the site header and the pinned builder). NOT part of the app. */
+        .bsd-cap{position:fixed;top:${NAV_PX}px;left:50%;transform:translateX(-50%);width:min(1240px,calc(100vw - 40px));height:${SENTENCE_ZONE}px;z-index:5;display:flex;flex-wrap:wrap;gap:9px 10px;align-items:center;justify-content:center;padding:0 28px;box-sizing:border-box;text-align:center;pointer-events:none;transition:opacity .45s}
+        .bsd-cap .bsd-join{color:#EAF2FB;font-weight:500;font-size:22px;letter-spacing:-.01em}
+        .bsd-cap.bsd-hero .bsd-join{color:#fff;font-size:32px;font-weight:700;letter-spacing:-.015em}
+        .bsd-cap.bsd-hero .bsd-chip{font-size:17px !important;padding:8px 15px !important;font-weight:700 !important}
       `}</style>
       <section ref={trackRef} style={{ height: sectionH, position: 'relative', boxSizing: 'border-box', paddingTop: collapsed ? `${NAV_PX}px` : 0, background: '#060D1A', borderTop: '1px solid #101E33' }}>
         <div ref={frameRef}
-          style={{ opacity: 0, position: collapsed ? 'relative' : 'sticky', top: collapsed ? 'auto' : `${NAV_PX}px`, height: frameH, width: 'min(1240px, calc(100vw - 40px))', margin: '0 auto', borderRadius: '14px 14px 0 0', overflow: 'hidden', border: '1px solid #1B3050', borderBottom: 'none', boxShadow: '0 30px 80px rgba(0,0,0,0.55)', background: '#f8fafc' }}>
+          style={{ opacity: 0, position: collapsed ? 'relative' : 'sticky', top: collapsed ? 'auto' : `${NAV_PX + SENTENCE_ZONE}px`, height: frameH, width: 'min(1240px, calc(100vw - 40px))', margin: '0 auto', borderRadius: '14px 14px 0 0', overflow: 'hidden', border: '1px solid #1B3050', borderBottom: 'none', boxShadow: '0 30px 80px rgba(0,0,0,0.55)', background: '#f8fafc' }}>
           <span ref={debugRef} className="ark-mono" style={{ position: 'absolute', top: '8px', left: '10px', zIndex: 9, color: '#FF8A9A', fontSize: '11px', background: 'rgba(0,0,0,0.6)', padding: '3px 8px', borderRadius: '6px' }}>boot: waiting for iframe…</span>
 
           {!booted && !iframeDead && (
@@ -446,7 +474,7 @@ export default function BuilderScrollDemo() {
           )}
         </div>
 
-        {/* caption above the builder (chips fly out of it into the strip) */}
+        {/* sentence band on the dark page surface, above the builder (chips fly out into the strip) */}
         <div ref={captionRef} className="bsd-cap" style={{ opacity: 0 }} />
         {/* fixed layer hosting the flying chip clones */}
         <div ref={flyRef} style={{ position: 'fixed', inset: 0, zIndex: 6, pointerEvents: 'none' }} />
