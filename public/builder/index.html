@@ -97,6 +97,11 @@
   .sub{margin-bottom:8px}
   .sub-h{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:600;color:var(--slate-600);padding:6px 6px;border-radius:6px;cursor:pointer}
   .sub-h:hover{background:var(--slate-50);color:var(--violet)}
+  .sub-hl{display:inline-flex;align-items:center;gap:7px;min-width:0}
+  /* presence dot — shown next to a subcategory label when it has an active filter. Only visible while
+     the sidebar + parent category accordion are open (the .sub-h lives inside the collapsed .acc-body). */
+  .sub-dot{width:6px;height:6px;border-radius:50%;background:var(--violet);flex:none;display:none}
+  .sub-dot.on{display:inline-block}
   .sub-sign{font-size:13px;font-weight:800;color:var(--slate-400)}
   .sub-body{padding:6px 2px 2px 6px;display:none}
   .sub.open .sub-body{display:block}
@@ -1151,16 +1156,20 @@ function visible(cat){
   // B2C/B2B now only picks the topic catalog, chosen inside the Topics panel.
   return true;
 }
+// active-filter count for ONE subcategory — shared by the category badge and the per-sub dot.
+function subCount(s){
+  let n=0;
+  if(s.type==="check") s.options.forEach(o=>{if(S.checks[s.id]?.has(o))n++;});
+  else if(s.type==="text" && S.texts[s.id]) n++;
+  else if(s.type==="picker") n+=pickerActive(s);
+  else if(s.type==="location"){const L=S.loc[s.group];n+=L.state.size+L.city.size+(L.metro?L.metro.size:0)+L.zip.size;}
+  return n;
+}
 function catCount(cat){
   let n=0;
   if(cat.type==="topics"||cat.type==="intent") n+=S.topics.size+(S.checks.score?S.checks.score.size:0);
   if(cat.type==="contact") n+=Object.keys(S.contactReq).length;
-  (cat.subs||[]).forEach(s=>{
-    if(s.type==="check") s.options.forEach(o=>{if(S.checks[s.id]?.has(o))n++;});
-    if(s.type==="text" && S.texts[s.id]) n++;
-    if(s.type==="picker") n+=pickerActive(s);
-    if(s.type==="location"){const L=S.loc[s.group];n+=L.state.size+L.city.size+(L.metro?L.metro.size:0)+L.zip.size;}
-  });
+  (cat.subs||[]).forEach(s=>{n+=subCount(s);});
   return n;
 }
 function renderSidebar(){
@@ -1305,7 +1314,8 @@ function renderBody(cat){
   (cat.subs||[]).forEach(sub=>{
     const open=S.openSub.has(sub.id);
     const sd=document.createElement("div");sd.className="sub"+(open?" open":"");
-    sd.innerHTML=`<div class="sub-h">${sub.label}<span class="sub-sign">${open?'−':'+'}</span></div><div class="sub-body"></div>`;
+    const hasFilter=subCount(sub)>0; // presence dot when this subcategory has an active filter
+    sd.innerHTML=`<div class="sub-h"><span class="sub-hl">${sub.label}<i class="sub-dot${hasFilter?' on':''}"></i></span><span class="sub-sign">${open?'−':'+'}</span></div><div class="sub-body"></div>`;
     sd.querySelector(".sub-h").onclick=()=>{open?S.openSub.delete(sub.id):S.openSub.add(sub.id);renderSidebar();};
     const body=sd.querySelector(".sub-body");
     if(sub.type==="check"){sub.options.forEach(o=>body.appendChild(checkRow(sub.id,o,sub.pf)));}
