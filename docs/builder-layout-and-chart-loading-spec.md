@@ -284,3 +284,126 @@ The canonical, verified implementation of all of the above is the current
 `public/builder/index.html` + `public/builder/embed-script.js` on `main`
 (`ArkDataShaw/ark-data-web`, merged 2026-07-09/10). Diff a target version against these two files to
 see the exact deltas; this doc is the human-readable rulebook for that diff.
+
+---
+
+## I. ADDENDUM — Width Tiers & Sentence Geo Rule (answers to fable-html-audience-builder, 2026-07-10)
+
+Two under-specified areas, answered against the canonical `public/builder/index.html` on `main`.
+
+### I.1 WIDTH TIERS — which builder width each rule applies to
+
+**Foundational fact: all `@media` in the builder are CONTAINER-width, not device-width.**
+The builder runs inside an `<iframe>`. An iframe establishes its own viewport, so every `@media
+(min/max-width…)` inside `index.html` evaluates against **the iframe's own rendered width = the
+container width** (the width the host gives the iframe). There is NO separate "device viewport"
+inside the builder. So when this spec says "builder width" it means the iframe/container width, and
+every `@media` here is effectively container-based. (The lone true CSS **container query** is the
+family legend: `.famdo{container-type:inline-size}` + `@container (max-width:230px)` — keyed to the
+`.famdo` card's own inline size, NOT the iframe. See A5.)
+
+**The tiers (by builder/iframe width):**
+
+| Tier | Width range | What changes |
+|---|---|---|
+| **Desktop** | **≥ 1001px** | Two-pane shell (`243px` sidebar + main), chips strip, insights `.span2` = half (span 6), maprail cards stacked in the rail. |
+| **Mobile block** | **≤ 1000px** (`@media(max-width:1000px)`) | Single-column shell (`.shell{grid-template-columns:1fr}`), sentence strip replaces chips, mobile sidebar drawer, chip ✕ hidden, `#modeSwitch`/`.nameinput`/`.account` hidden. |
+| **Insights single-column** | **≤ 820px** (`@media(max-width:820px)`) | `.insights{grid-template-columns:1fr}` — every insight card full-width, stacked. |
+| **Insights multi-column (reflows enabled)** | **≥ 821px** (`@media(min-width:821px)`) | The 12-col insights grid is active, so A3 `.cities-promoted` reflow AND A4 `.ins-narrow/.ins-wide` sparse rebalance are **only meaningful/allowed here**. |
+| **Tablet maprail 2-col** | **680–1000px** (`@media (min-width:680px) and (max-width:1000px)`) **AND `body.ark-fullheight`** | See I.1a — DEMO-only. |
+
+**Per-rule width gating (cross-reference to sections A–F):**
+
+| Rule | Applies at builder width | Gate |
+|---|---|---|
+| A1 insights order (`applyInsightsOrder`) | all widths (order set unconditionally; only *visible* as multi-row ≥821px) | none |
+| A2 Top States→Cities swap | all widths (content swap is width-independent) | `hasStateSel()` |
+| A3 seniority/dept reflow → halves | **≥ 821px only** | `@media(min-width:821px)` + `.cities-promoted` |
+| A4 sparse-vbar quarter/three-quarter | **≥ 821px only** (`balanceSparseRows` early-returns if `matchMedia('(max-width:820px)')`) | `@media(min-width:821px)` + runtime guard |
+| A5 family legend 2-col | all widths; container-query tighten at **famdo card ≤230px** | `@container` (card-based, not iframe) |
+| A6 coverage icons bottom-right | all widths | none |
+| A7/A8 labels | all widths | none |
+| B1/B2 chart loading (appear-at-target, donut tween) | all widths | none |
+| C1 map fits US | all widths | none |
+| E2 tablet maprail 2-col + `--ark-cardh` + `.ark-cov-fill` | **680–1000px** | `body.ark-fullheight` (DEMO) |
+| E3 declutter (`.pvtop`/`.notebar`/`#card-intent` hidden) | all demo widths | `body.ark-fullheight` (DEMO) |
+
+**I.1a — iPad / tablet, answered precisely (Shaw's question): the 680–1000px 2-col Coverage+TopCities
+maprail row is `ark-fullheight`-ONLY. A plain standalone builder at tablet width does NOT get it, by
+design.**
+
+- Proof: in `@media (min-width:680px) and (max-width:1000px)`, **every** selector is prefixed
+  `body.ark-fullheight` (`.maprail{grid…2 cols}`, `.maprail .card{height:var(--ark-cardh…)}`, and the
+  `.ark-cov-fill` fill rules). Without the `ark-fullheight` body class the whole block is inert.
+- Why it's demo-only, and correct: the 2-col maprail exists to fill the horizontal space of the
+  **full-height sticky native-scroll layout** (map has a fixed `360px` height there; the parent measures
+  an insight card and pushes `--ark-cardh` so the maprail row matches it). A **plain standalone builder**
+  at 680–1000px is in the **mobile block (≤1000px)**: single-column shell, and the maprail cards stack
+  vertically in the rail — which is the intended standalone tablet presentation. There is no bug to fix;
+  the 2-col row is a demo-layout optimization, not a general tablet rule.
+- **Porting guidance:** if a target builder does NOT host the scripted embed (no `ark-fullheight`), do
+  **not** port E2 — leave the maprail stacked at tablet width. If Shaw later wants standalone tablets to
+  get the 2-col maprail, that's a NEW rule: drop the `body.ark-fullheight` prefix from the E2 block AND
+  supply `--ark-cardh` from a resize handler in the core builder (currently only the demo parent sets it).
+  Until then, standalone tablet = stacked maprail.
+
+### I.2 SENTENCE GEO RULE — state-chip replacement by cities/metros
+
+**As-implemented today (exact canonical code, `index.html` ~L2773–2782):**
+```js
+["personal","professional","company"].forEach(function(g){
+  var l=S.loc[g];if(!l)return;
+  // metros REPLACE the state chip (metro implies its state). Display-only; map scoping still reads S.loc.state.
+  if(!(l.metro&&l.metro.size))l.state.forEach(function(s){geoParts.push(s);});
+  l.city.forEach(function(c){geoParts.push(String(c).split("|")[0]);});
+  if(l.metro)l.metro.forEach(function(m){geoParts.push(String(m).split("|")[0].replace(/\s+metro(\s+area)?$/i,"").replace(/^Fort\s+/i,"Ft. "));});
+  ...
+});
+```
+Precise semantics of the current code (be honest about the gap):
+- It runs **per loc group** (personal/professional/company), independently.
+- It drops **ALL** states in a group **iff that group has ≥1 metro** (`l.metro.size`).
+- It does **NOT** consider cities at all for the drop (a selected city never drops a state).
+- It is **NOT per-state**: one metro drops *every* state in the group, even unrelated ones.
+- City rendering: `split("|")[0]` — cities stored `"City, ST"` (no `|`) render **WITH** the `", ST"`
+  suffix; cities stored `"City|meta"` render bare. Metros render **bare** ("… metro" stripped, `Fort→Ft.`).
+
+**Intended rule (Shaw, broader — the target to implement):** a selected **city OR metro that lies within
+a selected state replaces that specific state's chip** (space preservation, per-state). Keep states that
+no selected city/metro covers. Precise algorithm, per loc group `g`:
+
+1. **Compute implied states** from this group's selected cities + metros:
+   - City `"City, ST"` → implied state = the 2-letter `ST` suffix (uppercased). City `"City|…"` or bare →
+     resolve via the city→state lookup if available, else no implied state.
+   - Metro (bare name) → implied state = the metro's home state via `US_METROS` (`m.st`, or the modal
+     state of `m.z`/`m.c`). (Demo metros Miami/Ft. Lauderdale → `FL`.)
+   - `impliedStates(g) = { those STs }`.
+2. **States:** for each `s` in `l.state`, push `s` to `geoParts` **only if `s ∉ impliedStates(g)`**
+   (drop states that a selected city/metro already represents; keep unrelated ones).
+3. **Cities:** push the **bare city name** (strip `", ST"` and `"|…"` → just `"City"`) when its state was
+   dropped/implied; keep `", ST"` only to disambiguate a city whose state is NOT selected (or when the
+   same bare city name appears under two different selected states). Rationale: the narrative sentence
+   reads "in Miami", not "in Miami, FL", once FL is implied.
+4. **Metros:** unchanged — bare place name, `"…metro"` stripped, `Fort→Ft.` (already correct).
+5. **Cross-state city (Shaw's edge case):** a city/metro in a state **NOT** in `l.state` (e.g. state=`FL`
+   + city=`Austin, TX`): `TX ∉ l.state`, so nothing is dropped — `FL` stays, and the city shows as its own
+   chip. Because it's a different state, keep its `", ST"` for clarity → sentence reads
+   "in FL, Austin, TX". Only same-state cities/metros collapse their state.
+6. **Scope unchanged:** this is **display-only**. Map scoping / reach still read `S.loc.*.state` directly
+   (`updateMapScope`, `_metroScopeKey`) — never derive scope from the sentence.
+
+**Delta to implement (current → intended):** replace the coarse
+`if(!(l.metro&&l.metro.size))l.state.forEach(push)` with the per-state `impliedStates(g)` filter above,
+and extend the drop trigger from **metros-only** to **metros OR cities**. Suggested shape:
+```js
+var implied = new Set();
+l.city.forEach(function(c){ var st=cityState(c); if(st) implied.add(st); });      // "City, ST" → ST, else lookup
+if(l.metro) l.metro.forEach(function(m){ var st=metroState(m); if(st) implied.add(st); });
+l.state.forEach(function(s){ if(!implied.has(s)) geoParts.push(s); });            // per-state keep/drop
+l.city.forEach(function(c){ geoParts.push(cityLabel(c, implied)); });            // bare if state implied, else "City, ST"
+if(l.metro) l.metro.forEach(function(m){ geoParts.push(metroLabel(m)); });        // bare, Fort→Ft.
+```
+**Verify:** (a) state=FL + metros=Miami,FtLaud → "in Miami & Ft. Lauderdale" (FL dropped). (b) state=FL +
+city="Miami, FL" → "in Miami" (FL dropped, city bare). (c) state=FL + state=GA + city="Miami, FL" →
+"in GA, Miami" (FL dropped as implied, GA kept). (d) state=FL + city="Austin, TX" → "in FL, Austin, TX"
+(FL kept, cross-state city keeps its ST). (e) map scope/reach identical in all cases (display-only).
