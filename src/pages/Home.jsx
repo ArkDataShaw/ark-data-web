@@ -8,11 +8,6 @@ import DataPipeline from '../components/home/DataPipeline';
 import BuilderScrollDemo from '../components/home/BuilderScrollDemo';
 import IntentShowcase from '../components/home/IntentShowcase';
 import IntentPulse from '../components/home/IntentPulse';
-const ProtoTag = ({ n, label }) => (
-  <div style={{ background: '#1A0B0B', borderTop: '1px solid #C8102E', borderBottom: '1px solid #3A1520', padding: '7px 0', textAlign: 'center' }}>
-    <span className="ark-mono" style={{ color: '#FF8A9A', fontSize: '11px', letterSpacing: '0.14em' }}>▼ SANDBOX PROTOTYPE {n} — {label}</span>
-  </div>
-);
 
 const APP_URL = 'https://app.arkdata.io';
 
@@ -166,7 +161,6 @@ export default function Home() {
       {/* HOW IT WORKS — unified pipeline scroll animation */}
       <DataPipeline />
 
-      <ProtoTag n="A" label="AUDIENCE BUILDER SCROLL SEQUENCE (chips -> builder -> live data; freezes on top half, cross-fades to live embed later)" />
       <BuilderScrollDemo />
 
       {/* FEATURE GRID — light. position:relative + z-index lifts it above the builder's
@@ -195,8 +189,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <ProtoTag n="B" label="INTENT USE-CASE SHOWCASE (live signal feed by industry)" />
       <IntentShowcase />
 
       {/* VISITOR ID SPOTLIGHT — dark */}
@@ -251,8 +243,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <ProtoTag n="C" label="INTENT PULSE — INDUSTRY INSIGHTS + NEWSLETTER" />
       <IntentPulse />
 
       {/* FAQ — light */}

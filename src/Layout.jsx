@@ -195,13 +195,6 @@ export default function Layout({ children, currentPageName }) {
         ::selection { background: rgba(177,0,26,0.3); color: #fff; }
       `}</style>
 
-      {/* SANDBOX BANNER */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 200, background: '#C8102E', textAlign: 'center', padding: '6px 12px' }}>
-        <span className="ark-mono" style={{ color: '#fff', fontSize: '11px', letterSpacing: '0.12em', fontWeight: 600 }}>
-          SANDBOX — PLACEMENT PROTOTYPES · NOT PRODUCTION · arkdata.io is unchanged
-        </span>
-      </div>
-
       {/* Nav */}
       <header style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
