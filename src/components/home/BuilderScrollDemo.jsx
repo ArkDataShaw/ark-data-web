@@ -75,7 +75,8 @@ export default function BuilderScrollDemo() {
   const trackRef = useRef(null);
   const frameRef = useRef(null);
   const iframeRef = useRef(null);
-  const captionRef = useRef(null);   // the sentence/caption element above the builder
+  const captionRef = useRef(null);   // the sticky sentence BAND (opacity = scroll-entry / pin)
+  const capInnerRef = useRef(null);  // inner wrapper — per-beat sentence crossfade lives here
   const flyRef = useRef(null);       // fixed overlay hosting flying chip clones
   const scrimRef = useRef(null);
   const debugRef = useRef(null);
@@ -184,23 +185,22 @@ export default function BuilderScrollDemo() {
   // hero can pre-display before the builder arrives). Returns the chip spans + their hint, for
   // flying. Does NOT fly — that's a separate phase so the sentence stays readable first.
   const buildCaption = useCallback((k) => {
-    const cap = captionRef.current;
-    if (!cap) return [];
+    const cap = captionRef.current, inner = capInnerRef.current;
+    if (!cap || !inner) return [];
     const spec = CAPTIONS[k] || { segs: [] };
-    cap.innerHTML = '';
-    cap.style.opacity = '1';
     cap.className = 'bsd-cap ark-display' + (spec.hero ? ' bsd-hero' : '');
+    inner.innerHTML = '';
     const chipSpans = []; // {span, hint}
     spec.segs.forEach(sgm => {
       if (sgm.t != null) {
         const s = document.createElement('span');
         s.textContent = sgm.t; s.className = 'bsd-join';
-        cap.appendChild(s);
+        inner.appendChild(s);
       } else if (sgm.chip != null) {
         const span = document.createElement('span');
         Object.assign(span.style, CHIP_CSS); span.className = 'bsd-chip';
         span.textContent = sgm.show || sgm.chip;
-        cap.appendChild(span);
+        inner.appendChild(span);
         chipSpans.push({ span, hint: sgm.chip.toLowerCase() });
       }
     });
@@ -252,11 +252,20 @@ export default function BuilderScrollDemo() {
     cap.querySelectorAll('.bsd-join').forEach(el => { el.style.transition = 'opacity .55s'; el.style.opacity = '0'; });
   }, []);
 
-  // Pre-show beat k's sentence (fades in) and stash its chip spans — called a CAPTION_LEAD before
-  // the beat's data commit, so the sentence always reads a moment before the audience updates.
+  // Pre-show beat k's sentence and stash its chip spans — called a CAPTION_LEAD before the beat's
+  // data commit, so the sentence fades in a moment BEFORE the audience updates. The new sentence is
+  // swapped in while invisible (transition off) then faded 0→1, so you never see the old text
+  // cross-dissolve into the new one — each sentence cleanly fades in right before its beat.
   const preshowCaption = useCallback((k) => {
+    const inner = capInnerRef.current;
+    if (inner) { inner.style.transition = 'none'; inner.style.opacity = '0'; }
     beatSpansRef.current[k] = buildCaption(k);
     capShownRef.current.add(k);
+    if (inner) {
+      void inner.offsetWidth; // commit opacity:0 with no transition
+      inner.style.transition = 'opacity .35s ease-out';
+      requestAnimationFrame(() => { if (capInnerRef.current) capInnerRef.current.style.opacity = '1'; });
+    }
   }, [buildCaption]);
 
   // scroll-up: hide chips owned by beats > k, keep the rest revealed, restore beat k's caption.
@@ -273,12 +282,12 @@ export default function BuilderScrollDemo() {
 
   // restore beat k's caption text on reverse (connectors only — chips already landed in the strip).
   const renderCaptionOnly = useCallback((k) => {
-    const cap = captionRef.current;
-    if (!cap) return;
-    const spec = CAPTIONS[k]; if (!spec) { cap.innerHTML = ''; cap.style.opacity = '0'; return; }
+    const cap = captionRef.current, inner = capInnerRef.current;
+    if (!cap || !inner) return;
+    const spec = CAPTIONS[k]; if (!spec) { inner.innerHTML = ''; return; }
     cap.className = 'bsd-cap ark-display' + (spec.hero ? ' bsd-hero' : '');
-    cap.style.opacity = '1';
-    cap.innerHTML = spec.segs.filter(s => s.t != null).map(s => `<span class="bsd-join" style="opacity:0">${s.t}</span>`).join('');
+    inner.style.transition = 'none'; inner.style.opacity = '1';
+    inner.innerHTML = spec.segs.filter(s => s.t != null).map(s => `<span class="bsd-join" style="opacity:0">${s.t}</span>`).join('');
   }, []);
 
   const frame = useCallback(() => {
@@ -317,11 +326,12 @@ export default function BuilderScrollDemo() {
     }
     storyDoneRef.current = complete;
 
-    // caption fades in on entry with the builder; hidden once explored or once we scroll past the
-    // beats into the charts.
+    // BAND opacity: fades in on scroll-entry with the builder (hero phase), stays visible through
+    // the story, hidden once explored or scrolled past the beats. The per-beat sentence fade is on
+    // the INNER wrapper (preshowCaption), independent of this.
     if (captionRef.current) {
       const hideCap = collapsedRef.current || armedRef.current || p >= 0.90;
-      captionRef.current.style.opacity = hideCap ? '0' : String(entry);
+      captionRef.current.style.opacity = hideCap ? '0' : (topBeatRef.current < 0 ? String(entry) : '1');
     }
     if (collapsedRef.current || armedRef.current) return; // frozen once explored
 
@@ -453,15 +463,19 @@ export default function BuilderScrollDemo() {
         /* the sentence band: STICKY on the dark page surface, ABOVE the builder. In normal flow it
            sits at the section top and scrolls UP into view with the builder, then PINS at top:NAV
            (just under the header) as the builder pins below it. NOT part of the app. */
-        .bsd-cap{position:sticky;top:${NAV_PX}px;height:${SENTENCE_ZONE}px;width:min(1240px,calc(100vw - 40px));margin:0 auto;z-index:5;display:flex;flex-wrap:wrap;gap:9px 10px;align-items:center;justify-content:center;padding:0 28px;box-sizing:border-box;text-align:center;pointer-events:none;transition:opacity .3s}
-        .bsd-cap .bsd-join{color:#EAF2FB;font-weight:500;font-size:22px;letter-spacing:-.01em}
-        .bsd-cap.bsd-hero .bsd-join{color:#fff;font-size:32px;font-weight:700;letter-spacing:-.015em}
-        .bsd-cap.bsd-hero .bsd-chip{font-size:17px !important;padding:8px 15px !important;font-weight:700 !important}
+        .bsd-cap{position:sticky;top:${NAV_PX}px;height:${SENTENCE_ZONE}px;width:min(1240px,calc(100vw - 40px));margin:0 auto;z-index:5;display:flex;align-items:center;justify-content:center;padding:0 28px;box-sizing:border-box;text-align:center;pointer-events:none;transition:opacity .3s}
+        /* inner wrapper: the per-beat sentence crossfade (opacity 0→1 right before each beat). */
+        .bsd-cap-inner{display:flex;flex-wrap:wrap;gap:10px 11px;align-items:center;justify-content:center}
+        /* every sentence is the SAME big/bold size as the hero (Shaw 2026-07-10). */
+        .bsd-cap .bsd-join{color:#fff;font-weight:700;font-size:32px;letter-spacing:-.015em}
+        .bsd-cap .bsd-chip{font-size:17px !important;padding:8px 15px !important;font-weight:700 !important}
       `}</style>
       <section ref={trackRef} style={{ height: sectionH, position: 'relative', boxSizing: 'border-box', paddingTop: collapsed ? `${NAV_PX}px` : 0, background: '#060D1A', borderTop: '1px solid #101E33' }}>
         {/* sentence band FIRST in flow (above the builder): sticky, so it scrolls up into view with
             the builder and pins with it. display:none once collapsed so it doesn't hold flow space. */}
-        <div ref={captionRef} className="bsd-cap" style={{ opacity: 0, display: collapsed ? 'none' : undefined }} />
+        <div ref={captionRef} className="bsd-cap" style={{ opacity: 0, display: collapsed ? 'none' : undefined }}>
+          <div ref={capInnerRef} className="bsd-cap-inner" />
+        </div>
 
         <div ref={frameRef}
           style={{ opacity: 0, position: collapsed ? 'relative' : 'sticky', top: collapsed ? 'auto' : `${NAV_PX + SENTENCE_ZONE}px`, height: frameH, width: 'min(1240px, calc(100vw - 40px))', margin: '0 auto', borderRadius: '14px 14px 0 0', overflow: 'hidden', border: '1px solid #1B3050', borderBottom: 'none', boxShadow: '0 30px 80px rgba(0,0,0,0.55)', background: '#f8fafc' }}>
