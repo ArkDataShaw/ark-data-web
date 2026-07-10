@@ -61,6 +61,25 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const seg = (p, [a, b]) => clamp((p - a) / (b - a), 0, 1);
 const easeOut = t => 1 - Math.pow(1 - t, 3);
 
+// longest common substring (contiguous, case-insensitive) between two strings — used by the chip
+// text morph to find the run of letters that survives (travels) from the sentence form to the
+// filter form. Returns {ai, bi, len}: start index in a, start index in b, and length.
+const lcsubstr = (a, b) => {
+  const A = (a || '').toLowerCase(), B = (b || '').toLowerCase();
+  let best = 0, ai = 0, bi = 0;
+  const dp = new Array(B.length + 1).fill(0);
+  for (let i = 1; i <= A.length; i++) {
+    let prev = 0;
+    for (let j = 1; j <= B.length; j++) {
+      const tmp = dp[j];
+      if (A[i - 1] === B[j - 1]) { dp[j] = prev + 1; if (dp[j] > best) { best = dp[j]; ai = i - best; bi = j - best; } }
+      else dp[j] = 0;
+      prev = tmp;
+    }
+  }
+  return { ai, bi, len: best };
+};
+
 // purple filter chip (matches the builder's .chip / app .pk-chip). Used for the caption
 // chips AND the flying clones so they're visually identical to the landed strip chip.
 const CHIP_CSS = {
@@ -295,30 +314,80 @@ export default function BuilderScrollDemo() {
         clone.style.boxShadow = '0 2px 10px rgba(124,58,237,0.12)';
       });
       let finished = false;
-      // MORPH on landing: the clone carries the SENTENCE form ("Pool Construction" / "Florida").
-      // Only NOW (landed on the strip) do we expand: lock the current sentence width, then tween the
-      // pill out to the real filter-chip width ("Topic: Pool Construction" / "Location: FL"). The
-      // current letters stay put (left-aligned) as the pill grows, THEN the filter letters are
-      // revealed. Reveal the real strip chip once the morph settles.
+      const outStr = span.textContent || ''; // the SENTENCE form ("Florida", "Miami", …)
+      // MORPH on landing: the clone carries the SENTENCE form; on the strip it expands into the
+      // FILTER form ("Location: FL", "Location: Miami Metro", "Topic: Pool Construction"). Instead of
+      // fading the whole word out then in (which flashed blank), we anchor on the longest common
+      // run of letters: that run TRAVELS to its final position while the pill expands; the dying
+      // letters fade out in place; the new letters fade in at their final positions. So
+      // "Florida" → the "Fl/FL" slides right (its final slot) while "orida" fades and "Location: "
+      // fades in; "Miami" slides to its slot while "Location: " + " Metro" fade in around it.
+      const mkText = (t) => { const s = document.createElement('span'); s.style.whiteSpace = 'nowrap'; s.textContent = t; return s; };
+      const PAD_L = 9; // CHIP_CSS padding-left → content origin inside the pill
       const morph = () => {
-        const startW = clone.getBoundingClientRect().width; // real sentence-form width, in the DOM
+        const startW = clone.getBoundingClientRect().width;
         clone.style.width = startW + 'px';
         clone.style.overflow = 'hidden';
-        void clone.offsetWidth; // commit the start width before transitioning
+        void clone.offsetWidth;
         clone.style.transition = 'width .34s cubic-bezier(.4,0,.2,1)';
-        requestAnimationFrame(() => { clone.style.width = Math.max(tr.width, startW) + 'px'; }); // expand to fill the filter slot
-        // after the pill has finished expanding, swap sentence letters → filter letters (quick fade)
-        setTimeout(() => {
-          inner0.style.transition = 'opacity .12s'; inner0.style.opacity = '0';
-          setTimeout(() => {
-            const nxt = document.createElement('span');
-            nxt.style.cssText = 'display:inline-flex;align-items:center;gap:6px;white-space:nowrap;opacity:0;transition:opacity .16s';
-            if (chip.label) { const bb = document.createElement('b'); bb.style.cssText = 'font-weight:700;opacity:.75'; bb.textContent = chip.label; nxt.appendChild(bb); nxt.appendChild(document.createTextNode(' ')); }
-            nxt.appendChild(document.createTextNode(chip.value));
-            clone.innerHTML = ''; clone.appendChild(nxt);
-            requestAnimationFrame(() => { nxt.style.opacity = '1'; });
-          }, 120);
-        }, 340);
+
+        const inStr = (chip.label ? chip.label + ': ' : '') + chip.value;
+        let m; try { m = lcsubstr(outStr, inStr); } catch { m = { ai: 0, bi: 0, len: 0 }; }
+        clone.innerHTML = '';
+
+        if (m.len < 2) {
+          // no meaningful shared run → layered crossfade (no blank), still expand the pill
+          const dead = mkText(outStr);
+          dead.style.cssText += `;position:absolute;left:${PAD_L}px;top:50%;transform:translateY(-50%);transition:opacity .18s`;
+          const live = document.createElement('span');
+          live.style.cssText = 'display:inline-flex;align-items:center;white-space:nowrap;opacity:0;transition:opacity .24s';
+          if (chip.label) { const bb = document.createElement('b'); bb.style.cssText = 'font-weight:700;opacity:.75'; bb.textContent = chip.label + ':'; live.appendChild(bb); live.appendChild(document.createTextNode(' ')); }
+          live.appendChild(document.createTextNode(chip.value));
+          clone.appendChild(dead); clone.appendChild(live);
+          requestAnimationFrame(() => { clone.style.width = Math.max(tr.width, startW) + 'px'; dead.style.opacity = '0'; live.style.opacity = '1'; });
+          return;
+        }
+
+        const anchorOut = outStr.slice(m.ai, m.ai + m.len), postOut = outStr.slice(m.ai + m.len), preOut = outStr.slice(0, m.ai);
+        const preIn = inStr.slice(0, m.bi), anchorIn = inStr.slice(m.bi, m.bi + m.len), postIn = inStr.slice(m.bi + m.len);
+
+        // LIVING layer — defines the final layout: preIn (fade in) · anchor (travels) · postIn (fade in)
+        const living = document.createElement('span');
+        living.style.cssText = 'display:inline-flex;align-items:center;white-space:nowrap';
+        const preInEl = mkText(preIn);
+        preInEl.style.transition = 'opacity .3s ease-out'; preInEl.style.opacity = preIn ? '0' : '1';
+        if (preIn && chip.label && preIn.toLowerCase().startsWith(chip.label.toLowerCase())) {
+          preInEl.textContent = '';
+          const bb = document.createElement('b'); bb.style.cssText = 'font-weight:700;opacity:.75'; bb.textContent = chip.label + ':';
+          preInEl.appendChild(bb); preInEl.appendChild(document.createTextNode(preIn.slice(chip.label.length + 1)));
+        }
+        const anchorEl = mkText(anchorIn); anchorEl.style.willChange = 'transform';
+        const postInEl = mkText(postIn);
+        postInEl.style.transition = 'opacity .3s ease-out'; postInEl.style.opacity = postIn ? '0' : '1';
+        living.appendChild(preInEl); living.appendChild(anchorEl); living.appendChild(postInEl);
+        clone.appendChild(living);
+
+        // DYING layer — absolute overlay of the OUT text (anchor hidden so it doesn't double the run)
+        const dying = document.createElement('span');
+        dying.style.cssText = `position:absolute;left:${PAD_L}px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;white-space:nowrap;pointer-events:none`;
+        const preOutEl = mkText(preOut); preOutEl.style.transition = 'opacity .2s';
+        const ghost = mkText(anchorOut); ghost.style.visibility = 'hidden';
+        const postOutEl = mkText(postOut); postOutEl.style.transition = 'opacity .2s';
+        dying.appendChild(preOutEl); dying.appendChild(ghost); dying.appendChild(postOutEl);
+        clone.appendChild(dying);
+
+        // anchor travels from its OUT position (dying ghost) to its final position (living anchor)
+        const delta = ghost.getBoundingClientRect().left - anchorEl.getBoundingClientRect().left;
+        anchorEl.style.transform = `translateX(${delta}px)`;
+        void anchorEl.offsetWidth;
+        anchorEl.style.transition = 'transform .34s cubic-bezier(.22,.61,.36,1)';
+        requestAnimationFrame(() => {
+          clone.style.width = Math.max(tr.width, startW) + 'px'; // expand + traverse simultaneously
+          anchorEl.style.transform = 'translateX(0)';
+          preInEl.style.opacity = '1'; postInEl.style.opacity = '1';
+          preOutEl.style.opacity = '0'; postOutEl.style.opacity = '0';
+        });
+        setTimeout(() => { if (dying.parentNode) dying.remove(); }, 380);
       };
       const done = () => {
         if (finished) return; finished = true;
