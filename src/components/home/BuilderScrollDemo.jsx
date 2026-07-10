@@ -38,11 +38,14 @@ const BEAT_MIN_GAP_MS = 420; // one fly-in at a time, even on a fast flick
 // Caption per beat: ordered segments — plain strings are connectors, {chip} slots are
 // filled from the beat's NEW strip chips (chipInfo diff), matched by value-substring hint
 // so the caption chip text always mirrors the real chip. hero = the big opening line.
+// chip slots are filled from the beat's NEW strip chips (matched by `chip` hint against the real
+// chip value/label). `show` overrides the caption display text (Shaw's exact wording) while the
+// clone still flies into the real strip chip — the builder's own chip keeps its native label.
 const CAPTIONS = [
-  { hero: true, segs: [{ t: 'Show me all ' }, { chip: 'homeowner' }, { t: ' searching for ' }, { chip: 'pool' }] },
-  { hero: false, segs: [{ t: 'Who live in ' }, { chip: 'florida' }] },
-  { hero: false, segs: [{ t: 'Specifically ' }, { chip: 'lauderdale' }, { t: ' and ' }, { chip: 'miami' }] },
-  { hero: false, segs: [{ t: 'with ' }, { chip: 'worth' }] },
+  { hero: true, segs: [{ t: 'Show me all ' }, { chip: 'homeowner', show: 'Homeowners' }, { t: ' searching for ' }, { chip: 'pool', show: 'Pool Construction' }] },
+  { hero: false, segs: [{ t: 'Who live in ' }, { chip: 'fl', show: 'Florida' }] },
+  { hero: false, segs: [{ t: 'Specifically ' }, { chip: 'lauderdale', show: 'Ft. Lauderdale' }, { t: ' and ' }, { chip: 'miami', show: 'Miami' }] },
+  { hero: false, segs: [{ t: 'with ' }, { chip: 'worth', show: 'Net Worth: $1M+' }] },
 ];
 
 const DEBUG = typeof window !== 'undefined' && /[?&]debugBeats=1/.test(window.location.search);
@@ -146,78 +149,95 @@ export default function BuilderScrollDemo() {
   }, [mountIframe, booted, app]);
 
   // ── caption + chip fly-in ────────────────────────────────────────────────────
-  // Render the caption for beat k (connectors + purple chip spans built from the beat's
-  // NEW chips), then fly a clone of each chip span down into its real strip rect and
-  // reveal the real chip on landing. Connectors fade as the chips fly.
-  const chipKey = c => `${c.group}|${c.value}`;
+  // The parent has same-origin access to the iframe, so we drive chip visibility per-ELEMENT
+  // (not by group — FL + the metros share the "location" group). Each beat: re-reveal chips that
+  // already landed (tagChips re-hides ALL chips every beat), render the caption for beat k, and
+  // fly a purple clone of each NEW chip down into its real strip rect, revealing the real chip on
+  // landing. Fully reversible: reverseTo() re-hides chips owned by beats > k and restores the rest.
+  const parseChip = (el) => {
+    const b = el.querySelector('b');
+    const label = b ? b.textContent : '';
+    const value = (el.textContent || '').replace(label, '').replace(/\u2715\s*$/, '').trim();
+    return { el, group: el.dataset.arkGroup || '', label, value, key: (el.dataset.arkGroup || '') + '|' + value };
+  };
+  const readChips = (w) => { try { return [...w.document.querySelectorAll('#chips .chip')].map(parseChip); } catch { return []; } };
+  // which beat owns a chip (lowest caption whose hint matches its value/label)
+  const ownerOf = (c) => {
+    const hay = (c.value + ' ' + c.label).toLowerCase();
+    let owner = -1;
+    CAPTIONS.forEach((cap2, bi) => (cap2.segs || []).forEach(sgm => { if (sgm.chip && owner === -1 && hay.includes(sgm.chip.toLowerCase())) owner = bi; }));
+    return owner;
+  };
 
   const renderAndFly = useCallback((w, k) => {
     const cap = captionRef.current, fly = flyRef.current, ifr = iframeRef.current;
     if (!cap || !fly || !ifr) return;
-    let info;
-    try { info = w.ArkEmbed.chipInfo() || []; } catch { return; }
-    const fresh = info.filter(c => !landedRef.current.has(chipKey(c)));
+    const chips = readChips(w);
+    // re-reveal chips that already landed (tagChips re-hid them this beat)
+    chips.forEach(c => { if (landedRef.current.has(c.key)) c.el.classList.remove('ark-hidden'); });
+    const fresh = chips.filter(c => !landedRef.current.has(c.key));
     const spec = CAPTIONS[k] || { segs: [] };
 
-    // Build the caption: connectors as faded spans, chip slots matched to fresh chips by hint.
+    // Build the caption: connectors as faded spans, chip slots filled from fresh chips by hint.
     cap.innerHTML = '';
     cap.style.opacity = '1';
-    cap.className = 'ark-display' + (spec.hero ? ' bsd-hero' : '');
-    const used = new Set();
+    cap.className = 'bsd-cap ark-display' + (spec.hero ? ' bsd-hero' : '');
+    const usedIdx = new Set();
     const chipSpans = []; // {span, chip}
     spec.segs.forEach(sgm => {
       if (sgm.t != null) {
         const s = document.createElement('span');
-        s.textContent = sgm.t;
-        s.className = 'bsd-join';
+        s.textContent = sgm.t; s.className = 'bsd-join';
         cap.appendChild(s);
       } else if (sgm.chip != null) {
-        // pick the fresh chip whose value/label contains the hint
         const hint = sgm.chip.toLowerCase();
-        let chip = fresh.find((c, i) => !used.has(i) && ((c.value || '') + ' ' + (c.label || '')).toLowerCase().includes(hint));
-        if (!chip) chip = fresh.find((c, i) => !used.has(i));
-        if (!chip) return;
-        used.add(fresh.indexOf(chip));
+        let fi = fresh.findIndex((c, i) => !usedIdx.has(i) && (c.value + ' ' + c.label).toLowerCase().includes(hint));
+        if (fi < 0) fi = fresh.findIndex((c, i) => !usedIdx.has(i));
+        if (fi < 0) return;
+        usedIdx.add(fi);
+        const chip = fresh[fi];
         const span = document.createElement('span');
-        Object.assign(span.style, CHIP_CSS);
-        span.className = 'bsd-chip';
-        if (chip.label) { const b = document.createElement('b'); b.style.opacity = '0.75'; b.textContent = chip.label; span.appendChild(b); span.appendChild(document.createTextNode(' ')); }
-        span.appendChild(document.createTextNode(chip.value));
+        Object.assign(span.style, CHIP_CSS); span.className = 'bsd-chip';
+        if (sgm.show) {
+          span.appendChild(document.createTextNode(sgm.show)); // Shaw's exact caption wording
+        } else {
+          if (chip.label) { const b = document.createElement('b'); b.style.opacity = '0.75'; b.textContent = chip.label; span.appendChild(b); span.appendChild(document.createTextNode(' ')); }
+          span.appendChild(document.createTextNode(chip.value));
+        }
         cap.appendChild(span);
         chipSpans.push({ span, chip });
       }
     });
 
-    // Fly each chip span → its real strip rect, then reveal the real chip.
+    // Fly each caption chip → its real strip rect, reveal the real chip on landing.
     const ifrBox = ifr.getBoundingClientRect();
     requestAnimationFrame(() => {
-      chipSpans.forEach(({ span, chip }, idx) => {
+      chipSpans.forEach(({ span, chip }) => {
         const from = span.getBoundingClientRect();
-        const tx = ifrBox.left + chip.rect.x;      // chipInfo rects are iframe-viewport space
-        const ty = ifrBox.top + chip.rect.y;
+        const tr = chip.el.getBoundingClientRect();     // iframe-viewport space
+        const tx = ifrBox.left + tr.left, ty = ifrBox.top + tr.top;
         const clone = span.cloneNode(true);
         Object.assign(clone.style, CHIP_CSS, {
           position: 'fixed', left: from.left + 'px', top: from.top + 'px', margin: 0,
-          zIndex: 6, transition: 'transform .62s cubic-bezier(.22,.61,.36,1), opacity .62s',
+          zIndex: 6, transition: 'transform .62s cubic-bezier(.22,.61,.36,1), box-shadow .62s',
           boxShadow: '0 12px 40px rgba(124,58,237,0.35)', pointerEvents: 'none',
         });
         fly.appendChild(clone);
         span.style.visibility = 'hidden';
-        // next frame → animate to the strip
         requestAnimationFrame(() => {
           clone.style.transform = `translate(${tx - from.left}px, ${ty - from.top}px)`;
           clone.style.boxShadow = '0 2px 10px rgba(124,58,237,0.12)';
         });
         const done = () => {
-          try { w.ArkEmbed.reveal(chip.group); } catch { /* noop */ }
-          landedRef.current.add(chipKey(chip));
+          landedRef.current.add(chip.key);
+          // renderChips rebuilds #chips on every sync → reveal by key from the CURRENT DOM
+          readChips(w).forEach(rc => { if (rc.key === chip.key) rc.el.classList.remove('ark-hidden'); });
           clone.remove();
           clone.removeEventListener('transitionend', done);
         };
         clone.addEventListener('transitionend', done);
-        setTimeout(done, 900); // safety if transitionend is missed
+        setTimeout(done, 950); // safety if transitionend is missed
       });
-      // fade connectors slightly after the chips launch
       setTimeout(() => {
         if (topBeatRef.current !== k) return;
         cap.querySelectorAll('.bsd-join').forEach(el => { el.style.transition = 'opacity .5s'; el.style.opacity = '0'; });
@@ -225,40 +245,24 @@ export default function BuilderScrollDemo() {
     });
   }, []);
 
-  // reverse to beat k's state (scroll-up): hide chips added ABOVE beat k, re-show beat k's caption.
+  // scroll-up: hide chips owned by beats > k, keep the rest revealed, restore beat k's caption.
   const reverseTo = useCallback((w, k) => {
-    // hide any real chips whose beat index > k
-    let info;
-    try { info = w.ArkEmbed.chipInfo() || []; } catch { info = []; }
-    // Hide any real chips whose owning beat index > k, then re-show beat k's caption.
-    if (k < 0) {
-      if (captionRef.current) { captionRef.current.innerHTML = ''; captionRef.current.style.opacity = '0'; }
-      landedRef.current = new Set();
-      return;
-    }
-    // hide chips that are NOT part of beats 0..k by re-deriving: a chip belongs to the lowest beat
-    // whose hint matches it. Hide those matching only beats > k.
-    info.forEach(c => {
-      const hay = ((c.value || '') + ' ' + (c.label || '')).toLowerCase();
-      let owner = -1;
-      CAPTIONS.forEach((cap2, bi) => { (cap2.segs || []).forEach(sgm => { if (sgm.chip && hay.includes(sgm.chip.toLowerCase()) && owner === -1) owner = bi; }); });
-      if (owner > k) { try { w.ArkEmbed.hideGroup(c.group); } catch { /* noop */ } landedRef.current.delete(chipKey(c)); }
+    readChips(w).forEach(c => {
+      if (ownerOf(c) > k) { c.el.classList.add('ark-hidden'); landedRef.current.delete(c.key); }
+      else { c.el.classList.remove('ark-hidden'); landedRef.current.add(c.key); }
     });
-    // re-show beat k's caption (chips already landed for ≤k stay revealed in the strip)
+    if (k < 0) { if (captionRef.current) { captionRef.current.innerHTML = ''; captionRef.current.style.opacity = '0'; } return; }
     renderCaptionOnly(k);
   }, []);
 
-  // render just the caption text for beat k (no fly) — used on reverse so the sentence returns.
+  // restore beat k's caption text (chips shown inline, connectors faded) — used on reverse.
   const renderCaptionOnly = useCallback((k) => {
     const cap = captionRef.current;
     if (!cap) return;
     const spec = CAPTIONS[k]; if (!spec) { cap.innerHTML = ''; cap.style.opacity = '0'; return; }
-    cap.className = 'ark-display' + (spec.hero ? ' bsd-hero' : '');
+    cap.className = 'bsd-cap ark-display' + (spec.hero ? ' bsd-hero' : '');
     cap.style.opacity = '1';
-    cap.innerHTML = spec.segs.map(sgm => sgm.t != null
-      ? `<span class="bsd-join" style="opacity:0">${sgm.t}</span>`
-      : `<span class="bsd-chip" style="display:inline-flex;align-items:center;gap:6px;background:#f5f3ff;border:1px solid #ede9fe;border-radius:999px;padding:4px 9px;font-size:12px;color:#7c3aed;font-weight:600;visibility:hidden">·</span>`
-    ).join('');
+    cap.innerHTML = spec.segs.filter(s => s.t != null).map(s => `<span class="bsd-join" style="opacity:0">${s.t}</span>`).join('');
   }, []);
 
   const frame = useCallback(() => {
@@ -328,6 +332,9 @@ export default function BuilderScrollDemo() {
       w.document.body.classList.add('ark-data-hidden'); revealedRef.current = false;
     }
     if (generatedRef.current) w.ArkEmbed.reassert();
+    // keep all landed chips revealed — the builder's renderChips rebuilds + re-hides #chips on
+    // every sync (per-stage repaint), which would otherwise drop already-flown chips for a frame.
+    if (landedRef.current.size) { readChips(w).forEach(c => { if (landedRef.current.has(c.key)) c.el.classList.remove('ark-hidden'); }); }
   }, [mountIframe, booted, app, renderAndFly, reverseTo]);
 
   const measure = useCallback(() => {
