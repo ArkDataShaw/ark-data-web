@@ -281,45 +281,55 @@ export default function BuilderScrollDemo() {
         zIndex: 6, transition: 'transform .62s cubic-bezier(.22,.61,.36,1), box-shadow .62s',
         boxShadow: '0 12px 40px rgba(124,58,237,0.35)', pointerEvents: 'none',
       });
-      clone.style.width = clone.getBoundingClientRect().width + 'px'; // lock sentence-form width for the morph tween
-      clone.style.overflow = 'hidden';
-      fly.appendChild(clone);
+      // content lives in an inner, left-aligned span so the pill can grow to the right (overflow
+      // clipped) without the sentence text recentering as it expands.
+      clone.style.justifyContent = 'flex-start';
+      const inner0 = document.createElement('span');
+      inner0.style.cssText = 'display:inline-flex;align-items:center;gap:6px;white-space:nowrap';
+      while (clone.firstChild) inner0.appendChild(clone.firstChild);
+      clone.appendChild(inner0);
+      fly.appendChild(clone); // in the DOM now — natural sentence width during flight
       span.style.visibility = 'hidden';
       requestAnimationFrame(() => {
         clone.style.transform = `translate(${tx - from.left}px, ${ty - from.top}px)`;
         clone.style.boxShadow = '0 2px 10px rgba(124,58,237,0.12)';
       });
       let finished = false;
-      // MORPH on landing: the clone carries the SENTENCE form ("Pool Construction" / "Florida");
-      // expand it into the FILTER form ("Topic: Pool Construction" / "Location: FL") — tween the pill
-      // width to the real chip's width while crossfading the text — then reveal the real chip.
+      // MORPH on landing: the clone carries the SENTENCE form ("Pool Construction" / "Florida").
+      // Only NOW (landed on the strip) do we expand: lock the current sentence width, then tween the
+      // pill out to the real filter-chip width ("Topic: Pool Construction" / "Location: FL"). The
+      // current letters stay put (left-aligned) as the pill grows, THEN the filter letters are
+      // revealed. Reveal the real strip chip once the morph settles.
       const morph = () => {
+        const startW = clone.getBoundingClientRect().width; // real sentence-form width, in the DOM
+        clone.style.width = startW + 'px';
+        clone.style.overflow = 'hidden';
+        void clone.offsetWidth; // commit the start width before transitioning
         clone.style.transition = 'width .34s cubic-bezier(.4,0,.2,1)';
-        const cur = document.createElement('span');
-        cur.style.cssText = 'display:inline-block;transition:opacity .15s;white-space:nowrap';
-        while (clone.firstChild) cur.appendChild(clone.firstChild);
-        clone.appendChild(cur);
-        requestAnimationFrame(() => { clone.style.width = tr.width + 'px'; cur.style.opacity = '0'; });
+        requestAnimationFrame(() => { clone.style.width = Math.max(tr.width, startW) + 'px'; }); // expand to fill the filter slot
+        // after the pill has finished expanding, swap sentence letters → filter letters (quick fade)
         setTimeout(() => {
-          clone.innerHTML = '';
-          const nxt = document.createElement('span');
-          nxt.style.cssText = 'display:inline-block;opacity:0;transition:opacity .16s;white-space:nowrap';
-          if (chip.label) { const bb = document.createElement('b'); bb.style.cssText = 'font-weight:700;opacity:.75'; bb.textContent = chip.label; nxt.appendChild(bb); nxt.appendChild(document.createTextNode(' ')); }
-          nxt.appendChild(document.createTextNode(chip.value));
-          clone.appendChild(nxt);
-          requestAnimationFrame(() => { nxt.style.opacity = '1'; });
-        }, 150);
+          inner0.style.transition = 'opacity .12s'; inner0.style.opacity = '0';
+          setTimeout(() => {
+            const nxt = document.createElement('span');
+            nxt.style.cssText = 'display:inline-flex;align-items:center;gap:6px;white-space:nowrap;opacity:0;transition:opacity .16s';
+            if (chip.label) { const bb = document.createElement('b'); bb.style.cssText = 'font-weight:700;opacity:.75'; bb.textContent = chip.label; nxt.appendChild(bb); nxt.appendChild(document.createTextNode(' ')); }
+            nxt.appendChild(document.createTextNode(chip.value));
+            clone.innerHTML = ''; clone.appendChild(nxt);
+            requestAnimationFrame(() => { nxt.style.opacity = '1'; });
+          }, 120);
+        }, 340);
       };
       const done = () => {
         if (finished) return; finished = true;
         clone.removeEventListener('transitionend', done);
         morph();
-        // after the morph settles, reveal the real strip chip and drop the clone
+        // after the expansion + letter reveal settles, reveal the real strip chip and drop the clone
         setTimeout(() => {
           landedRef.current.add(chip.key);
           readChips(w).forEach(rc => { if (rc.key === chip.key) rc.el.classList.remove('ark-hidden'); }); // renderChips rebuilds #chips
           clone.remove();
-        }, 380);
+        }, 640);
       };
       clone.addEventListener('transitionend', done);
       setTimeout(done, 780); // safety if transform transitionend is missed
