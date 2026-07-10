@@ -180,6 +180,54 @@ export default function BuilderScrollDemo() {
     return owner;
   };
 
+  // FLIP reflow: capture the CURRENT strip rects of already-landed chips (iframe-viewport coords)
+  // BEFORE a beat rebuilds #chips, so we can animate them from old → new positions afterward.
+  const captureChipRects = (w) => {
+    const out = {};
+    readChips(w).forEach(c => { if (landedRef.current.has(c.key)) { const r = c.el.getBoundingClientRect(); out[c.key] = { left: r.left, top: r.top, h: r.height }; } });
+    return out;
+  };
+  // Animate each already-landed chip from its captured position to its new one: SLIDE if it stays
+  // on the same line (FLIP invert-then-play), FADE-OUT-old / FADE-IN-new if it wrapped to a new line.
+  const flipChips = (w, prevRects) => {
+    const ifr = iframeRef.current, fly = flyRef.current;
+    if (!ifr) return;
+    const ifrBox = ifr.getBoundingClientRect();
+    readChips(w).forEach(c => {
+      if (!landedRef.current.has(c.key)) return;
+      c.el.classList.remove('ark-hidden');
+      const prev = prevRects[c.key];
+      if (!prev) return;
+      const now = c.el.getBoundingClientRect();
+      const dx = prev.left - now.left, dy = prev.top - now.top;
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return; // didn't move
+      if (Math.abs(dy) > (now.height || 24) * 0.5) {
+        // LINE CHANGE: fade a ghost out at the old spot, fade the chip in at the new spot.
+        if (fly) {
+          const ghost = c.el.cloneNode(true);
+          ghost.classList.remove('ark-hidden');
+          Object.assign(ghost.style, {
+            position: 'fixed', left: (ifrBox.left + prev.left) + 'px', top: (ifrBox.top + prev.top) + 'px',
+            margin: 0, zIndex: 6, transition: 'opacity .3s ease-out', pointerEvents: 'none', visibility: 'visible',
+          });
+          fly.appendChild(ghost);
+          requestAnimationFrame(() => { ghost.style.opacity = '0'; });
+          setTimeout(() => ghost.remove(), 360);
+        }
+        c.el.style.transition = 'none'; c.el.style.opacity = '0';
+        requestAnimationFrame(() => { c.el.style.transition = 'opacity .32s ease-out'; c.el.style.opacity = '1'; });
+      } else {
+        // SAME LINE: slide from old → new (invert to old, then play to natural position).
+        c.el.style.transition = 'none';
+        c.el.style.transform = `translate(${dx}px, ${dy}px)`;
+        requestAnimationFrame(() => {
+          c.el.style.transition = 'transform .4s cubic-bezier(.22,.61,.36,1)';
+          c.el.style.transform = '';
+        });
+      }
+    });
+  };
+
   // Build the FULL caption for beat k in the sentence zone: connectors (white) + inline purple
   // chip spans (using the beat's `show` wording — works even before the strip chips exist, so the
   // hero can pre-display before the builder arrives). Returns the chip spans + their hint, for
@@ -233,20 +281,48 @@ export default function BuilderScrollDemo() {
         zIndex: 6, transition: 'transform .62s cubic-bezier(.22,.61,.36,1), box-shadow .62s',
         boxShadow: '0 12px 40px rgba(124,58,237,0.35)', pointerEvents: 'none',
       });
+      clone.style.width = clone.getBoundingClientRect().width + 'px'; // lock sentence-form width for the morph tween
+      clone.style.overflow = 'hidden';
       fly.appendChild(clone);
       span.style.visibility = 'hidden';
       requestAnimationFrame(() => {
         clone.style.transform = `translate(${tx - from.left}px, ${ty - from.top}px)`;
         clone.style.boxShadow = '0 2px 10px rgba(124,58,237,0.12)';
       });
+      let finished = false;
+      // MORPH on landing: the clone carries the SENTENCE form ("Pool Construction" / "Florida");
+      // expand it into the FILTER form ("Topic: Pool Construction" / "Location: FL") — tween the pill
+      // width to the real chip's width while crossfading the text — then reveal the real chip.
+      const morph = () => {
+        clone.style.transition = 'width .34s cubic-bezier(.4,0,.2,1)';
+        const cur = document.createElement('span');
+        cur.style.cssText = 'display:inline-block;transition:opacity .15s;white-space:nowrap';
+        while (clone.firstChild) cur.appendChild(clone.firstChild);
+        clone.appendChild(cur);
+        requestAnimationFrame(() => { clone.style.width = tr.width + 'px'; cur.style.opacity = '0'; });
+        setTimeout(() => {
+          clone.innerHTML = '';
+          const nxt = document.createElement('span');
+          nxt.style.cssText = 'display:inline-block;opacity:0;transition:opacity .16s;white-space:nowrap';
+          if (chip.label) { const bb = document.createElement('b'); bb.style.cssText = 'font-weight:700;opacity:.75'; bb.textContent = chip.label; nxt.appendChild(bb); nxt.appendChild(document.createTextNode(' ')); }
+          nxt.appendChild(document.createTextNode(chip.value));
+          clone.appendChild(nxt);
+          requestAnimationFrame(() => { nxt.style.opacity = '1'; });
+        }, 150);
+      };
       const done = () => {
-        landedRef.current.add(chip.key);
-        readChips(w).forEach(rc => { if (rc.key === chip.key) rc.el.classList.remove('ark-hidden'); }); // renderChips rebuilds #chips
-        clone.remove();
+        if (finished) return; finished = true;
         clone.removeEventListener('transitionend', done);
+        morph();
+        // after the morph settles, reveal the real strip chip and drop the clone
+        setTimeout(() => {
+          landedRef.current.add(chip.key);
+          readChips(w).forEach(rc => { if (rc.key === chip.key) rc.el.classList.remove('ark-hidden'); }); // renderChips rebuilds #chips
+          clone.remove();
+        }, 380);
       };
       clone.addEventListener('transitionend', done);
-      setTimeout(done, 950);
+      setTimeout(done, 780); // safety if transform transitionend is missed
     });
     // the connecting words fade as the filters leave for the strip
     cap.querySelectorAll('.bsd-join').forEach(el => { el.style.transition = 'opacity .55s'; el.style.opacity = '0'; });
@@ -354,13 +430,15 @@ export default function BuilderScrollDemo() {
           if (i >= 1 && (!generatedRef.current || !w.ArkEmbed.mapReady())) break; // wait for map
           let spans = beatSpansRef.current[i];
           if (!spans) { spans = buildCaption(i); beatSpansRef.current[i] = spans; capShownRef.current.add(i); } // fast scroll skipped the pre-show
+          const prevRects = captureChipRects(w); // FLIP: existing chip positions BEFORE the rebuild
           w.ArkEmbed.beatOnDesktop(i);      // data updates a moment AFTER the sentence appeared
           appliedRef.current.add(i);
           topBeatRef.current = i;
           lastBeatAtRef.current = now;
           // generate on beat 0 BEFORE the fly (the strip chips + map need the generate flow)
           if (i === 0 && !generatedRef.current) { generatedRef.current = !!w.ArkEmbed.generate(); if (generatedRef.current) { w.ArkEmbed.setDataReveal(1); revealedRef.current = true; } }
-          flyChips(w, i, spans);            // filters fly into the strip, connectors fade
+          flipChips(w, prevRects);          // existing chips slide/fade to their new positions
+          flyChips(w, i, spans);            // the NEW filter flies into the strip, connectors fade
           if (!rafKickRef.current) { rafKickRef.current = true; setTimeout(() => { rafKickRef.current = false; frameRef2.current && frameRef2.current(); }, BEAT_MIN_GAP_MS + 30); }
         }
         break; // one beat per frame
