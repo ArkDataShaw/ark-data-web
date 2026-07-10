@@ -339,6 +339,17 @@
         // owners at the homeowner beat; family mix shifts each stage.
         if (typeof renderHomeDonut === 'function' && st.homeowner) renderHomeDonut({ homeowner: st.homeowner }, false);
         if (typeof renderFamily === 'function' && st.family) renderFamily({ family: st.family }, false);
+        // DESKTOP: Household Income + Net Worth are per-stage story charts too (mobile omits them
+        // and reveals them via prewarm). Guarded on baked data presence, so mobile stages (no
+        // income/networth keys) are unaffected. Net worth collapses to 100% >$1M at the final stage.
+        if (st.income && typeof vbars === 'function' && typeof incRank === 'function') {
+          var incEntries = Object.entries(st.income).filter(function (e) { return e[1] > 0; }).sort(function (a, b) { return incRank(a[0]) - incRank(b[0]); });
+          if (typeof SHOW === 'function') SHOW('card-income', vbars('incomeBars', incEntries, { fmt: typeof incLabel === 'function' ? incLabel : undefined }));
+        }
+        if (st.networth && typeof vbars === 'function' && typeof nwRank === 'function') {
+          var nwEntries = Object.entries(st.networth).filter(function (e) { return e[1] > 0; }).sort(function (a, b) { return nwRank(a[0]) - nwRank(b[0]); });
+          if (typeof SHOW === 'function') SHOW('card-networth', vbars('networthBars', nwEntries, { fmt: typeof nwLabel === 'function' ? nwLabel : undefined }));
+        }
         // apply the insights grid order NOW (the story skips renderCharts) so Home/Family sit in
         // their row-1 slots beside Age from the start — not Household Income (Shaw 2026-07-09).
         if (typeof applyInsightsOrder === 'function') applyInsightsOrder();
@@ -389,6 +400,65 @@
         try { if (window.fitMapToScope) window.fitMapToScope(null); _lastScopeKey = ''; } catch (e) { /* noop */ }
       }
       if (k === 0) { this.unapplyStep(0); }
+      this._stageIdx = k - 1;
+    },
+
+    // ── DESKTOP deal-story beats (Shaw 2026-07-10) ───────────────────────────
+    // Additive: mobile beatOn/beatOff above are untouched. Desktop and mobile never co-exist
+    // (device-viewport switch), and each iframe loads its OWN stages file, so this._stages is
+    // independent per iframe — desktop loads stages-pool-desktop.json (4 stages). Beat index ==
+    // stage index; STEP indices differ (b0 composes topic+homeowner). Set by the parent, which
+    // also sets _desktopStory=true so generate() skips the (final-audience) chart prewarm.
+    //  b0 homeowners+pool nationwide → US state choropleth
+    //  b1 + Florida                  → zoom FL + flip to County/ZIP
+    //  b2 + Miami/FtLaud metros      → zoom South-FL
+    //  b3 + Net Worth $1M+           → narrows within SFL + full-density release
+    _desktopStory: false,
+    beatOnDesktop: function (k) {
+      this._lastBeatT = performance.now();
+      if (k === 0) {
+        // hero: apply topic + homeowner together, one sync (the fly-in is a PARENT overlay on
+        // desktop — not the mobile sentence renderer — so a double sync can't destroy it).
+        this._preSetReach(0);
+        this.STEPS[0].apply(); this.STEPS[2].apply();
+        renderSidebar(); sync(); tagChips();
+        this._setStageMeta(0); this._paintStage(0, false);
+      }
+      if (k === 1) {
+        // + Florida: paint FL state choropleth, zoom to FL, then flip to County/ZIP.
+        this._preSetReach(1); this.applyStep(1); this._setStageMeta(1); this._paintStage(1, false);
+        try { if (window.fitMapToScope) window.fitMapToScope(this.FL_BBOX, 7); _lastScopeKey = 'FL|'; } catch (e) { /* noop */ }
+        this._flipToFull(); this._paintStage(1, true);
+      }
+      if (k === 2) {
+        // + metros: pin the exact updateMapScope key BEFORE sync so only our SFL fit runs.
+        this._preSetReach(2);
+        _lastScopeKey = this._metroScopeKey();
+        this.applyStep(3); this._setStageMeta(2); this._paintStage(2, true);
+        try { if (window.fitMapToScope) window.fitMapToScope(this.SFL_BBOX, 9, this.SFL_OFFSET); } catch (e) { /* noop */ }
+      }
+      if (k === 3) {
+        // + net worth $1M+: narrows within SFL, release the held real geoPoll density.
+        this._preSetReach(3); this.applyStep(4); this._setStageMeta(3); this._paintStage(3, true); this.releaseGeo();
+      }
+      this._stageIdx = k;
+    },
+    beatOffDesktop: function (k) {
+      this._lastBeatT = performance.now();
+      if (k === 3) { this._preSetReach(2); this.unapplyStep(4); this._setStageMeta(2); this._paintStage(2, true); }
+      if (k === 2) {
+        this._preSetReach(1); this.unapplyStep(3); this._setStageMeta(1); this._paintStage(1, true);
+        try { if (window.fitMapToScope) window.fitMapToScope(this.FL_BBOX, 7); } catch (e) { /* noop */ }
+      }
+      if (k === 1) {
+        this._flipToState();
+        this._preSetReach(0); this.unapplyStep(1); this._setStageMeta(0); this._paintStage(0, false);
+        try { if (window.fitMapToScope) window.fitMapToScope(null); _lastScopeKey = ''; } catch (e) { /* noop */ }
+      }
+      if (k === 0) {
+        this.STEPS[2].unapply(); this.STEPS[0].unapply();
+        renderSidebar(); sync(); tagChips();
+      }
       this._stageIdx = k - 1;
     },
     // per-tick cheap re-asserts (late canned poll stomps reach / nulls geo)
@@ -456,7 +526,9 @@
       // story — no "Calculating…" flash then load (Shaw 2026-07-09). Retry until the chart
       // helpers + snapshot are ready; guarded to run once.
       var self = this;
-      if (!self._prewarmed) {
+      // DESKTOP: income/net worth are painted PER-STAGE by _paintStageCharts, so prewarming them
+      // from the FINAL snapshot agg here would stomp the beat-0 stage values. Skip on desktop.
+      if (!self._prewarmed && !self._desktopStory) {
         var pw = setInterval(function () {
           var agg = null;
           try { agg = canned && canned.responses && canned.responses.geoPoll && canned.responses.geoPoll.body && canned.responses.geoPoll.body.agg; } catch (e) {}
