@@ -322,8 +322,8 @@ export default function BuilderScrollDemo() {
       // letters fade out in place; the new letters fade in at their final positions. So
       // "Florida" → the "Fl/FL" slides right (its final slot) while "orida" fades and "Location: "
       // fades in; "Miami" slides to its slot while "Location: " + " Metro" fade in around it.
-      // inline text run (spaces preserved by the parent's white-space:pre); inline-block variant is
-      // used for the anchor so it can carry a transform (pure inline can't be translated).
+      // inline text run (spaces preserved via white-space:pre); inline-block variant carries the
+      // travel transform (pure inline can't be translated).
       const mkI = (t) => { const s = document.createElement('span'); s.style.cssText = 'display:inline;white-space:pre'; s.textContent = t; return s; };
       const mkIB = (t) => { const s = document.createElement('span'); s.style.cssText = 'display:inline-block;white-space:pre'; s.textContent = t; return s; };
       const morph = () => {
@@ -331,61 +331,73 @@ export default function BuilderScrollDemo() {
         clone.style.width = startW + 'px';
         clone.style.overflow = 'hidden';
         void clone.offsetWidth;
-        clone.style.transition = 'width .4s cubic-bezier(.4,0,.2,1)';
-
-        // chip.label ALREADY ends with the colon (builder renders "<b>Location:</b>"), so just add a
-        // space — "Location:" + " " + "Miami Metro" → "Location: Miami Metro" (no double colon).
-        const inStr = (chip.label ? chip.label + ' ' : '') + chip.value;
-        let m; try { m = lcsubstr(outStr, inStr); } catch { m = { ai: 0, bi: 0, len: 0 }; }
+        clone.style.transition = 'width .4s cubic-bezier(.4,0,.2,1), box-shadow .3s';
+        clone.style.boxShadow = 'none'; // real strip chip has no shadow — match it
         clone.innerHTML = '';
-        // single inline-block flow, white-space:pre → every space (incl. leading " Metro") is kept,
-        // and the sentence↔filter strings are used verbatim (no colon re-adding → no "::"). Styling
-        // stays uniform (bold, one color) through the morph; the bold→normal-value shift is handled
-        // by the crossfade handoff to the real chip, so nothing snaps.
-        const flow = document.createElement('span');
-        flow.style.cssText = 'display:inline-block;white-space:pre;position:relative';
-        clone.appendChild(flow);
+
+        // Rebuild the clone as the EXACT real-chip structure (flex items, gap 6px, matching CHIP_CSS
+        // == builder .chip): <b>label</b> · value · ✕ — so the clone's END frame is pixel-identical
+        // to the real chip and the handoff is an INVISIBLE same-frame swap (no crossfade to a
+        // different element). Label + ✕ fade in; the value morphs sentence→filter; only the VALUE's
+        // shared letters travel while its weight eases 600→400 (bold sentence → normal filter value).
+        const labelEl = document.createElement('b');
+        labelEl.style.cssText = 'font-weight:700;white-space:pre;opacity:0;transition:opacity .3s ease-out';
+        labelEl.textContent = chip.label || ''; // already includes the colon ("Location:")
+        const valWrap = document.createElement('span');
+        valWrap.style.cssText = 'position:relative;display:inline-block;white-space:pre;font-weight:400';
+        const xEl = document.createElement('span');
+        xEl.textContent = '\u2715';
+        xEl.style.cssText = 'color:#7c3aed;font-weight:700;opacity:0;transition:opacity .3s ease-out';
+        if (chip.label) clone.appendChild(labelEl);
+        clone.appendChild(valWrap);
+        clone.appendChild(xEl);
+        const settleLabelX = () => { labelEl.style.opacity = chip.label ? '0.75' : '0'; xEl.style.opacity = '0.6'; };
+
+        // morph is on the VALUE only (label + ✕ are separate faded-in flex items).
+        const outV = outStr, inV = chip.value;
+        let m; try { m = lcsubstr(outV, inV); } catch { m = { ai: 0, bi: 0, len: 0 }; }
 
         if (m.len < 2) {
-          const dead = mkIB(outStr); dead.style.cssText += ';position:absolute;left:0;top:0;transition:opacity .22s';
-          const live = mkIB(inStr); live.style.opacity = '0'; live.style.transition = 'opacity .3s';
-          flow.appendChild(dead); flow.appendChild(live);
-          requestAnimationFrame(() => { clone.style.width = Math.max(tr.width, startW) + 'px'; dead.style.opacity = '0'; live.style.opacity = '1'; });
+          const dead = mkIB(outV); dead.style.cssText += ';position:absolute;left:0;top:0;font-weight:600;transition:opacity .22s';
+          const live = mkIB(inV); live.style.cssText += ';font-weight:400;opacity:0;transition:opacity .3s';
+          valWrap.appendChild(dead); valWrap.appendChild(live);
+          requestAnimationFrame(() => { clone.style.width = Math.max(tr.width, startW) + 'px'; dead.style.opacity = '0'; live.style.opacity = '1'; settleLabelX(); });
           return;
         }
 
-        const preOut = outStr.slice(0, m.ai), postOut = outStr.slice(m.ai + m.len), anchorOut = outStr.slice(m.ai, m.ai + m.len);
-        const preIn = inStr.slice(0, m.bi), anchorIn = inStr.slice(m.bi, m.bi + m.len), postIn = inStr.slice(m.bi + m.len);
+        const preOut = outV.slice(0, m.ai), postOut = outV.slice(m.ai + m.len);
+        const preIn = inV.slice(0, m.bi), anchorIn = inV.slice(m.bi, m.bi + m.len), postIn = inV.slice(m.bi + m.len);
 
-        // LIVING flow (final layout): preIn (fades in) · anchor (travels) · postIn (fades in)
-        const living = document.createElement('span');
-        living.style.cssText = 'display:inline-block;white-space:pre';
-        const preInEl = mkI(preIn); preInEl.style.transition = 'opacity .3s ease-out'; preInEl.style.opacity = preIn ? '0' : '1';
-        const anchorEl = mkIB(anchorIn); anchorEl.style.willChange = 'transform';
-        const postInEl = mkI(postIn); postInEl.style.transition = 'opacity .3s ease-out'; postInEl.style.opacity = postIn ? '0' : '1';
+        // LIVING value (final layout): preIn(fade) · anchor(travels, weight eases to 400) · postIn(fade)
+        const living = document.createElement('span'); living.style.cssText = 'display:inline-block;white-space:pre';
+        const preInEl = mkI(preIn); preInEl.style.cssText += ';font-weight:400;transition:opacity .3s ease-out'; preInEl.style.opacity = preIn ? '0' : '1';
+        const anchorEl = mkIB(anchorIn); anchorEl.style.cssText += ';font-weight:600;will-change:transform;transition:transform .4s cubic-bezier(.22,.61,.36,1),font-weight .38s ease-out';
+        const postInEl = mkI(postIn); postInEl.style.cssText += ';font-weight:400;transition:opacity .3s ease-out'; postInEl.style.opacity = postIn ? '0' : '1';
         living.appendChild(preInEl); living.appendChild(anchorEl); living.appendChild(postInEl);
-        flow.appendChild(living);
+        valWrap.appendChild(living);
 
-        // DYING overlay (out text), absolute at the flow origin; anchor kept as a hidden ghost so the
-        // out text keeps its layout while the real anchor (in the living flow) does the travelling.
+        // DYING sentence value, absolute at the CLONE's content origin (padding-left 9px) — i.e. where
+        // the flying sentence text actually sat — so the anchor's travel starts from the real fly
+        // position, not shifted by the (now reserved) label space. Anchor kept as a hidden ghost.
         const dying = document.createElement('span');
-        dying.style.cssText = 'position:absolute;left:0;top:0;display:inline-block;white-space:pre;pointer-events:none';
+        dying.style.cssText = 'position:absolute;left:9px;top:50%;transform:translateY(-50%);display:inline-block;white-space:pre;font-weight:600;pointer-events:none';
         const preOutEl = mkI(preOut); preOutEl.style.transition = 'opacity .22s';
-        const ghost = mkIB(anchorOut); ghost.style.visibility = 'hidden';
+        const ghost = mkIB(outV.slice(m.ai, m.ai + m.len)); ghost.style.visibility = 'hidden';
         const postOutEl = mkI(postOut); postOutEl.style.transition = 'opacity .22s';
         dying.appendChild(preOutEl); dying.appendChild(ghost); dying.appendChild(postOutEl);
-        flow.appendChild(dying);
+        clone.appendChild(dying); // on the CLONE (padding box), not valWrap
 
-        // travel: anchor from its OUT position (ghost) → its final position (living anchor)
+        // travel: living anchor from its OUT position (ghost, at content origin) → its final slot
         const delta = ghost.getBoundingClientRect().left - anchorEl.getBoundingClientRect().left;
         anchorEl.style.transform = `translateX(${delta}px)`;
         void anchorEl.offsetWidth;
-        anchorEl.style.transition = 'transform .4s cubic-bezier(.22,.61,.36,1)';
         requestAnimationFrame(() => {
           clone.style.width = Math.max(tr.width, startW) + 'px'; // expand + traverse simultaneously
           anchorEl.style.transform = 'translateX(0)';
+          anchorEl.style.fontWeight = '400';                     // bold sentence → normal filter value
           preInEl.style.opacity = '1'; postInEl.style.opacity = '1';
           preOutEl.style.opacity = '0'; postOutEl.style.opacity = '0';
+          settleLabelX();
         });
         setTimeout(() => { if (dying.parentNode) dying.remove(); }, 440);
       };
@@ -393,16 +405,14 @@ export default function BuilderScrollDemo() {
         if (finished) return; finished = true;
         clone.removeEventListener('transitionend', done);
         morph();
-        // handoff: once the morph settles, reveal the real strip chip UNDER the clone, then crossfade
-        // the clone out over it — so the bold(sentence)→normal(filter value) weight change and the ✕/
-        // exact-position differences dissolve smoothly instead of snapping.
+        // seamless handoff: once the morph has settled the clone is pixel-identical to the real strip
+        // chip (same bold label @.75, normal value, ✕ @.6, no shadow, same padding/font/gap), so we
+        // reveal the real chip and remove the clone in the SAME frame — an invisible swap, no fade.
         setTimeout(() => {
           landedRef.current.add(chip.key);
           readChips(w).forEach(rc => { if (rc.key === chip.key) rc.el.classList.remove('ark-hidden'); }); // renderChips rebuilds #chips
-          clone.style.transition = 'opacity .2s ease-out';
-          clone.style.opacity = '0';
-          setTimeout(() => clone.remove(), 240);
-        }, 540);
+          clone.remove();
+        }, 640);
       };
       clone.addEventListener('transitionend', done);
       setTimeout(done, 780); // safety if transform transitionend is missed
