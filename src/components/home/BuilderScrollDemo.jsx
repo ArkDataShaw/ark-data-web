@@ -37,7 +37,6 @@ const SENTENCE_ZONE = 118;
 // beat COMMIT thresholds (data update + chip fly) over the pinned range. Each beat's sentence
 // fades in CAPTION_LEAD earlier, so the sentence always reads a moment BEFORE its data lands.
 const CAPTION_LEAD = 0.05;
-const HERO_SHOW = 0.006; // hero shows almost immediately — builder + sentence are visible together
 const BEATS = [0.10, 0.32, 0.54, 0.74];
 // builder is visible from the start (Shaw 2026-07-10): sentence + builder appear together in their
 // pre-pin positions, then pin as you scroll. A quick fade as the section enters, not gated on beats.
@@ -268,9 +267,9 @@ export default function BuilderScrollDemo() {
     });
     // beats above k are no longer shown/committed → allow them to pre-show + fly again on re-descent
     CAPTIONS.forEach((_, bi) => { if (bi > k) { capShownRef.current.delete(bi); delete beatSpansRef.current[bi]; } });
-    if (k < 0) { if (captionRef.current) { captionRef.current.innerHTML = ''; captionRef.current.style.opacity = '0'; } return; }
+    if (k < 0) { capShownRef.current.delete(0); preshowCaption(0); return; } // back above beat 0 → restore the hero
     renderCaptionOnly(k);
-  }, []);
+  }, [preshowCaption]);
 
   // restore beat k's caption text on reverse (connectors only — chips already landed in the strip).
   const renderCaptionOnly = useCallback((k) => {
@@ -294,9 +293,12 @@ export default function BuilderScrollDemo() {
     const p = clamp(scrolled / storyPinPx, 0, 1);
     const w = app();
 
-    // builder is visible from the start (quick fade as the section enters, NOT gated on beats) so
-    // the sentence + builder appear together in their pre-pin positions, then pin as you scroll.
-    if (frameRef.current) frameRef.current.style.opacity = collapsedRef.current ? '1' : String(easeOut(seg(p, T.frameIn)));
+    // builder + sentence fade in on VIEWPORT ENTRY (as the section scrolls up into view), NOT on the
+    // pin fraction p — so they're fully visible DURING the scroll-in, then pin (sticky) as you reach
+    // them, then the first beat starts. entry: 0 when the section top is a viewport below, 1 by the
+    // time it has risen ~420px up.
+    const entry = clamp((cssVh - r.top) / 420, 0, 1);
+    if (frameRef.current) frameRef.current.style.opacity = collapsedRef.current ? '1' : String(easeOut(entry));
     if (!w || !booted) return;
 
     if (DEBUG) {
@@ -315,14 +317,18 @@ export default function BuilderScrollDemo() {
     }
     storyDoneRef.current = complete;
 
-    // the sentence lives on the page surface ONLY during the story — hide it once explored or once
-    // we scroll down past the beats into the charts.
-    if (captionRef.current && (collapsedRef.current || armedRef.current || p >= 0.90)) captionRef.current.style.opacity = '0';
+    // caption fades in on entry with the builder; hidden once explored or once we scroll past the
+    // beats into the charts.
+    if (captionRef.current) {
+      const hideCap = collapsedRef.current || armedRef.current || p >= 0.90;
+      captionRef.current.style.opacity = hideCap ? '0' : String(entry);
+    }
     if (collapsedRef.current || armedRef.current) return; // frozen once explored
 
     // ── caption pre-show: each beat's sentence fades in CAPTION_LEAD before its data commit ──
-    // hero (beat 0) shows almost immediately so the sentence + builder read together from the start.
-    if (!capShownRef.current.has(0) && topBeatRef.current < 0 && p > HERO_SHOW && p < BEATS[0]) preshowCaption(0);
+    // hero (beat 0) is present as soon as the section is in view (rendered on boot / here) so the
+    // sentence + builder read together during the scroll-in, before any beat commits.
+    if (!capShownRef.current.has(0) && topBeatRef.current < 0) preshowCaption(0);
     // beats 1-3: pre-show once the previous beat has committed and we're within the lead window.
     for (let i = 1; i < BEATS.length; i++) {
       if (topBeatRef.current === i - 1 && !appliedRef.current.has(i) && !capShownRef.current.has(i) && p >= BEATS[i] - CAPTION_LEAD) {
@@ -380,6 +386,9 @@ export default function BuilderScrollDemo() {
   useEffect(() => { frameRef2.current = frame; }, [frame]);
   useEffect(() => { measureRef.current = measure; }, [measure]);
   useEffect(() => { armedRef.current = armed; }, [armed]);
+  // render the hero sentence as soon as the builder boots, so it's present (in the sticky band) while
+  // the section scrolls up into view — before frame()/any beat runs. Opacity is driven by frame().
+  useEffect(() => { if (booted && topBeatRef.current < 0) { preshowCaption(0); if (captionRef.current) captionRef.current.style.opacity = '0'; } }, [booted, preshowCaption]);
 
   const onExplore = useCallback(() => {
     if (!storyDoneRef.current) return;
@@ -441,14 +450,19 @@ export default function BuilderScrollDemo() {
   return (
     <>
       <style>{`
-        /* the sentence band: FIXED in the viewport, on the dark page surface, ABOVE the builder
-           (between the site header and the pinned builder). NOT part of the app. */
-        .bsd-cap{position:fixed;top:${NAV_PX}px;left:50%;transform:translateX(-50%);width:min(1240px,calc(100vw - 40px));height:${SENTENCE_ZONE}px;z-index:5;display:flex;flex-wrap:wrap;gap:9px 10px;align-items:center;justify-content:center;padding:0 28px;box-sizing:border-box;text-align:center;pointer-events:none;transition:opacity .45s}
+        /* the sentence band: STICKY on the dark page surface, ABOVE the builder. In normal flow it
+           sits at the section top and scrolls UP into view with the builder, then PINS at top:NAV
+           (just under the header) as the builder pins below it. NOT part of the app. */
+        .bsd-cap{position:sticky;top:${NAV_PX}px;height:${SENTENCE_ZONE}px;width:min(1240px,calc(100vw - 40px));margin:0 auto;z-index:5;display:flex;flex-wrap:wrap;gap:9px 10px;align-items:center;justify-content:center;padding:0 28px;box-sizing:border-box;text-align:center;pointer-events:none;transition:opacity .3s}
         .bsd-cap .bsd-join{color:#EAF2FB;font-weight:500;font-size:22px;letter-spacing:-.01em}
         .bsd-cap.bsd-hero .bsd-join{color:#fff;font-size:32px;font-weight:700;letter-spacing:-.015em}
         .bsd-cap.bsd-hero .bsd-chip{font-size:17px !important;padding:8px 15px !important;font-weight:700 !important}
       `}</style>
       <section ref={trackRef} style={{ height: sectionH, position: 'relative', boxSizing: 'border-box', paddingTop: collapsed ? `${NAV_PX}px` : 0, background: '#060D1A', borderTop: '1px solid #101E33' }}>
+        {/* sentence band FIRST in flow (above the builder): sticky, so it scrolls up into view with
+            the builder and pins with it. display:none once collapsed so it doesn't hold flow space. */}
+        <div ref={captionRef} className="bsd-cap" style={{ opacity: 0, display: collapsed ? 'none' : undefined }} />
+
         <div ref={frameRef}
           style={{ opacity: 0, position: collapsed ? 'relative' : 'sticky', top: collapsed ? 'auto' : `${NAV_PX + SENTENCE_ZONE}px`, height: frameH, width: 'min(1240px, calc(100vw - 40px))', margin: '0 auto', borderRadius: '14px 14px 0 0', overflow: 'hidden', border: '1px solid #1B3050', borderBottom: 'none', boxShadow: '0 30px 80px rgba(0,0,0,0.55)', background: '#f8fafc' }}>
           <span ref={debugRef} className="ark-mono" style={{ position: 'absolute', top: '8px', left: '10px', zIndex: 9, color: '#FF8A9A', fontSize: '11px', background: 'rgba(0,0,0,0.6)', padding: '3px 8px', borderRadius: '6px' }}>boot: waiting for iframe…</span>
@@ -481,8 +495,6 @@ export default function BuilderScrollDemo() {
           )}
         </div>
 
-        {/* sentence band on the dark page surface, above the builder (chips fly out into the strip) */}
-        <div ref={captionRef} className="bsd-cap" style={{ opacity: 0 }} />
         {/* fixed layer hosting the flying chip clones */}
         <div ref={flyRef} style={{ position: 'fixed', inset: 0, zIndex: 6, pointerEvents: 'none' }} />
 
