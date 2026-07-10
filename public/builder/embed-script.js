@@ -445,7 +445,17 @@
     },
     beatOffDesktop: function (k) {
       this._lastBeatT = performance.now();
-      if (k === 3) { this._preSetReach(2); this.unapplyStep(4); this._setStageMeta(2); this._paintStage(2, true); }
+      // reversing must fully repaint from BAKED stage data — after the final-stage release the real
+      // geoPoll's final-audience coverage/charts can bleed into earlier stages. Clear the paint
+      // caches so _setStageMeta/_paintStage repaint fresh on the way back up.
+      this._paintedMetaKey = -1; this._paintedKey = '';
+      if (k === 3) {
+        // un-release: earlier stages own the data again (reassert re-enables; a lingering final poll
+        // can no longer stomp them). Re-descending to b3 re-runs releaseGeo for the density money-shot.
+        this._geoReleased = false; window._geoData = null; window._geoPullDone = false;
+        try { document.body.classList.add('ark-funnel-hold'); } catch (e) { /* noop */ }
+        this._preSetReach(2); this.unapplyStep(4); this._setStageMeta(2); this._paintStage(2, true);
+      }
       if (k === 2) {
         this._preSetReach(1); this.unapplyStep(3); this._setStageMeta(1); this._paintStage(1, true);
         try { if (window.fitMapToScope) window.fitMapToScope(this.FL_BBOX, 7); } catch (e) { /* noop */ }
