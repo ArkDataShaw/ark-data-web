@@ -350,6 +350,14 @@
           var nwEntries = Object.entries(st.networth).filter(function (e) { return e[1] > 0; }).sort(function (a, b) { return nwRank(a[0]) - nwRank(b[0]); });
           if (typeof SHOW === 'function') SHOW('card-networth', vbars('networthBars', nwEntries, { fmt: typeof nwLabel === 'function' ? nwLabel : undefined }));
         }
+        // DESKTOP: Intent Strength lives in the always-visible maprail, so it must narrate per beat
+        // too. It's a mock proportional of reach (same split renderCharts uses: 25/45/30) — the
+        // scripted story never picks a score filter, so drive it straight off the stage's reach.
+        if (st.income && typeof vbars === 'function' && st.reach != null) {
+          var _r = st.reach;
+          var mockIntent = [['Low', Math.round(_r * 0.25)], ['Medium', Math.round(_r * 0.45)], ['High', Math.round(_r * 0.30)]];
+          if (typeof SHOW === 'function') SHOW('card-intent', vbars('intentBars', mockIntent, {}));
+        }
         // apply the insights grid order NOW (the story skips renderCharts) so Home/Family sit in
         // their row-1 slots beside Age from the start — not Household Income (Shaw 2026-07-09).
         if (typeof applyInsightsOrder === 'function') applyInsightsOrder();
@@ -489,7 +497,10 @@
       var agBlank = agEl && (agEl.querySelector('.pk-empty') || !agEl.querySelector('.pyrow'));
       var hoBlank = hoEl && (hoEl.querySelector('.pk-empty') || !hoEl.querySelector('svg'));
       var faBlank = faEl && (faEl.querySelector('.pk-empty') || !faEl.querySelector('svg'));
-      if (tsBlank || agBlank || hoBlank || faBlank) { this._paintedMetaKey = -1; this._paintStageCharts(si); }
+      // Intent Strength (desktop maprail) — blank if the loading placeholder is still there or no bars.
+      var inEl = document.getElementById('intentBars');
+      var inBlank = inEl && (inEl.querySelector('.pk-empty') || !inEl.querySelector('.vb'));
+      if (tsBlank || agBlank || hoBlank || faBlank || inBlank) { this._paintedMetaKey = -1; this._paintStageCharts(si); }
     },
     releaseGeo: function () {
       // final stage: let the held canned geoPoll resolve → full FL density,

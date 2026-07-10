@@ -32,18 +32,17 @@ const NAV_PX = 80; // pin the builder 10px below the 70px fixed nav (matches mob
 // app — natural-language-to-audience isn't a builder feature yet; it'll live on a separate surface
 // like a chat bubble). We reserve this band by pinning the builder SENTENCE_ZONE px lower, so the
 // sentence has room to display, the filters fly out of it into the strip, and the rest fades.
-const SENTENCE_ZONE = 168;
+const SENTENCE_ZONE = 118;
 
-// beat thresholds over the pinned range. Beat 0 is held back a bit so the HERO sentence reads on
-// its own first (hero pre-displays from HERO_SHOW); last ~0.74 so the density release + settle fit
-// before the pin releases to native scroll.
-const HERO_SHOW = 0.02;
-const BEATS = [0.12, 0.32, 0.54, 0.74];
-// builder fades in AS beat 0 commits (the hero sentence is already on screen; the app arrives as
-// the filters fly and the connecting words fade).
-const T = { frameIn: [0.12, 0.24] };
-const BEAT_MIN_GAP_MS = 420; // one fly-in at a time, even on a fast flick
-const FLY_PAUSE_MS = 620;    // hold the full sentence readable before the chips fly + words fade
+// beat COMMIT thresholds (data update + chip fly) over the pinned range. Each beat's sentence
+// fades in CAPTION_LEAD earlier, so the sentence always reads a moment BEFORE its data lands.
+const CAPTION_LEAD = 0.05;
+const HERO_SHOW = 0.006; // hero shows almost immediately — builder + sentence are visible together
+const BEATS = [0.10, 0.32, 0.54, 0.74];
+// builder is visible from the start (Shaw 2026-07-10): sentence + builder appear together in their
+// pre-pin positions, then pin as you scroll. A quick fade as the section enters, not gated on beats.
+const T = { frameIn: [0.0, 0.02] };
+const BEAT_MIN_GAP_MS = 380; // one fly-in at a time, even on a fast flick
 
 // Caption per beat: ordered segments — plain strings are connectors, {chip} slots are
 // filled from the beat's NEW strip chips (chipInfo diff), matched by value-substring hint
@@ -82,7 +81,9 @@ export default function BuilderScrollDemo() {
   const scrimRef = useRef(null);
   const debugRef = useRef(null);
 
-  const appliedRef = useRef(new Set());  // applied beat indices (data)
+  const appliedRef = useRef(new Set());  // committed beat indices (data landed)
+  const capShownRef = useRef(new Set()); // beats whose sentence has faded in (pre-commit)
+  const beatSpansRef = useRef({});       // beat index → caption chip spans (built at pre-show, flown at commit)
   const landedRef = useRef(new Set());   // chip keys (group|value) already flown into the strip
   const lastBeatAtRef = useRef(0);
   const rafKickRef = useRef(false);
@@ -252,15 +253,12 @@ export default function BuilderScrollDemo() {
     cap.querySelectorAll('.bsd-join').forEach(el => { el.style.transition = 'opacity .55s'; el.style.opacity = '0'; });
   }, []);
 
-  // A beat commits: show the full sentence, hold it readable, then fly the filters + fade words.
-  const renderAndFly = useCallback((w, k) => {
-    const chipSpans = buildCaption(k);
-    const pause = k === 0 ? FLY_PAUSE_MS : Math.round(FLY_PAUSE_MS * 0.7);
-    setTimeout(() => flyChips(w, k, chipSpans), pause);
-  }, [buildCaption, flyChips]);
-
-  // hero pre-display: the opening sentence on the dark surface BEFORE the builder arrives (no fly).
-  const renderHero = useCallback(() => { buildCaption(0); }, [buildCaption]);
+  // Pre-show beat k's sentence (fades in) and stash its chip spans — called a CAPTION_LEAD before
+  // the beat's data commit, so the sentence always reads a moment before the audience updates.
+  const preshowCaption = useCallback((k) => {
+    beatSpansRef.current[k] = buildCaption(k);
+    capShownRef.current.add(k);
+  }, [buildCaption]);
 
   // scroll-up: hide chips owned by beats > k, keep the rest revealed, restore beat k's caption.
   const reverseTo = useCallback((w, k) => {
@@ -268,6 +266,8 @@ export default function BuilderScrollDemo() {
       if (ownerOf(c) > k) { c.el.classList.add('ark-hidden'); landedRef.current.delete(c.key); }
       else { c.el.classList.remove('ark-hidden'); landedRef.current.add(c.key); }
     });
+    // beats above k are no longer shown/committed → allow them to pre-show + fly again on re-descent
+    CAPTIONS.forEach((_, bi) => { if (bi > k) { capShownRef.current.delete(bi); delete beatSpansRef.current[bi]; } });
     if (k < 0) { if (captionRef.current) { captionRef.current.innerHTML = ''; captionRef.current.style.opacity = '0'; } return; }
     renderCaptionOnly(k);
   }, []);
@@ -294,6 +294,8 @@ export default function BuilderScrollDemo() {
     const p = clamp(scrolled / storyPinPx, 0, 1);
     const w = app();
 
+    // builder is visible from the start (quick fade as the section enters, NOT gated on beats) so
+    // the sentence + builder appear together in their pre-pin positions, then pin as you scroll.
     if (frameRef.current) frameRef.current.style.opacity = collapsedRef.current ? '1' : String(easeOut(seg(p, T.frameIn)));
     if (!w || !booted) return;
 
@@ -318,22 +320,31 @@ export default function BuilderScrollDemo() {
     if (captionRef.current && (collapsedRef.current || armedRef.current || p >= 0.90)) captionRef.current.style.opacity = '0';
     if (collapsedRef.current || armedRef.current) return; // frozen once explored
 
-    // hero pre-display: the opening sentence reads on the dark surface BEFORE the builder arrives
-    // (builder fade-in is held until beat 0 via T.frameIn). Re-shows when scrolled back above beat 0.
-    if (!appliedRef.current.has(0) && topBeatRef.current < 0 && p > HERO_SHOW && p < BEATS[0]
-        && captionRef.current && captionRef.current.childElementCount === 0) renderHero();
+    // ── caption pre-show: each beat's sentence fades in CAPTION_LEAD before its data commit ──
+    // hero (beat 0) shows almost immediately so the sentence + builder read together from the start.
+    if (!capShownRef.current.has(0) && topBeatRef.current < 0 && p > HERO_SHOW && p < BEATS[0]) preshowCaption(0);
+    // beats 1-3: pre-show once the previous beat has committed and we're within the lead window.
+    for (let i = 1; i < BEATS.length; i++) {
+      if (topBeatRef.current === i - 1 && !appliedRef.current.has(i) && !capShownRef.current.has(i) && p >= BEATS[i] - CAPTION_LEAD) {
+        preshowCaption(i); break;
+      }
+    }
 
-    // ── beats: apply forward (throttled), unapply on scroll-up (fully reversible) ──
+    // ── beats: COMMIT forward (throttled) at the threshold, unapply on scroll-up (fully reversible) ──
     const now = performance.now();
     for (let i = 0; i < BEATS.length; i++) {
       if (p >= BEATS[i] && !appliedRef.current.has(i)) {
         if (now - lastBeatAtRef.current >= BEAT_MIN_GAP_MS) {
           if (i >= 1 && (!generatedRef.current || !w.ArkEmbed.mapReady())) break; // wait for map
-          w.ArkEmbed.beatOnDesktop(i);
+          let spans = beatSpansRef.current[i];
+          if (!spans) { spans = buildCaption(i); beatSpansRef.current[i] = spans; capShownRef.current.add(i); } // fast scroll skipped the pre-show
+          w.ArkEmbed.beatOnDesktop(i);      // data updates a moment AFTER the sentence appeared
           appliedRef.current.add(i);
           topBeatRef.current = i;
           lastBeatAtRef.current = now;
-          renderAndFly(w, i);
+          // generate on beat 0 BEFORE the fly (the strip chips + map need the generate flow)
+          if (i === 0 && !generatedRef.current) { generatedRef.current = !!w.ArkEmbed.generate(); if (generatedRef.current) { w.ArkEmbed.setDataReveal(1); revealedRef.current = true; } }
+          flyChips(w, i, spans);            // filters fly into the strip, connectors fade
           if (!rafKickRef.current) { rafKickRef.current = true; setTimeout(() => { rafKickRef.current = false; frameRef2.current && frameRef2.current(); }, BEAT_MIN_GAP_MS + 30); }
         }
         break; // one beat per frame
@@ -348,19 +359,15 @@ export default function BuilderScrollDemo() {
       }
     }
 
-    // generate as soon as beat 0 (topic) applied; then reveal the data (map/charts) once.
-    if (!generatedRef.current && appliedRef.current.has(0)) generatedRef.current = !!w.ArkEmbed.generate();
-    if (generatedRef.current && !revealedRef.current && appliedRef.current.has(0)) {
-      w.ArkEmbed.setDataReveal(1); revealedRef.current = true;
-    }
     if (!appliedRef.current.has(0) && revealedRef.current) { // scrolled fully back above the hero
       w.document.body.classList.add('ark-data-hidden'); revealedRef.current = false;
+      capShownRef.current.delete(0); // let the hero pre-show again on the next descent
     }
     if (generatedRef.current) w.ArkEmbed.reassert();
     // keep all landed chips revealed — the builder's renderChips rebuilds + re-hides #chips on
     // every sync (per-stage repaint), which would otherwise drop already-flown chips for a frame.
     if (landedRef.current.size) { readChips(w).forEach(c => { if (landedRef.current.has(c.key)) c.el.classList.remove('ark-hidden'); }); }
-  }, [mountIframe, booted, app, renderAndFly, reverseTo, renderHero]);
+  }, [mountIframe, booted, app, buildCaption, flyChips, preshowCaption, reverseTo]);
 
   const measure = useCallback(() => {
     const w = app();
