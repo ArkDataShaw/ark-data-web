@@ -322,83 +322,87 @@ export default function BuilderScrollDemo() {
       // letters fade out in place; the new letters fade in at their final positions. So
       // "Florida" → the "Fl/FL" slides right (its final slot) while "orida" fades and "Location: "
       // fades in; "Miami" slides to its slot while "Location: " + " Metro" fade in around it.
-      const mkText = (t) => { const s = document.createElement('span'); s.style.whiteSpace = 'nowrap'; s.textContent = t; return s; };
-      const PAD_L = 9; // CHIP_CSS padding-left → content origin inside the pill
+      // inline text run (spaces preserved by the parent's white-space:pre); inline-block variant is
+      // used for the anchor so it can carry a transform (pure inline can't be translated).
+      const mkI = (t) => { const s = document.createElement('span'); s.style.cssText = 'display:inline;white-space:pre'; s.textContent = t; return s; };
+      const mkIB = (t) => { const s = document.createElement('span'); s.style.cssText = 'display:inline-block;white-space:pre'; s.textContent = t; return s; };
       const morph = () => {
         const startW = clone.getBoundingClientRect().width;
         clone.style.width = startW + 'px';
         clone.style.overflow = 'hidden';
         void clone.offsetWidth;
-        clone.style.transition = 'width .34s cubic-bezier(.4,0,.2,1)';
+        clone.style.transition = 'width .4s cubic-bezier(.4,0,.2,1)';
 
-        const inStr = (chip.label ? chip.label + ': ' : '') + chip.value;
+        // chip.label ALREADY ends with the colon (builder renders "<b>Location:</b>"), so just add a
+        // space — "Location:" + " " + "Miami Metro" → "Location: Miami Metro" (no double colon).
+        const inStr = (chip.label ? chip.label + ' ' : '') + chip.value;
         let m; try { m = lcsubstr(outStr, inStr); } catch { m = { ai: 0, bi: 0, len: 0 }; }
         clone.innerHTML = '';
+        // single inline-block flow, white-space:pre → every space (incl. leading " Metro") is kept,
+        // and the sentence↔filter strings are used verbatim (no colon re-adding → no "::"). Styling
+        // stays uniform (bold, one color) through the morph; the bold→normal-value shift is handled
+        // by the crossfade handoff to the real chip, so nothing snaps.
+        const flow = document.createElement('span');
+        flow.style.cssText = 'display:inline-block;white-space:pre;position:relative';
+        clone.appendChild(flow);
 
         if (m.len < 2) {
-          // no meaningful shared run → layered crossfade (no blank), still expand the pill
-          const dead = mkText(outStr);
-          dead.style.cssText += `;position:absolute;left:${PAD_L}px;top:50%;transform:translateY(-50%);transition:opacity .18s`;
-          const live = document.createElement('span');
-          live.style.cssText = 'display:inline-flex;align-items:center;white-space:nowrap;opacity:0;transition:opacity .24s';
-          if (chip.label) { const bb = document.createElement('b'); bb.style.cssText = 'font-weight:700;opacity:.75'; bb.textContent = chip.label + ':'; live.appendChild(bb); live.appendChild(document.createTextNode(' ')); }
-          live.appendChild(document.createTextNode(chip.value));
-          clone.appendChild(dead); clone.appendChild(live);
+          const dead = mkIB(outStr); dead.style.cssText += ';position:absolute;left:0;top:0;transition:opacity .22s';
+          const live = mkIB(inStr); live.style.opacity = '0'; live.style.transition = 'opacity .3s';
+          flow.appendChild(dead); flow.appendChild(live);
           requestAnimationFrame(() => { clone.style.width = Math.max(tr.width, startW) + 'px'; dead.style.opacity = '0'; live.style.opacity = '1'; });
           return;
         }
 
-        const anchorOut = outStr.slice(m.ai, m.ai + m.len), postOut = outStr.slice(m.ai + m.len), preOut = outStr.slice(0, m.ai);
+        const preOut = outStr.slice(0, m.ai), postOut = outStr.slice(m.ai + m.len), anchorOut = outStr.slice(m.ai, m.ai + m.len);
         const preIn = inStr.slice(0, m.bi), anchorIn = inStr.slice(m.bi, m.bi + m.len), postIn = inStr.slice(m.bi + m.len);
 
-        // LIVING layer — defines the final layout: preIn (fade in) · anchor (travels) · postIn (fade in)
+        // LIVING flow (final layout): preIn (fades in) · anchor (travels) · postIn (fades in)
         const living = document.createElement('span');
-        living.style.cssText = 'display:inline-flex;align-items:center;white-space:nowrap';
-        const preInEl = mkText(preIn);
-        preInEl.style.transition = 'opacity .3s ease-out'; preInEl.style.opacity = preIn ? '0' : '1';
-        if (preIn && chip.label && preIn.toLowerCase().startsWith(chip.label.toLowerCase())) {
-          preInEl.textContent = '';
-          const bb = document.createElement('b'); bb.style.cssText = 'font-weight:700;opacity:.75'; bb.textContent = chip.label + ':';
-          preInEl.appendChild(bb); preInEl.appendChild(document.createTextNode(preIn.slice(chip.label.length + 1)));
-        }
-        const anchorEl = mkText(anchorIn); anchorEl.style.willChange = 'transform';
-        const postInEl = mkText(postIn);
-        postInEl.style.transition = 'opacity .3s ease-out'; postInEl.style.opacity = postIn ? '0' : '1';
+        living.style.cssText = 'display:inline-block;white-space:pre';
+        const preInEl = mkI(preIn); preInEl.style.transition = 'opacity .3s ease-out'; preInEl.style.opacity = preIn ? '0' : '1';
+        const anchorEl = mkIB(anchorIn); anchorEl.style.willChange = 'transform';
+        const postInEl = mkI(postIn); postInEl.style.transition = 'opacity .3s ease-out'; postInEl.style.opacity = postIn ? '0' : '1';
         living.appendChild(preInEl); living.appendChild(anchorEl); living.appendChild(postInEl);
-        clone.appendChild(living);
+        flow.appendChild(living);
 
-        // DYING layer — absolute overlay of the OUT text (anchor hidden so it doesn't double the run)
+        // DYING overlay (out text), absolute at the flow origin; anchor kept as a hidden ghost so the
+        // out text keeps its layout while the real anchor (in the living flow) does the travelling.
         const dying = document.createElement('span');
-        dying.style.cssText = `position:absolute;left:${PAD_L}px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;white-space:nowrap;pointer-events:none`;
-        const preOutEl = mkText(preOut); preOutEl.style.transition = 'opacity .2s';
-        const ghost = mkText(anchorOut); ghost.style.visibility = 'hidden';
-        const postOutEl = mkText(postOut); postOutEl.style.transition = 'opacity .2s';
+        dying.style.cssText = 'position:absolute;left:0;top:0;display:inline-block;white-space:pre;pointer-events:none';
+        const preOutEl = mkI(preOut); preOutEl.style.transition = 'opacity .22s';
+        const ghost = mkIB(anchorOut); ghost.style.visibility = 'hidden';
+        const postOutEl = mkI(postOut); postOutEl.style.transition = 'opacity .22s';
         dying.appendChild(preOutEl); dying.appendChild(ghost); dying.appendChild(postOutEl);
-        clone.appendChild(dying);
+        flow.appendChild(dying);
 
-        // anchor travels from its OUT position (dying ghost) to its final position (living anchor)
+        // travel: anchor from its OUT position (ghost) → its final position (living anchor)
         const delta = ghost.getBoundingClientRect().left - anchorEl.getBoundingClientRect().left;
         anchorEl.style.transform = `translateX(${delta}px)`;
         void anchorEl.offsetWidth;
-        anchorEl.style.transition = 'transform .34s cubic-bezier(.22,.61,.36,1)';
+        anchorEl.style.transition = 'transform .4s cubic-bezier(.22,.61,.36,1)';
         requestAnimationFrame(() => {
           clone.style.width = Math.max(tr.width, startW) + 'px'; // expand + traverse simultaneously
           anchorEl.style.transform = 'translateX(0)';
           preInEl.style.opacity = '1'; postInEl.style.opacity = '1';
           preOutEl.style.opacity = '0'; postOutEl.style.opacity = '0';
         });
-        setTimeout(() => { if (dying.parentNode) dying.remove(); }, 380);
+        setTimeout(() => { if (dying.parentNode) dying.remove(); }, 440);
       };
       const done = () => {
         if (finished) return; finished = true;
         clone.removeEventListener('transitionend', done);
         morph();
-        // after the expansion + letter reveal settles, reveal the real strip chip and drop the clone
+        // handoff: once the morph settles, reveal the real strip chip UNDER the clone, then crossfade
+        // the clone out over it — so the bold(sentence)→normal(filter value) weight change and the ✕/
+        // exact-position differences dissolve smoothly instead of snapping.
         setTimeout(() => {
           landedRef.current.add(chip.key);
           readChips(w).forEach(rc => { if (rc.key === chip.key) rc.el.classList.remove('ark-hidden'); }); // renderChips rebuilds #chips
-          clone.remove();
-        }, 640);
+          clone.style.transition = 'opacity .2s ease-out';
+          clone.style.opacity = '0';
+          setTimeout(() => clone.remove(), 240);
+        }, 540);
       };
       clone.addEventListener('transitionend', done);
       setTimeout(done, 780); // safety if transform transitionend is missed
