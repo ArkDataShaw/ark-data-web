@@ -44,9 +44,9 @@ next caption then comes in.
 | Beat | Caption (chips in `[ ]`) | Chips → strip | Map | Reach |
 |---|---|---|---|---|
 | 0 (hero) | *"Show me all `[Homeowners]` searching for `[Pool Construction]`"* | Homeowners, Pool Construction | US state choropleth | **395,936** |
-| 1 | *"Who live in `[Florida]`"* | Florida | zoom FL + flip to County/ZIP | **23,283** |
-| 2 | *"Specifically `[Ft. Lauderdale]` and `[Miami]`"* | Ft. Lauderdale, Miami | zoom South-FL | **3,477** |
-| 3 | *"with `[Net Worth: $1M+]`"* | Net Worth $1M+ | full-density release (stays framed on SFL) | **95** |
+| 1 | *"Who live in `[Florida]`"* | Florida | zoom FL + flip to County/ZIP | **28,928** |
+| 2 | *"Specifically `[Ft. Lauderdale]` and `[Miami]`"* | Ft. Lauderdale, Miami | zoom South-FL | **4,360** |
+| 3 | *"with `[Net Worth: $1M+]`"* | Net Worth $1M+ | full-density release (stays framed on SFL) | **128** |
 
 Beats keyed to pin-fraction `p` over the pin range. Starting spacing to tune on staging:
 `[0.05, 0.30, 0.52, 0.72]`. A per-beat min-gap throttle (mobile uses 350ms) prevents two
@@ -92,9 +92,9 @@ Stage specs (BASE = topic 7676 Pool Construction, consumer, 7days):
 | idx | filters | reach |
 |---|---|---|
 | 0 | `checks.homeowner=[Homeowner]`, no loc | 395,936 (confirmed live) |
-| 1 | `+ loc.personal.state=[FL]` | 23,283 |
-| 2 | `+ loc.personal.zip=SFL_ZIPS` (Miami+FtLaud metros) | 3,477 |
-| 3 | `+ checks.networth=[more than $1,000,000]` | 95 |
+| 1 | `+ loc.personal.state=[FL]` | 28,928 |
+| 2 | `+ loc.personal.zip=SFL_ZIPS` (Miami+FtLaud metros) | 4,360 |
+| 3 | `+ checks.networth=[more than $1,000,000]` | 128 |
 
 Bake per-ZIP density (`zips`) only for the zip-scoped stages (2, 3) — those beats zoom to ZIP
 level and need immediate shading; nationwide/FL stages stay state/county zoom (spec §5 of
@@ -171,7 +171,7 @@ Iterate on **staging** (`arkdata-brainstorm-761.netlify.app`, site
 `6553894a-410f-44b4-87e5-82dc8aa472ec`) first. Headless probe (Chrome :9222, viewport
 1280×1000, reach into the same-origin builder iframe, stub `mapReady`, drive
 `beatOnDesktop(k)` / scroll):
-- Each beat narrows: reach 395,936 → 23,283 → 3,477 → 95; coverage drops; map US→FL→SFL;
+- Each beat narrows: reach 395,936 → 28,928 → 4,360 → 128; coverage drops; map US→FL→SFL;
   County/ZIP from b1; full-density at b3.
 - **Every visible chart shifts each beat** (Top states→cities, Age, Income, Net Worth,
   Homeownership 100% owner from b0, Family); Net Worth 100% >$1M at b3.
