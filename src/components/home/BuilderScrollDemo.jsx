@@ -309,6 +309,9 @@ export default function BuilderScrollDemo() {
       clone.appendChild(inner0);
       fly.appendChild(clone); // in the DOM now — natural sentence width during flight
       span.style.visibility = 'hidden';
+      // check-at-LAUNCH: reveal this filter's sidebar selection the moment the chip STARTS moving
+      // from the sentence toward the strip (Shaw 2026-07-11) — not when it lands.
+      try { if (w.ArkEmbed.landSel) w.ArkEmbed.landSel(chip.value, chip.label); } catch { /* noop */ }
       requestAnimationFrame(() => {
         clone.style.transform = `translate(${tx - from.left}px, ${ty - from.top}px)`;
         clone.style.boxShadow = '0 2px 10px rgba(124,58,237,0.12)';
@@ -412,8 +415,6 @@ export default function BuilderScrollDemo() {
           landedRef.current.add(chip.key);
           readChips(w).forEach(rc => { if (rc.key === chip.key) rc.el.classList.remove('ark-hidden'); }); // renderChips rebuilds #chips
           clone.remove();
-          // EXACT check-at-land: reveal this filter's sidebar selection the instant its chip lands.
-          try { if (w.ArkEmbed.landSel) w.ArkEmbed.landSel(chip.value, chip.label); } catch { /* noop */ }
         }, 640);
       };
       clone.addEventListener('transitionend', done);
