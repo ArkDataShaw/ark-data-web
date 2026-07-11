@@ -113,6 +113,12 @@
     ],
     applyStep: function (i) { this.STEPS[i].apply(); renderSidebar(); sync(); tagChips(); },
     unapplyStep: function (i) { this.STEPS[i].unapply(); renderSidebar(); sync(); tagChips(); },
+    // QUIET variants — skip renderSidebar. Desktop beats open/close the sidebar via setSidebarStage
+    // (which owns the expand/collapse animation) at PRE-SHOW; a renderSidebar rebuild AT COMMIT would
+    // replace the accordion elements mid-transition and snap them open. The selection is suppressed
+    // until the chip lands anyway, so the sidebar has nothing new to show at commit.
+    applyStepQuiet: function (i) { this.STEPS[i].apply(); sync(); tagChips(); },
+    unapplyStepQuiet: function (i) { this.STEPS[i].unapply(); sync(); tagChips(); },
     setReach: function (n) { try { setReach(n); if (window.renderSentence) renderSentence(); } catch (e) { /* noop */ } },
     isMobile: function () { return window.innerWidth <= 1000; },
 
@@ -450,9 +456,14 @@
     ],
     _suppressSel: null, // Set of suppressed selection descriptors (read by index.html _supp())
     // open EXACTLY this beat's sidebar sections (closing all others); beat<0 → everything closed.
+    // renderSidebar animates the open/close DELTA vs the current DOM state. Idempotent: if the
+    // sidebar is already in this exact stage, skip the render — so pre-show (which opens it) and a
+    // later re-call at commit don't double-render and snap the animation.
     setSidebarStage: function (beat) {
       var st = (beat >= 0 && this._SIDEBAR_STAGES[beat]) ? this._SIDEBAR_STAGES[beat] : { acc: [], sub: [], search: '' };
       try {
+        var sameSet = function (set, arr) { arr = arr || []; if (set.size !== arr.length) return false; for (var i = 0; i < arr.length; i++) if (!set.has(arr[i])) return false; return true; };
+        if (sameSet(S.openAcc, st.acc) && sameSet(S.openSub, st.sub) && (S.search.topics || '') === (st.search || '')) return; // already staged
         S.openAcc = new Set(st.acc || []);
         S.openSub = new Set(st.sub || []);
         S.search.topics = st.search || '';
@@ -485,17 +496,21 @@
     beatOnDesktop: function (k) {
       this._lastBeatT = performance.now();
       this._suppressBeat(k); // hold this beat's selection UNchecked in the sidebar until its chip lands
+      // NOTE: desktop beats use the QUIET steps (no renderSidebar) — the sidebar open/close +
+      // selection are owned by setSidebarStage (pre-show) + landSel (at chip-land), so a rebuild
+      // here would snap the expand animation. setSidebarStage(k) is called too (idempotent: it
+      // no-ops if pre-show already staged it; on fast scroll where pre-show was skipped, it stages).
       if (k === 0) {
         // hero: apply topic + homeowner together, one sync (the fly-in is a PARENT overlay on
         // desktop — not the mobile sentence renderer — so a double sync can't destroy it).
         this._preSetReach(0);
         this.STEPS[0].apply(); this.STEPS[2].apply();
-        renderSidebar(); sync(); tagChips();
+        sync(); tagChips();
         this._setStageMeta(0); this._paintStage(0, false);
       }
       if (k === 1) {
         // + Florida: paint FL state choropleth, zoom to FL, then flip to County/ZIP.
-        this._preSetReach(1); this.applyStep(1); this._setStageMeta(1); this._paintStage(1, false);
+        this._preSetReach(1); this.applyStepQuiet(1); this._setStageMeta(1); this._paintStage(1, false);
         try { if (window.fitMapToScope) window.fitMapToScope(this.FL_BBOX, 7); _lastScopeKey = 'FL|'; } catch (e) { /* noop */ }
         this._flipToFull(); this._paintStage(1, true);
       }
@@ -503,14 +518,14 @@
         // + metros: pin the exact updateMapScope key BEFORE sync so only our SFL fit runs.
         this._preSetReach(2);
         _lastScopeKey = this._metroScopeKey();
-        this.applyStep(3); this._setStageMeta(2); this._paintStage(2, true);
+        this.applyStepQuiet(3); this._setStageMeta(2); this._paintStage(2, true);
         try { if (window.fitMapToScope) window.fitMapToScope(this.SFL_BBOX, 9, this.SFL_OFFSET); } catch (e) { /* noop */ }
       }
       if (k === 3) {
         // + net worth $1M+: narrows within SFL, release the held real geoPoll density.
-        this._preSetReach(3); this.applyStep(4); this._setStageMeta(3); this._paintStage(3, true); this.releaseGeo();
+        this._preSetReach(3); this.applyStepQuiet(4); this._setStageMeta(3); this._paintStage(3, true); this.releaseGeo();
       }
-      this.setSidebarStage(k); // open EXACTLY this beat's sections (closes the previous beat's)
+      this.setSidebarStage(k); // open EXACTLY this beat's sections (idempotent — pre-show usually did)
       this._stageIdx = k;
     },
     beatOffDesktop: function (k) {
@@ -524,25 +539,31 @@
         // can no longer stomp them). Re-descending to b3 re-runs releaseGeo for the density money-shot.
         this._geoReleased = false; window._geoData = null; window._geoPullDone = false;
         try { document.body.classList.add('ark-funnel-hold'); } catch (e) { /* noop */ }
-        this._preSetReach(2); this.unapplyStep(4); this._setStageMeta(2); this._paintStage(2, true);
+        this._preSetReach(2); this.unapplyStepQuiet(4); this._setStageMeta(2); this._paintStage(2, true);
       }
       if (k === 2) {
-        this._preSetReach(1); this.unapplyStep(3); this._setStageMeta(1); this._paintStage(1, true);
+        this._preSetReach(1); this.unapplyStepQuiet(3); this._setStageMeta(1); this._paintStage(1, true);
         try { if (window.fitMapToScope) window.fitMapToScope(this.FL_BBOX, 7); } catch (e) { /* noop */ }
       }
       if (k === 1) {
         this._flipToState();
-        this._preSetReach(0); this.unapplyStep(1); this._setStageMeta(0); this._paintStage(0, false);
+        this._preSetReach(0); this.unapplyStepQuiet(1); this._setStageMeta(0); this._paintStage(0, false);
         try { if (window.fitMapToScope) window.fitMapToScope(null); _lastScopeKey = ''; } catch (e) { /* noop */ }
       }
       if (k === 0) {
         this.STEPS[2].unapply(); this.STEPS[0].unapply();
-        renderSidebar(); sync(); tagChips();
+        sync(); tagChips();
       }
-      // scroll-up: settle on the previous beat — its filters should all show SELECTED (nothing
-      // pending), and its sidebar sections re-open (closing this beat's).
+      // scroll-up: settle on the previous beat — its filters all show SELECTED (nothing pending) and
+      // its sidebar sections re-open (closing this beat's). Force a render even when the stage is
+      // unchanged (b2→b1 share Geographics/Location) so the removed selection (e.g. the metros)
+      // actually clears; renderSidebar animates any open/close delta and re-renders selection.
       this.clearSuppress();
-      this.setSidebarStage(k - 1);
+      var stg = (k - 1 >= 0 && this._SIDEBAR_STAGES[k - 1]) ? this._SIDEBAR_STAGES[k - 1] : { acc: [], sub: [], search: '' };
+      try {
+        S.openAcc = new Set(stg.acc || []); S.openSub = new Set(stg.sub || []); S.search.topics = stg.search || '';
+        if (typeof renderSidebar === 'function') renderSidebar();
+      } catch (e) { /* noop */ }
       this._stageIdx = k - 1;
     },
     // per-tick cheap re-asserts (late canned poll stomps reach / nulls geo)

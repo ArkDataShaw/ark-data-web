@@ -103,8 +103,11 @@
   .sub-dot{width:6px;height:6px;border-radius:50%;background:var(--violet);flex:none;display:none}
   .sub-dot.on{display:inline-block}
   .sub-sign{font-size:13px;font-weight:800;color:var(--slate-400)}
-  .sub-body{padding:6px 2px 2px 6px;display:none}
-  .sub.open .sub-body{display:block}
+  /* animatable collapse (mirrors .acc-body): grid-template-rows 0fr→1fr with an overflow-hidden
+     inner wrapper, so opening/closing a subcategory carries motion instead of snapping. */
+  .sub-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .26s ease}
+  .sub.open .sub-body{grid-template-rows:1fr}
+  .sub-body-in{overflow:hidden;min-height:0;padding:2px 2px 2px 6px}
 
   /* checkbox rows */
   .cbrow{display:flex;align-items:center;gap:9px;padding:5px 8px;border-radius:6px;font-size:13px;cursor:pointer;color:var(--slate-700)}
@@ -1178,12 +1181,25 @@ function catCount(cat){
   return n;
 }
 function renderSidebar(){
+  // Read the CURRENT DOM open state BEFORE rebuilding, so we can render each accordion in its
+  // PREVIOUS state and then animate it to the target (S) state — this makes the expand/collapse
+  // transitions actually run (both programmatic opens from the demo AND user sub-clicks), instead
+  // of the accordion appearing already-open. Steady-state renders (e.g. a selection change with no
+  // open-state delta) render in-place with no re-animation. Using the live DOM as "previous" auto-
+  // syncs with the category click handler (which toggles .open directly, bypassing this function).
+  const domOpenAcc=new Set([...accRoot.querySelectorAll('.acc-item.open')].map(e=>e.dataset.cat));
+  const domOpenSub=new Set([...accRoot.querySelectorAll('.sub.open')].map(e=>e.dataset.sub));
+  renderSidebar._domOpenSub=domOpenSub; // renderBody reads this to seed each sub's start state
+  renderSidebar._subAnim=[];            // renderBody pushes sub open/close deltas here
+  const animate=[]; // {el, open} category deltas to play on the next frame
   accRoot.innerHTML="";
   SIDEBAR.forEach(cat=>{
     if(!visible(cat)) return;
-    const open=S.openAcc.has(cat.id);
+    const isOpen=S.openAcc.has(cat.id), wasOpen=domOpenAcc.has(cat.id);
     const item=document.createElement("div");
-    item.className="acc-item"+(open?" open":"");
+    item.dataset.cat=cat.id;
+    item.className="acc-item"+(wasOpen?" open":""); // START in the previous state...
+    if(isOpen!==wasOpen) animate.push({el:item,open:isOpen}); // ...then transition to the new one
     const cnt=catCount(cat);
     const labelTxt=(S.mode==="custom"&&cat.id==="topics")?"Custom intent":cat.label;
     item.innerHTML=`<button class="acc-trigger"><span class="acc-ico"><i data-lucide="${cat.ico}"></i></span><span class="acc-label">${labelTxt}</span>${cnt?`<span class="acc-badge">${cnt}</span>`:""}<span class="acc-chev">▾</span></button><div class="acc-body"></div>`;
@@ -1198,6 +1214,11 @@ function renderSidebar(){
     accRoot.appendChild(item);
   });
   if(window.lucide)lucide.createIcons();
+  // play the open/close transitions on the next frame (elements are in their PREVIOUS state now;
+  // forcing a reflow then flipping .open runs the grid-template-rows transition). rAF alone can
+  // batch with the same style recalc and skip the transition, so force a reflow first.
+  const allAnim=animate.concat(renderSidebar._subAnim||[]);
+  if(allAnim.length){void accRoot.offsetWidth;requestAnimationFrame(()=>{allAnim.forEach(a=>a.el.classList.toggle("open",a.open));});}
 }
 function renderBody(cat){
   const wrap=document.createElement("div");wrap.className="acc-body-pad";
@@ -1316,13 +1337,16 @@ function renderBody(cat){
     return wrap;
   }
   // subs
+  const domOpenSub=renderSidebar._domOpenSub||new Set(); // previous DOM open state (seeded by renderSidebar)
+  const subAnim=renderSidebar._subAnim||(renderSidebar._subAnim=[]);
   (cat.subs||[]).forEach(sub=>{
-    const open=S.openSub.has(sub.id);
-    const sd=document.createElement("div");sd.className="sub"+(open?" open":"");
+    const isOpen=S.openSub.has(sub.id), wasOpen=domOpenSub.has(sub.id);
+    const sd=document.createElement("div");sd.dataset.sub=sub.id;sd.className="sub"+(wasOpen?" open":""); // START in previous state
+    if(isOpen!==wasOpen) subAnim.push({el:sd,open:isOpen}); // ...animate to target (flushed by renderSidebar)
     const hasFilter=subCount(sub)>0; // presence dot when this subcategory has an active filter
-    sd.innerHTML=`<div class="sub-h"><span class="sub-hl">${sub.label}<i class="sub-dot${hasFilter?' on':''}"></i></span><span class="sub-sign">${open?'−':'+'}</span></div><div class="sub-body"></div>`;
-    sd.querySelector(".sub-h").onclick=()=>{open?S.openSub.delete(sub.id):S.openSub.add(sub.id);renderSidebar();};
-    const body=sd.querySelector(".sub-body");
+    sd.innerHTML=`<div class="sub-h"><span class="sub-hl">${sub.label}<i class="sub-dot${hasFilter?' on':''}"></i></span><span class="sub-sign">${isOpen?'−':'+'}</span></div><div class="sub-body"><div class="sub-body-in"></div></div>`;
+    sd.querySelector(".sub-h").onclick=()=>{isOpen?S.openSub.delete(sub.id):S.openSub.add(sub.id);renderSidebar();};
+    const body=sd.querySelector(".sub-body-in");
     if(sub.type==="check"){sub.options.forEach(o=>body.appendChild(checkRow(sub.id,o,sub.pf)));}
     else if(sub.type==="text"){
       const inp=document.createElement("input");inp.className="txtin";inp.placeholder=sub.ph||"";inp.value=S.texts[sub.id]||"";
