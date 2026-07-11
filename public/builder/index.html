@@ -1156,18 +1156,23 @@ function visible(cat){
   // B2C/B2B now only picks the topic catalog, chosen inside the Topics panel.
   return true;
 }
+// _supp(desc): true if the scripted demo is holding this selection "pending" — the filter is in S
+// (data needs it) but its sidebar selection shouldn't light up until the chip lands on the strip.
+// Returns false whenever the embed isn't present (normal builder) → zero behavior change.
+function _supp(d){try{return !!(window.ArkEmbed&&window.ArkEmbed._suppressSel&&window.ArkEmbed._suppressSel.has(d));}catch(e){return false;}}
 // active-filter count for ONE subcategory — shared by the category badge and the per-sub dot.
+// Pending (suppressed) selections don't count, so the dot/badge light up WITH the check, at land.
 function subCount(s){
   let n=0;
-  if(s.type==="check") s.options.forEach(o=>{if(S.checks[s.id]?.has(o))n++;});
+  if(s.type==="check") s.options.forEach(o=>{if(S.checks[s.id]?.has(o)&&!_supp('check:'+s.id+':'+o))n++;});
   else if(s.type==="text" && S.texts[s.id]) n++;
   else if(s.type==="picker") n+=pickerActive(s);
-  else if(s.type==="location"){const L=S.loc[s.group];n+=L.state.size+L.city.size+(L.metro?L.metro.size:0)+L.zip.size;}
+  else if(s.type==="location"){const L=S.loc[s.group];const c=(setv,tab)=>{let x=0;setv.forEach(v=>{if(!_supp('loc:'+s.group+':'+tab+':'+v))x++;});return x;};n+=c(L.state,'state')+c(L.city,'city')+(L.metro?c(L.metro,'metro'):0)+c(L.zip,'zip');}
   return n;
 }
 function catCount(cat){
   let n=0;
-  if(cat.type==="topics"||cat.type==="intent") n+=S.topics.size+(S.checks.score?S.checks.score.size:0);
+  if(cat.type==="topics"||cat.type==="intent"){let tc=0;S.topics.forEach(l=>{if(!_supp('topic:'+l))tc++;});n+=tc+(S.checks.score?S.checks.score.size:0);}
   if(cat.type==="contact") n+=Object.keys(S.contactReq).length;
   (cat.subs||[]).forEach(s=>{n+=subCount(s);});
   return n;
@@ -1237,12 +1242,12 @@ function renderBody(cat){
       tfMenu.querySelectorAll(".dd-opt").forEach(o=>o.onclick=()=>{S.timeframe=o.dataset.v;renderSidebar();sync();});
     }
     const flashCap=()=>{const c=wrap.querySelector("#tcap");if(c){c.classList.add("cap-warn");setTimeout(()=>c.classList.remove("cap-warn"),700);}};
-    const drawChips=()=>{const box=wrap.querySelector("#tchips");box.innerHTML="";S.topics.forEach(l=>{const c=document.createElement("span");c.className="pk-chip";c.innerHTML=`${l}<span class="x">✕</span>`;c.querySelector(".x").onclick=()=>{S.topics.delete(l);renderSidebar();sync();};box.appendChild(c);});};
+    const drawChips=()=>{const box=wrap.querySelector("#tchips");box.innerHTML="";S.topics.forEach(l=>{if(_supp('topic:'+l))return;const c=document.createElement("span");c.className="pk-chip";c.innerHTML=`${l}<span class="x">✕</span>`;c.querySelector(".x").onclick=()=>{S.topics.delete(l);renderSidebar();sync();};box.appendChild(c);});};
     const renderRows=(rows)=>{
       const list=wrap.querySelector("#tlist");if(!list)return;list.innerHTML="";
       if(!rows.length){list.innerHTML=`<div class="pk-empty">No matching topics</div>`;return;}
       rows.forEach(t=>{
-        const label=t.label||t.topic||"",cat2=t.category||"";const selected=S.topics.has(label),disabled=!selected&&S.topics.size>=5;
+        const label=t.label||t.topic||"",cat2=t.category||"";const selected=S.topics.has(label)&&!_supp('topic:'+label),disabled=!selected&&S.topics.size>=5;
         const r=document.createElement("div");r.className="pk-row"+(selected?" sel":"")+(disabled?" disabled":"");
         r.innerHTML=`<input type="checkbox" ${selected?"checked":""}><span>${label}${cat2?` <span class="trow-cat">${cat2}</span>`:""}</span>`;
         r.onclick=()=>{ if(selected){S.topics.delete(label);delete S.topicMeta[label];} else { if(S.topics.size>=5){flashCap();return;} S.topics.add(label); S.topicMeta[label]={id:t.topic_id,kind}; } renderSidebar();sync(); };
@@ -1357,8 +1362,9 @@ function renderLocation(body,sub){
     L.state.forEach(v=>out.push(["state",v,v]));L.city.forEach(v=>out.push(["city",v,v]));
     L.metro.forEach(v=>{var dName=v;if(typeof US_METROS!=="undefined"){var found=US_METROS.find(function(x){return x.n===v;});if(found)dName=found.n;}out.push(["metro",v,dName]);});
     L.zip.forEach(v=>out.push(["zip",v,v]));
-    if(!out.length)return "";
-    return `<div class="pk-chips" style="margin-top:10px">`+out.map(([k,v,label])=>`<span class="pk-chip" data-k="${k}" data-v="${String(v).replace(/"/g,'&quot;')}">${label}<span class="x">&#10005;</span></span>`).join("")+`</div>`;
+    const outv=out.filter(([k,v])=>!_supp('loc:'+sub.group+':'+k+':'+v)); // hide pending (not-yet-landed) chips
+    if(!outv.length)return "";
+    return `<div class="pk-chips" style="margin-top:10px">`+outv.map(([k,v,label])=>`<span class="pk-chip" data-k="${k}" data-v="${String(v).replace(/"/g,'&quot;')}">${label}<span class="x">&#10005;</span></span>`).join("")+`</div>`;
   };
   let inputHTML="";
   if(L.tab==="state"){
@@ -1377,7 +1383,7 @@ function renderLocation(body,sub){
     const q=(S.search[sub.id]||"").toLowerCase();
     const list=body.querySelector(`#loclist-${sub.id}`);
     const draw=()=>{const qq=(S.search[sub.id]||"").toLowerCase();const opts=STATE_OPTS.filter(([c,n])=>n.toLowerCase().includes(qq)||c.toLowerCase()===qq);
-      list.innerHTML=opts.map(([c,n])=>`<div class="pk-row${L.state.has(c)?' sel':''}" data-c="${c}"><input type="checkbox" ${L.state.has(c)?'checked':''}><span>${n} <span class="trow-cat">${c}</span></span></div>`).join("")||`<div class="pk-empty">No match</div>`;
+      list.innerHTML=opts.map(([c,n])=>{const sel=L.state.has(c)&&!_supp('loc:'+sub.group+':state:'+c);return `<div class="pk-row${sel?' sel':''}" data-c="${c}"><input type="checkbox" ${sel?'checked':''}><span>${n} <span class="trow-cat">${c}</span></span></div>`;}).join("")||`<div class="pk-empty">No match</div>`;
       list.querySelectorAll(".pk-row").forEach(r=>r.onclick=()=>{const c=r.dataset.c;L.state.has(c)?L.state.delete(c):L.state.add(c);renderSidebar();sync();});};
     draw();
     body.querySelector(`#locsearch-${sub.id}`).oninput=e=>{S.search[sub.id]=e.target.value;draw();};
@@ -1473,7 +1479,7 @@ function renderPicker(body,sub){
 function checkRow(key,opt,pf){
   S.checks[key]=S.checks[key]||new Set();
   const row=document.createElement("label");row.className="cbrow";
-  const checked=S.checks[key].has(opt)?"checked":"";
+  const checked=(S.checks[key].has(opt)&&!_supp('check:'+key+':'+opt))?"checked":"";
   row.innerHTML=`<input type="checkbox" ${checked}>${opt}${pf?'<span class="tag-pf" title="Not a build-time filter upstream -- applied as a post-filter">POST-FILTER</span>':''}`;
   row.querySelector("input").onchange=e=>{e.target.checked?S.checks[key].add(opt):S.checks[key].delete(opt);renderSidebar();sync();};
   return row;

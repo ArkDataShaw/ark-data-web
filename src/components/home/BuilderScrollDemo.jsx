@@ -412,6 +412,8 @@ export default function BuilderScrollDemo() {
           landedRef.current.add(chip.key);
           readChips(w).forEach(rc => { if (rc.key === chip.key) rc.el.classList.remove('ark-hidden'); }); // renderChips rebuilds #chips
           clone.remove();
+          // EXACT check-at-land: reveal this filter's sidebar selection the instant its chip lands.
+          try { if (w.ArkEmbed.landSel) w.ArkEmbed.landSel(chip.value, chip.label); } catch { /* noop */ }
         }, 640);
       };
       clone.addEventListener('transitionend', done);
@@ -435,7 +437,10 @@ export default function BuilderScrollDemo() {
       inner.style.transition = 'opacity .35s ease-out';
       requestAnimationFrame(() => { if (capInnerRef.current) capInnerRef.current.style.opacity = '1'; });
     }
-  }, [buildCaption]);
+    // open THIS beat's sidebar sections EMPTY (closing the previous beat's) as the sentence reads —
+    // the filter isn't in S yet, so the category shows ready/unchecked until the chip lands.
+    const w = app(); try { if (w && w.ArkEmbed.setSidebarStage) w.ArkEmbed.setSidebarStage(k); } catch { /* noop */ }
+  }, [buildCaption, app]);
 
   // scroll-up: hide chips owned by beats > k, keep the rest revealed, restore beat k's caption.
   const reverseTo = useCallback((w, k) => {
