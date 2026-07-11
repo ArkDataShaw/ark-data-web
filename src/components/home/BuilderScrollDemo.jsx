@@ -32,7 +32,7 @@ const NAV_PX = 80; // pin the builder 10px below the 70px fixed nav (matches mob
 // app — natural-language-to-audience isn't a builder feature yet; it'll live on a separate surface
 // like a chat bubble). We reserve this band by pinning the builder SENTENCE_ZONE px lower, so the
 // sentence has room to display, the filters fly out of it into the strip, and the rest fades.
-const SENTENCE_ZONE = 118;
+const SENTENCE_ZONE = 76;
 
 // beat COMMIT thresholds (data update + chip fly) over the pinned range. Each beat's sentence
 // fades in CAPTION_LEAD earlier, so the sentence always reads a moment BEFORE its data lands.
