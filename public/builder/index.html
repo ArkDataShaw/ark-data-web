@@ -531,6 +531,16 @@
        bodies flex/adapt within it. */
     body.ark-fullheight .maprail .card{height:var(--ark-cardh,182px);min-height:0}
   }
+  /* DESKTOP scroll demo (≥1001px iframe width WITH ark-fullheight — the mobile demo is ≤1000px, the
+     standalone /Demo never sets ark-fullheight, so this is desktop-demo-only). Shaw 2026-07-11:
+     drop the map caption ("County (zoom out) → ZIP … · contact address"), and stretch the map so its
+     bottom edge lines up with the maprail's last card (Intent strength) — the map column fills the
+     grid row (whose height the maprail defines) instead of a fixed 560px + caption below it. */
+  @media (min-width:1001px){
+    body.ark-fullheight .mapgrid .notebar{display:none}
+    body.ark-fullheight .mapgrid>div{display:flex;flex-direction:column;height:100%}
+    body.ark-fullheight .mapgrid>div>.mapwrap{flex:1;height:auto;min-height:360px}
+  }
 </style>
 </head>
 <body>
