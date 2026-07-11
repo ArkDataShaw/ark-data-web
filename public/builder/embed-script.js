@@ -422,6 +422,39 @@
     //  b2 + Miami/FtLaud metros      → zoom South-FL
     //  b3 + Net Worth $1M+           → narrows within SFL + full-density release
     _desktopStory: false,
+    // DESKTOP demo: as each beat's filters apply, open the matching sidebar category + subcategory
+    // (and type the topic into the intent search) so the sidebar visibly builds alongside the chips.
+    // Only affects the desktop story (beatOnDesktop is desktop-only). Opens ACCUMULATE and persist
+    // through the demo + after the visitor explores (the story then freezes); scroll-up reverses.
+    // Editable per-beat map — acc = category ids (S.openAcc), sub = subcategory ids (S.openSub).
+    //   b0 (topic + homeowner): open Intent + Personal cats, Net Worth sub, "Pool Construction" typed
+    //   b1 (Florida):           open Geographics cat + Location sub
+    //   b2/b3:                  nothing new (metros land in the open Location sub; the $1M+ check
+    //                           appears in the already-open Net Worth sub)
+    _SIDEBAR_BEATS: [
+      { acc: ['topics', 'personal'], sub: ['networth'], search: 'Pool Construction' },
+      { acc: ['geo'], sub: ['loc_personal'] },
+      { acc: [], sub: [] },
+      { acc: [], sub: [] },
+    ],
+    _openSidebarForBeat: function (k) {
+      var m = this._SIDEBAR_BEATS[k]; if (!m) return;
+      try {
+        (m.acc || []).forEach(function (id) { S.openAcc.add(id); });
+        (m.sub || []).forEach(function (id) { S.openSub.add(id); });
+        if (m.search != null) S.search.topics = m.search;
+        if (typeof renderSidebar === 'function') renderSidebar();
+      } catch (e) { /* sidebar not ready */ }
+    },
+    _closeSidebarForBeat: function (k) {
+      var m = this._SIDEBAR_BEATS[k]; if (!m) return;
+      try {
+        (m.acc || []).forEach(function (id) { S.openAcc.delete(id); });
+        (m.sub || []).forEach(function (id) { S.openSub.delete(id); });
+        if (m.search != null) S.search.topics = '';
+        if (typeof renderSidebar === 'function') renderSidebar();
+      } catch (e) { /* sidebar not ready */ }
+    },
     beatOnDesktop: function (k) {
       this._lastBeatT = performance.now();
       if (k === 0) {
@@ -449,6 +482,7 @@
         // + net worth $1M+: narrows within SFL, release the held real geoPoll density.
         this._preSetReach(3); this.applyStep(4); this._setStageMeta(3); this._paintStage(3, true); this.releaseGeo();
       }
+      this._openSidebarForBeat(k); // open the matching sidebar category/subcategory for this beat
       this._stageIdx = k;
     },
     beatOffDesktop: function (k) {
@@ -477,6 +511,7 @@
         this.STEPS[2].unapply(); this.STEPS[0].unapply();
         renderSidebar(); sync(); tagChips();
       }
+      this._closeSidebarForBeat(k); // scroll-up reverses this beat's sidebar expansion
       this._stageIdx = k - 1;
     },
     // per-tick cheap re-asserts (late canned poll stomps reach / nulls geo)
