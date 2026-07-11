@@ -2058,8 +2058,12 @@ function vbars(id,entries,{fmt,est=false}={}){
   const mx=Math.max(...entries.map(e=>e[1])),tot=entries.reduce((a,e)=>a+e[1],0)||1;
   const D='<span class="dots">\u00b7\u00b7\u00b7</span>';
   const escA=s=>String(s).replace(/"/g,'&quot;'); // local (hbars' escA is not in scope here)
-  el.innerHTML=entries.map(([l,v])=>{const p=Math.round(v/tot*100),lab=fmt?fmt(l):l;return `<div class="vbar"><div class="vbv">${est?D:p+'%'}</div><div class="vb" data-l="${escA(lab)}" data-v="${v}" style="height:${v/mx*100}%" title="${lab}: ${est?'...':v.toLocaleString()}"></div><div class="vl">${lab}</div></div>`;}).join("");
-  if(!est){const ctl=chartTipCtl(el);el.querySelectorAll(".vb").forEach(b=>{tipBind(b,ctl,()=>({label:b.dataset.l,value:+b.dataset.v,total:tot}));});}
+  el.innerHTML=entries.map(([l,v])=>{const p=Math.round(v/tot*100),lab=fmt?fmt(l):l;return `<div class="vbar"><div class="vbv">${est?D:p+'%'}</div><div class="vb" data-l="${escA(lab)}" data-v="${v}" style="height:${v/mx*100}%"></div><div class="vl">${lab}</div></div>`;}).join("");
+  // bind the dark chart tooltip on EVERY bar, incl. the estimate window (est) — matching hbars,
+  // which never gated on est. During est the tooltip shows "···" (the value isn't final yet); this
+  // is why vertical charts (income, net worth, intent, company size/revenue) had no tooltip after
+  // Generate until the full pull landed (Shaw 2026-07-11).
+  const ctl=chartTipCtl(el);el.querySelectorAll(".vb").forEach(b=>{tipBind(b,ctl,()=>({label:b.dataset.l,value:+b.dataset.v,total:tot,est:est}));});
   return true;
 }
 const ORD={income:["less than $20,000","$20,000 to $44,999","$45,000 to $59,999","$60,000 to $74,999","$75,000 to $99,999","$100,000 to $149,999","$150,000 to $199,999","$200,000 to $249,999","$250,000+"],
@@ -2080,8 +2084,10 @@ function chartTipCtl(root){
   root._tipCtl={
     enter:function(d,el){
       if(!tip||!tip.isConnected){tip=document.createElement("div");tip.className="charttip";root.appendChild(tip);}
-      var pct=((d.value/(d.total||1))*100).toFixed(1);
-      tip.innerHTML='<span style="font-weight:500">'+escT(d.label)+(d.extra?" \u00b7 "+escT(d.extra):"")+'</span><span class="sub">'+d.value.toLocaleString()+" ("+pct+"%)</span>";
+      // estimate window (est): the full-audience value isn't in yet, so show dots — matching the
+      // bar's own "···" — instead of a misleadingly-precise sample number.
+      var valStr=d.est?"\u00b7\u00b7\u00b7":(d.value.toLocaleString()+" ("+((d.value/(d.total||1))*100).toFixed(1)+"%)");
+      tip.innerHTML='<span style="font-weight:500">'+escT(d.label)+(d.extra?" \u00b7 "+escT(d.extra):"")+'</span><span class="sub">'+valStr+"</span>";
       // touch path: anchor over the tapped bar + auto-dismiss (no mouseleave on touch)
       if(el){anchor=el;place();clearTimeout(hideT);hideT=setTimeout(root._tipCtl.leave,2600);ChartTip._open=root._tipCtl;}
     },
