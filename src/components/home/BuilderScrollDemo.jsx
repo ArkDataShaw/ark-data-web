@@ -474,6 +474,29 @@ export default function BuilderScrollDemo() {
     cap.querySelectorAll('.bsd-join').forEach(el => { el.style.transition = 'opacity .55s'; el.style.opacity = '0'; });
   }, []);
 
+  // Wait for the just-committed strip to STOP reflowing, THEN fly. An immediate fly captures a target
+  // that's still moving — beat 0 runs generate() (map/charts/reach appear, reflowing the strip) and the
+  // seat slide may still be mid-transition — so the clone animates to where the strip WAS and lands ~48px
+  // low (the seat rise) once it settles. Stability = the strip's on-screen target (iframe top + first
+  // fresh chip top) unchanged across two consecutive frames; capped at 12 frames (~200ms) so it never
+  // hangs. flyChips itself is untouched — it reads all rects fresh at call time, so delaying the CALL
+  // targets the settled layout. On beats 1-3 (no reflow) this settles in ~2 frames — imperceptible.
+  const settleThenFly = useCallback((w, k, spans) => {
+    const ifr = iframeRef.current;
+    if (!ifr) { flyChips(w, k, spans); return; }
+    let lastSig = null, tries = 0;
+    const tick = () => {
+      if (topBeatRef.current !== k) return; // reversed/scrolled away during the wait — drop the fly
+      const fresh = readChips(w).filter(c => !landedRef.current.has(c.key));
+      const ib = ifr.getBoundingClientRect();
+      const sig = fresh.length ? Math.round(ib.top + fresh[0].el.getBoundingClientRect().top) : Math.round(ib.top);
+      if ((lastSig !== null && sig === lastSig) || ++tries >= 12) { flyChips(w, k, spans); return; }
+      lastSig = sig;
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, [flyChips]);
+
   // Pre-show beat k's sentence and stash its chip spans — called a CAPTION_LEAD before the beat's
   // data commit, so the sentence fades in a moment BEFORE the audience updates. The new sentence is
   // swapped in while invisible (transition off) then faded 0→1, so you never see the old text
@@ -619,8 +642,13 @@ export default function BuilderScrollDemo() {
 
     // ── beats: COMMIT forward (throttled) at the threshold, unapply on scroll-up (fully reversible) ──
     const now = performance.now();
+    // TAKEOVER: while engaged, forward beats commit ONLY through the controller's BUILD phase (after the
+    // read hold has elapsed) — never on stray scroll momentum (fast scroll-in / settle overshoot), so the
+    // read pause can't be skipped. Disengaged (escaped) → frame drives beats live as before.
+    const allowForward = !engagedRef.current || (transitionRef.current != null && now >= readHoldUntilRef.current);
     for (let i = 0; i < BEATS.length; i++) {
       if (p >= BEATS[i] && !appliedRef.current.has(i)) {
+        if (!allowForward) break;
         if (now - lastBeatAtRef.current >= BEAT_MIN_GAP_MS) {
           if (i >= 1 && (!generatedRef.current || !w.ArkEmbed.mapReady())) break; // wait for map
           let spans = beatSpansRef.current[i];
@@ -633,7 +661,7 @@ export default function BuilderScrollDemo() {
           // generate on beat 0 BEFORE the fly (the strip chips + map need the generate flow)
           if (i === 0 && !generatedRef.current) { generatedRef.current = !!w.ArkEmbed.generate(); if (generatedRef.current) { w.ArkEmbed.setDataReveal(1); revealedRef.current = true; } }
           flipChips(w, prevRects);          // existing chips slide/fade to their new positions
-          flyChips(w, i, spans);            // the NEW filter flies into the strip, connectors fade
+          settleThenFly(w, i, spans);       // the NEW filter flies into the strip once it's settled, connectors fade
           if (!rafKickRef.current) { rafKickRef.current = true; setTimeout(() => { rafKickRef.current = false; frameRef2.current && frameRef2.current(); }, BEAT_MIN_GAP_MS + 30); }
         }
         break; // one beat per frame
@@ -656,7 +684,7 @@ export default function BuilderScrollDemo() {
     // keep all landed chips revealed — the builder's renderChips rebuilds + re-hides #chips on
     // every sync (per-stage repaint), which would otherwise drop already-flown chips for a frame.
     if (landedRef.current.size) { readChips(w).forEach(c => { if (landedRef.current.has(c.key)) c.el.classList.remove('ark-hidden'); }); }
-  }, [mountIframe, booted, app, buildCaption, flyChips, preshowCaption, reverseTo, snapStrayChips]);
+  }, [mountIframe, booted, app, buildCaption, settleThenFly, preshowCaption, reverseTo, snapStrayChips]);
 
   const measure = useCallback(() => {
     const w = app();
