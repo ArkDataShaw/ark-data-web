@@ -551,7 +551,14 @@ export default function BuilderScrollDemo() {
     // behind the dark bar. Un-seat when scrolled back above the pin. Ref+state so the CSS transition
     // (on frameRef `top`) plays once per flip, not per scroll frame.
     const shouldSeat = !collapsedRef.current && r.top <= 1;
-    if (shouldSeat !== seatedRef.current) { seatedRef.current = shouldSeat; setSeated(shouldSeat); }
+    if (shouldSeat !== seatedRef.current) {
+      seatedRef.current = shouldSeat; setSeated(shouldSeat);
+      // ENGAGE the takeover when the section pins; RELEASE it when it un-pins (scrolled back above).
+      // Escape (mid-section) clears engagedRef WITHOUT a seat flip, so it stays released until re-entry.
+      // Reset the burst on engage so the scroll-in momentum doesn't instantly advance past the hero.
+      if (shouldSeat && !armedRef.current) { engagedRef.current = true; burstRef.current = 0; }
+      else if (!shouldSeat) { engagedRef.current = false; }
+    }
     if (frameRef.current) frameRef.current.style.opacity = collapsedRef.current ? '1' : String(easeOut(entry));
     if (!w || !booted) return;
 
@@ -711,6 +718,114 @@ export default function BuilderScrollDemo() {
       window.removeEventListener('resize', onResize);
     };
   }, [frame, isDesktop]);
+
+  // ── DESKTOP beat-snap scroll takeover (Option B) ────────────────────────────────────────────────
+  // The builder is sticky-pinned, so moving window.scrollY within the pin range advances p while the
+  // builder stays visually stationary. This controller decides WHEN (a wheel/key nudge) and how fast
+  // (TRANSITION_MS, fixed) scrollY moves between valleys; the existing frame() p-engine commits/
+  // reverses the ONE beat the eased scroll sweeps across. wheel is the only intent signal — scrollTo
+  // never fires wheel, so there is no feedback loop (frame() still runs on the resulting scroll to
+  // commit beats; progRef only stops two eases from fighting). Attached to BOTH the parent window and
+  // the same-origin builder iframe (wheel over the iframe fires in the iframe's own context).
+  useEffect(() => {
+    if (!isDesktop) return;
+    const geom = () => {
+      const t = trackRef.current; if (!t) return null;
+      const A = t.getBoundingClientRect().top + window.scrollY;
+      const pin = 4.2 * (document.documentElement.clientHeight || window.innerHeight);
+      return { A, pin };
+    };
+    const pNow = () => { const g = geom(); return g ? clamp((window.scrollY - g.A) / g.pin, 0, 1) : 0; };
+    const restY = (k) => { const g = geom(); return g ? g.A + REST_P[k] * g.pin : null; };
+    const currentValley = () => clamp(topBeatRef.current + 1, 0, REST_P.length - 1);
+    const seatedNow = () => { const t = trackRef.current; if (!t) return false; const r = t.getBoundingClientRect(); return r.top <= 1 && r.bottom > 0; };
+
+    const easeTo = (toY, dur, done) => {
+      cancelAnimationFrame(rafScrollRef.current);
+      progRef.current = true;
+      const fromY = window.scrollY, t0 = performance.now();
+      const step = () => {
+        const t = Math.min(1, (performance.now() - t0) / dur);
+        const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; // easeInOutQuad
+        window.scrollTo(0, Math.round(fromY + (toY - fromY) * e));
+        if (t < 1) rafScrollRef.current = requestAnimationFrame(step);
+        else { progRef.current = false; rafScrollRef.current = 0; if (done) done(); }
+      };
+      rafScrollRef.current = requestAnimationFrame(step);
+    };
+
+    const doEscape = () => {
+      engagedRef.current = false;
+      cancelAnimationFrame(rafScrollRef.current); rafScrollRef.current = 0;
+      progRef.current = false; transitionRef.current = null; queuedDirRef.current = 0; burstRef.current = 0;
+    };
+
+    const startTransition = (dir) => {
+      const to = currentValley() + dir;
+      if (to < 0 || to >= REST_P.length) { doEscape(); return; } // off the ends → let them leave
+      const ty = restY(to); if (ty == null) return;
+      transitionRef.current = { dir };
+      easeTo(ty, TRANSITION_MS, () => {
+        transitionRef.current = null;
+        const q = queuedDirRef.current; queuedDirRef.current = 0;
+        if (q && engagedRef.current) startTransition(q);
+      });
+    };
+
+    const settle = () => {
+      if (!engagedRef.current || progRef.current || transitionRef.current || !seatedNow()) return;
+      const ty = restY(currentValley()); if (ty == null || Math.abs(window.scrollY - ty) < 3) return;
+      easeTo(ty, SETTLE_MS);
+    };
+
+    const resetIdle = () => {
+      clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = setTimeout(() => {
+        burstRef.current = 0; burstDirRef.current = 0;
+        if (armedRef.current || collapsedRef.current) return;
+        if (!engagedRef.current) { // re-arm after an escape, but only INSIDE the valley band (not exiting an end)
+          const p = pNow();
+          if (seatedNow() && p >= REST_P[0] && p <= REST_P[REST_P.length - 1]) { engagedRef.current = true; settle(); }
+          return;
+        }
+        settle();
+      }, IDLE_MS);
+    };
+
+    const onWheel = (e) => {
+      if (armedRef.current || collapsedRef.current || !engagedRef.current || !seatedNow()) return;
+      const dir = e.deltaY > 0 ? 1 : -1;
+      if (dir !== burstDirRef.current) { burstRef.current = 0; burstDirRef.current = dir; }
+      burstRef.current += e.deltaY;
+      resetIdle();
+      const mag = Math.abs(burstRef.current);
+      if (mag >= EXIT_PX) { doEscape(); return; } // let native scroll carry them out (do NOT preventDefault)
+      e.preventDefault();
+      if (transitionRef.current) {
+        if (!queuedDirRef.current && dir === transitionRef.current.dir && mag >= 2 * INTENT_PX) queuedDirRef.current = dir;
+        return;
+      }
+      if (mag >= INTENT_PX) startTransition(dir);
+    };
+
+    const onKey = (e) => {
+      if (armedRef.current || collapsedRef.current || !engagedRef.current || !seatedNow() || transitionRef.current) return;
+      const down = ['ArrowDown', 'PageDown', ' ', 'Spacebar'].includes(e.key);
+      const up = ['ArrowUp', 'PageUp'].includes(e.key);
+      if (!down && !up) return;
+      e.preventDefault();
+      startTransition(down ? 1 : -1);
+    };
+
+    const targets = [window];
+    try { const iw = iframeRef.current && iframeRef.current.contentWindow; if (iw && iw !== window) targets.push(iw); } catch { /* same-origin always; guard anyway */ }
+    targets.forEach(w => { w.addEventListener('wheel', onWheel, { passive: false }); w.addEventListener('keydown', onKey); });
+    return () => {
+      targets.forEach(w => { try { w.removeEventListener('wheel', onWheel); w.removeEventListener('keydown', onKey); } catch { /* */ } });
+      clearTimeout(idleTimerRef.current);
+      cancelAnimationFrame(rafScrollRef.current);
+    };
+  }, [isDesktop, booted]);
 
   if (!isDesktop) return <MobileSentenceDemo />;
 
