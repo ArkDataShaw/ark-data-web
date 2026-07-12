@@ -27,12 +27,12 @@ import MobileSentenceDemo from './MobileSentenceDemo';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const GREEN_BORDER = 'rgba(25,195,125,0.35)';
-const NAV_PX = 80; // pin the builder 10px below the 70px fixed nav (matches mobile)
+const NAV_PX = 70; // pin the sentence band flush under the 70px fixed nav (no gap above it)
 // The sentence lives on the DARK PAGE surface, in its own band ABOVE the builder (NOT inside the
 // app — natural-language-to-audience isn't a builder feature yet; it'll live on a separate surface
 // like a chat bubble). We reserve this band by pinning the builder SENTENCE_ZONE px lower, so the
 // sentence has room to display, the filters fly out of it into the strip, and the rest fades.
-const SENTENCE_ZONE = 76;
+const SENTENCE_ZONE = 54;
 
 // beat COMMIT thresholds (data update + chip fly) over the pinned range. Each beat's sentence
 // fades in CAPTION_LEAD earlier, so the sentence always reads a moment BEFORE its data lands.
