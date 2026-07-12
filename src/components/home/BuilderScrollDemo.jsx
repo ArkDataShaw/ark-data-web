@@ -618,7 +618,12 @@ export default function BuilderScrollDemo() {
       if (collapsedRef.current || armedRef.current || p >= 0.90) capOp = 0;
       else if (topBeatRef.current < 0) capOp = String(entry); // pre-seat hero rise
       else if (!seatedRef.current) capOp = 1;
-      else if (performance.now() < readHoldUntilRef.current) capOp = 1; // read-pause: keep the sentence readable
+      // Hold the sentence up through the WHOLE transition — the read pause AND the build ease — so it
+      // stays readable continuously until the beat commits and the chip flies OUT of it. Without this,
+      // the caption blanked the instant the read ended (before the build reached its "imminent" zone),
+      // then flashed back — reading as "the sentence vanishes and reverses" mid-nudge. Once parked
+      // (transition done) the between-beats idle logic below fades it to reveal the top bar (Option 2).
+      else if (transitionRef.current || performance.now() < readHoldUntilRef.current) capOp = 1;
       else {
         const nextBeat = BEATS.find((b, i) => i > topBeatRef.current && p >= b - CAPTION_LEAD);
         const imminent = nextBeat !== undefined && !appliedRef.current.has(BEATS.indexOf(nextBeat));
