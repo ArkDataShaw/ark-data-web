@@ -526,6 +526,11 @@ export default function BuilderScrollDemo() {
     // them, then the first beat starts. entry: 0 when the section top is a viewport below, 1 by the
     // time it has risen ~420px up.
     const entry = clamp((cssVh - r.top) / 420, 0, 1);
+    // SEAT: once the section is pinned to the top (its top has reached the nav), slide the builder up
+    // behind the dark bar. Un-seat when scrolled back above the pin. Ref+state so the CSS transition
+    // (on frameRef `top`) plays once per flip, not per scroll frame.
+    const shouldSeat = !collapsedRef.current && r.top <= 1;
+    if (shouldSeat !== seatedRef.current) { seatedRef.current = shouldSeat; setSeated(shouldSeat); }
     if (frameRef.current) frameRef.current.style.opacity = collapsedRef.current ? '1' : String(easeOut(entry));
     if (!w || !booted) return;
 
@@ -679,9 +684,12 @@ export default function BuilderScrollDemo() {
 
   const frameH = H > 0 ? `${H}px` : '100vh';
   // expanded height also carries the SENTENCE_ZONE (the builder pins that much lower).
+  // Seated pins the builder BAR_OVERLAP below the nav (vs SENTENCE_ZONE); the pinned content is
+  // (SENTENCE_ZONE - BAR_OVERLAP) shorter, so shrink the track by that much when seated.
+  const seatOffset = seated ? SENTENCE_ZONE - BAR_OVERLAP : 0;
   const sectionH = collapsed
     ? `${(H > 0 ? H : 0) + NAV_PX}px`
-    : (H > 0 ? `calc(420vh + ${H + NAV_PX + SENTENCE_ZONE}px)` : 'calc(520vh)');
+    : (H > 0 ? `calc(420vh + ${H + NAV_PX + SENTENCE_ZONE - seatOffset}px)` : 'calc(520vh)');
 
   return (
     <>
@@ -704,7 +712,7 @@ export default function BuilderScrollDemo() {
         </div>
 
         <div ref={frameRef}
-          style={{ opacity: 0, position: collapsed ? 'relative' : 'sticky', top: collapsed ? 'auto' : `${NAV_PX + SENTENCE_ZONE}px`, height: frameH, width: 'min(1240px, calc(100vw - 40px))', margin: '0 auto', borderRadius: '14px 14px 0 0', overflow: 'hidden', border: '1px solid #1B3050', borderBottom: 'none', boxShadow: '0 30px 80px rgba(0,0,0,0.55)', background: '#f8fafc' }}>
+          style={{ opacity: 0, position: collapsed ? 'relative' : 'sticky', top: collapsed ? 'auto' : `${seated ? NAV_PX + BAR_OVERLAP : NAV_PX + SENTENCE_ZONE}px`, transition: 'top .32s cubic-bezier(.4,0,.2,1)', height: frameH, width: 'min(1240px, calc(100vw - 40px))', margin: '0 auto', borderRadius: '14px 14px 0 0', overflow: 'hidden', border: '1px solid #1B3050', borderBottom: 'none', boxShadow: '0 30px 80px rgba(0,0,0,0.55)', background: '#f8fafc' }}>
           <span ref={debugRef} className="ark-mono" style={{ position: 'absolute', top: '8px', left: '10px', zIndex: 9, color: '#FF8A9A', fontSize: '11px', background: 'rgba(0,0,0,0.6)', padding: '3px 8px', borderRadius: '6px' }}>boot: waiting for iframe…</span>
 
           {!booted && !iframeDead && (
