@@ -415,10 +415,11 @@ export default function BuilderScrollDemo() {
         });
         setTimeout(() => { if (dying.parentNode) dying.remove(); }, 440);
       };
-      // register this clone as in-flight, anchored to the scroll position at launch. If the page
-      // scrolls past SNAP_PX before it lands, snapStrayChips() calls abort() → the chip snaps
-      // straight into the strip (no orphaned fixed clone floating over the page).
-      const entry = { y0: window.scrollY, abort: null };
+      // register this clone as in-flight, anchored to the BUILDER's ON-SCREEN top at launch (NOT
+      // window.scrollY). While the builder is sticky-pinned its on-screen top is stable even as the
+      // page scrolls through beats, so the elegant land+expand morph plays out fully. Only when the
+      // strip actually MOVES on screen (pin released / scrolled past the section) does the abort fire.
+      const entry = { y0: ifrBox.top, abort: null };
       inFlightRef.current.push(entry);
       const unregister = () => { const i = inFlightRef.current.indexOf(entry); if (i >= 0) inFlightRef.current.splice(i, 1); };
       const landReal = () => {
@@ -502,8 +503,8 @@ export default function BuilderScrollDemo() {
   // visitor pauses to read a beat (the intended pace), scrollY is stable → the chip flies normally.
   const SNAP_PX = 90;
   const snapStrayChips = useCallback(() => {
-    if (!inFlightRef.current.length) return;
-    const y = window.scrollY;
+    if (!inFlightRef.current.length || !iframeRef.current) return;
+    const y = iframeRef.current.getBoundingClientRect().top; // builder on-screen top (stable while pinned)
     for (let i = inFlightRef.current.length - 1; i >= 0; i--) {
       if (Math.abs(y - inFlightRef.current[i].y0) > SNAP_PX) inFlightRef.current[i].abort();
     }
