@@ -97,6 +97,7 @@ export default function BuilderScrollDemo() {
   const captionRef = useRef(null);   // the sticky sentence BAND (opacity = scroll-entry / pin)
   const capInnerRef = useRef(null);  // inner wrapper — per-beat sentence crossfade lives here
   const flyRef = useRef(null);       // fixed overlay hosting flying chip clones
+  const inFlightRef = useRef([]);    // [{ y0, abort }] chips currently flying — snapped to the strip if it scrolls
   const scrimRef = useRef(null);
   const debugRef = useRef(null);
 
@@ -108,6 +109,7 @@ export default function BuilderScrollDemo() {
   const rafKickRef = useRef(false);
   const frameRef2 = useRef(null);
   const measureRef = useRef(null);
+  const snapRef = useRef(null);      // latest snapStrayChips() for the heartbeat safety net
   const generatedRef = useRef(false);
   const revealedRef = useRef(false);     // data (map/charts) revealed after beat 0
   const topBeatRef = useRef(-1);         // highest applied beat whose caption is showing
@@ -404,6 +406,18 @@ export default function BuilderScrollDemo() {
         });
         setTimeout(() => { if (dying.parentNode) dying.remove(); }, 440);
       };
+      // register this clone as in-flight, anchored to the scroll position at launch. If the page
+      // scrolls past SNAP_PX before it lands, snapStrayChips() calls abort() → the chip snaps
+      // straight into the strip (no orphaned fixed clone floating over the page).
+      const entry = { y0: window.scrollY, abort: null };
+      inFlightRef.current.push(entry);
+      const unregister = () => { const i = inFlightRef.current.indexOf(entry); if (i >= 0) inFlightRef.current.splice(i, 1); };
+      const landReal = () => {
+        landedRef.current.add(chip.key);
+        readChips(w).forEach(rc => { if (rc.key === chip.key) rc.el.classList.remove('ark-hidden'); }); // renderChips rebuilds #chips
+        clone.remove();
+        unregister();
+      };
       const done = () => {
         if (finished) return; finished = true;
         clone.removeEventListener('transitionend', done);
@@ -411,11 +425,14 @@ export default function BuilderScrollDemo() {
         // seamless handoff: once the morph has settled the clone is pixel-identical to the real strip
         // chip (same bold label @.75, normal value, ✕ @.6, no shadow, same padding/font/gap), so we
         // reveal the real chip and remove the clone in the SAME frame — an invisible swap, no fade.
-        setTimeout(() => {
-          landedRef.current.add(chip.key);
-          readChips(w).forEach(rc => { if (rc.key === chip.key) rc.el.classList.remove('ark-hidden'); }); // renderChips rebuilds #chips
-          clone.remove();
-        }, 640);
+        setTimeout(landReal, 640);
+      };
+      // hard-abort: the strip moved mid-flight → skip the fly/morph and land the real chip NOW.
+      // (abort only fires BEFORE done, so the morph's transient nodes never exist yet.)
+      entry.abort = () => {
+        if (finished) return; finished = true;
+        clone.removeEventListener('transitionend', done);
+        landReal();
       };
       clone.addEventListener('transitionend', done);
       setTimeout(done, 780); // safety if transform transitionend is missed
@@ -465,10 +482,28 @@ export default function BuilderScrollDemo() {
     inner.innerHTML = spec.segs.filter(s => s.t != null).map(s => `<span class="bsd-join" style="opacity:0">${s.t}</span>`).join('');
   }, []);
 
+  // Snap any in-flight chip once the page has scrolled meaningfully since the chip launched. The
+  // clone is position:fixed (viewport-anchored); if the user keeps scrolling during the ~640ms
+  // flight the strip it's aiming for moves out from under it (pin releases on a fast scroll-through,
+  // or scroll-up past the section), leaving the clone floating detached. Rather than track the
+  // sticky iframe's rect (unreliable — the first getBoundingClientRect of a post-scroll frame reads
+  // the stale pinned position), we watch window.scrollY, which needs no layout and never lies. Any
+  // scroll past SNAP_PX during flight → abort() lands the chip in the strip instantly. When the
+  // visitor pauses to read a beat (the intended pace), scrollY is stable → the chip flies normally.
+  const SNAP_PX = 90;
+  const snapStrayChips = useCallback(() => {
+    if (!inFlightRef.current.length) return;
+    const y = window.scrollY;
+    for (let i = inFlightRef.current.length - 1; i >= 0; i--) {
+      if (Math.abs(y - inFlightRef.current[i].y0) > SNAP_PX) inFlightRef.current[i].abort();
+    }
+  }, []);
+
   const frame = useCallback(() => {
     const track = trackRef.current;
     if (!track) return;
-    const r = track.getBoundingClientRect();
+    const r = track.getBoundingClientRect(); // flushes layout — read iframe rect AFTER this (sticky pos is stale on the first read of a post-scroll frame)
+    snapStrayChips();
     const vh = window.innerHeight;
     if (!mountIframe && r.top < vh * 4) { setMountIframe(true); return; }
     const scrolled = Math.max(0, -r.top);
@@ -560,7 +595,7 @@ export default function BuilderScrollDemo() {
     // keep all landed chips revealed — the builder's renderChips rebuilds + re-hides #chips on
     // every sync (per-stage repaint), which would otherwise drop already-flown chips for a frame.
     if (landedRef.current.size) { readChips(w).forEach(c => { if (landedRef.current.has(c.key)) c.el.classList.remove('ark-hidden'); }); }
-  }, [mountIframe, booted, app, buildCaption, flyChips, preshowCaption, reverseTo]);
+  }, [mountIframe, booted, app, buildCaption, flyChips, preshowCaption, reverseTo, snapStrayChips]);
 
   const measure = useCallback(() => {
     const w = app();
@@ -572,6 +607,7 @@ export default function BuilderScrollDemo() {
 
   useEffect(() => { frameRef2.current = frame; }, [frame]);
   useEffect(() => { measureRef.current = measure; }, [measure]);
+  useEffect(() => { snapRef.current = snapStrayChips; }, [snapStrayChips]);
   useEffect(() => { armedRef.current = armed; }, [armed]);
   // render the hero sentence as soon as the builder boots, so it's present (in the sticky band) while
   // the section scrolls up into view — before frame()/any beat runs. Opacity is driven by frame().
@@ -603,6 +639,9 @@ export default function BuilderScrollDemo() {
     if (!isDesktop) return;
     const hb = setInterval(() => {
       measureRef.current && measureRef.current();
+      // safety net: a fast scroll-past can leave the section out of view with clones still in flight;
+      // snap them even though the full frame() below is skipped when the section isn't visible.
+      snapRef.current && snapRef.current();
       const track = trackRef.current;
       if (!track || armedRef.current) return;
       const r = track.getBoundingClientRect();
