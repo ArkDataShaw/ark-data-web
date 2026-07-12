@@ -180,8 +180,10 @@ FEEL to tune on-device: `TRANSITION_MS`, `REST_P` spacing, `INTENT_PX`, `EXIT_PX
 
 ## Behavioral decisions locked with Shaw (2026-07-12)
 
-- **Input during a transition:** queue exactly ONE more beat (not ignore-until-parked). Eager scrollers
-  chain two beats; further input is ignored until settled.
+- **Input during a transition:** ~~queue exactly ONE more beat~~ → **REVERSED 2026-07-12 (Shaw, on-device):
+  NO queue.** Further input during a transition is ignored until parked; the burst resets on park so the
+  next beat needs a fresh gesture. One gesture = exactly one full, legible beat. (Queued/chained beats
+  flew by too fast to read.) Escape (EXIT_PX) is still honored mid-transition so a hard scroll can bail.
 - **Escape:** a single big accumulated `wheel` burst (> EXIT_PX) abandons takeover for that gesture and
   lets native scroll carry the user out; takeover re-arms on re-entry/re-seat.
 - **Hero valley:** valley 0 is its own rest — pin/seat shows the un-filtered builder + hero sentence,

@@ -144,7 +144,6 @@ export default function BuilderScrollDemo() {
   const engagedRef = useRef(false);   // takeover active (set on seat, cleared on escape/unseat/explore)
   const progRef = useRef(false);      // an eased programmatic scroll is running (gates settle)
   const transitionRef = useRef(null); // {dir} while a beat-transition ease is in flight, else null
-  const queuedDirRef = useRef(0);     // one queued beat direction (-1/0/+1) — "queue exactly one"
   const burstRef = useRef(0);         // signed accumulated wheel delta for the current gesture burst
   const burstDirRef = useRef(0);      // direction of the current burst (accumulation resets on flip)
   const idleTimerRef = useRef(0);     // idle debounce → settle / burst reset / re-arm
@@ -759,7 +758,7 @@ export default function BuilderScrollDemo() {
     const doEscape = () => {
       engagedRef.current = false;
       cancelAnimationFrame(rafScrollRef.current); rafScrollRef.current = 0;
-      progRef.current = false; transitionRef.current = null; queuedDirRef.current = 0; burstRef.current = 0;
+      progRef.current = false; transitionRef.current = null; burstRef.current = 0;
     };
 
     const startTransition = (dir) => {
@@ -769,8 +768,9 @@ export default function BuilderScrollDemo() {
       transitionRef.current = { dir };
       easeTo(ty, TRANSITION_MS, () => {
         transitionRef.current = null;
-        const q = queuedDirRef.current; queuedDirRef.current = 0;
-        if (q && engagedRef.current) startTransition(q);
+        // NO queue: reset the burst so the NEXT beat needs a fresh gesture — one gesture = one full,
+        // legible beat, then park. (Shaw 2026-07-12: chained/queued beats flew by too fast to read.)
+        burstRef.current = 0; burstDirRef.current = 0;
       });
     };
 
@@ -809,10 +809,9 @@ export default function BuilderScrollDemo() {
       const atEnd = (dir > 0 && currentValley() >= REST_P.length - 1) || (dir < 0 && currentValley() <= 0);
       if (mag >= EXIT_PX || atEnd) { doEscape(); return; }
       e.preventDefault();
-      if (transitionRef.current) {
-        if (!queuedDirRef.current && dir === transitionRef.current.dir && mag >= 2 * INTENT_PX) queuedDirRef.current = dir;
-        return;
-      }
+      // A transition is playing → ignore further input (no queue). Escape (EXIT_PX) is still honored
+      // above, so a hard scroll can bail mid-transition; a normal nudge just waits until it parks.
+      if (transitionRef.current) return;
       if (mag >= INTENT_PX) startTransition(dir);
     };
 
