@@ -40,6 +40,17 @@ const SENTENCE_ZONE = 54;
 const BAR_OVERLAP = 6;
 const SEAT_HOLD_MS = 280; // between beats, wait this long idle before fading the bar to reveal the top bar
 
+// ── beat-snap scroll takeover (Option B), DESKTOP only ──────────────────────────────────────────
+// Valley (rest-point) scroll fractions of the pinned range, one per state:
+// [hero(no beat), beat0, beat1, beat2, beat3]. Each sits BETWEEN two BEATS[] thresholds so a
+// transition sweeps p across exactly one threshold → exactly one beat. Tunable (Shaw tunes on-device).
+const REST_P = [0.05, 0.18, 0.42, 0.64, 0.85];
+const TRANSITION_MS = 1100; // fixed, scroll-speed-independent duration of ONE beat transition
+const INTENT_PX = 50;       // accumulated wheel delta (one burst) that fires a beat; 2× queues one more
+const EXIT_PX = 300;        // accumulated burst that ESCAPES the takeover (native scroll carries out)
+const SETTLE_MS = 250;      // ease duration for settle-to-rest (the ball rolls into the valley)
+const IDLE_MS = 150;        // idle after last wheel before settling / resetting the burst / re-arming
+
 // beat COMMIT thresholds (data update + chip fly) over the pinned range. Each beat's sentence
 // fades in CAPTION_LEAD earlier, so the sentence always reads a moment BEFORE its data lands.
 const CAPTION_LEAD = 0.05;
@@ -130,6 +141,14 @@ export default function BuilderScrollDemo() {
   const [seated, setSeated] = useState(false); // pinned → builder slid up behind the dark bar (desktop overlay)
   const seatedRef = useRef(false);             // mirror for frame() without a stale closure
   const lastCapAtRef = useRef(0);              // performance.now() when the current beat's sentence was last shown
+  const engagedRef = useRef(false);   // takeover active (set on seat, cleared on escape/unseat/explore)
+  const progRef = useRef(false);      // an eased programmatic scroll is running (gates settle)
+  const transitionRef = useRef(null); // {dir} while a beat-transition ease is in flight, else null
+  const queuedDirRef = useRef(0);     // one queued beat direction (-1/0/+1) — "queue exactly one"
+  const burstRef = useRef(0);         // signed accumulated wheel delta for the current gesture burst
+  const burstDirRef = useRef(0);      // direction of the current burst (accumulation resets on flip)
+  const idleTimerRef = useRef(0);     // idle debounce → settle / burst reset / re-arm
+  const rafScrollRef = useRef(0);     // rAF handle for the eased scroll
   const [mountIframe, setMountIframe] = useState(false);
   const [booted, setBooted] = useState(false);
   const [armed, setArmed] = useState(false);
