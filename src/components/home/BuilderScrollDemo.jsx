@@ -556,6 +556,8 @@ export default function BuilderScrollDemo() {
       // ENGAGE the takeover when the section pins; RELEASE it when it un-pins (scrolled back above).
       // Escape (mid-section) clears engagedRef WITHOUT a seat flip, so it stays released until re-entry.
       // Reset the burst on engage so the scroll-in momentum doesn't instantly advance past the hero.
+      // NB: re-engage happens ONLY on the seat EDGE (this flip); mid-section re-arm after an escape is
+      // owned by resetIdle() — do NOT write engagedRef on a non-edge here or it would fight the escape.
       if (shouldSeat && !armedRef.current) { engagedRef.current = true; burstRef.current = 0; }
       else if (!shouldSeat) { engagedRef.current = false; }
     }
@@ -793,13 +795,19 @@ export default function BuilderScrollDemo() {
     };
 
     const onWheel = (e) => {
-      if (armedRef.current || collapsedRef.current || !engagedRef.current || !seatedNow()) return;
+      // Disengaged (e.g. after an escape) but still over the pinned section: keep bumping the idle
+      // timer so re-arm waits for the scroll to TRULY stop — never interrupts inertial scroll mid-flight.
+      if (!engagedRef.current) { if (seatedNow() && !armedRef.current && !collapsedRef.current) resetIdle(); return; }
+      if (armedRef.current || collapsedRef.current || !seatedNow()) return;
       const dir = e.deltaY > 0 ? 1 : -1;
       if (dir !== burstDirRef.current) { burstRef.current = 0; burstDirRef.current = dir; }
       burstRef.current += e.deltaY;
       resetIdle();
       const mag = Math.abs(burstRef.current);
-      if (mag >= EXIT_PX) { doEscape(); return; } // let native scroll carry them out (do NOT preventDefault)
+      // Escape (big burst) OR a nudge off the ends (no next valley) → release WITHOUT preventDefault so
+      // this very event scrolls natively and carries the user out (no swallowed "dead" end-nudge).
+      const atEnd = (dir > 0 && currentValley() >= REST_P.length - 1) || (dir < 0 && currentValley() <= 0);
+      if (mag >= EXIT_PX || atEnd) { doEscape(); return; }
       e.preventDefault();
       if (transitionRef.current) {
         if (!queuedDirRef.current && dir === transitionRef.current.dir && mag >= 2 * INTENT_PX) queuedDirRef.current = dir;
