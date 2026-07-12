@@ -50,6 +50,8 @@ const INTENT_PX = 50;       // accumulated wheel delta (one burst) that fires a 
 const EXIT_PX = 300;        // accumulated burst that ESCAPES the takeover (native scroll carries out)
 const SETTLE_MS = 250;      // ease duration for settle-to-rest (the ball rolls into the valley)
 const IDLE_MS = 150;        // idle after last wheel before settling / resetting the burst / re-arming
+const READ_MS = 1400;       // a forward nudge shows the sentence and HOLDS it this long (readable) BEFORE
+                            // the chips fly / data commits — reading is separated from the build. Tunable.
 
 // beat COMMIT thresholds (data update + chip fly) over the pinned range. Each beat's sentence
 // fades in CAPTION_LEAD earlier, so the sentence always reads a moment BEFORE its data lands.
@@ -148,6 +150,9 @@ export default function BuilderScrollDemo() {
   const burstDirRef = useRef(0);      // direction of the current burst (accumulation resets on flip)
   const idleTimerRef = useRef(0);     // idle debounce → settle / burst reset / re-arm
   const rafScrollRef = useRef(0);     // rAF handle for the eased scroll
+  const readHoldUntilRef = useRef(0); // performance.now() until which a forward read-pause holds the sentence up
+  const shownBeatRef = useRef(-1);    // beat index whose sentence is currently in the caption (avoid re-flash)
+  const preshowRef = useRef(null);    // latest preshowCaption() for the takeover controller (mirror, like snapRef)
   const [mountIframe, setMountIframe] = useState(false);
   const [booted, setBooted] = useState(false);
   const [armed, setArmed] = useState(false);
@@ -475,6 +480,7 @@ export default function BuilderScrollDemo() {
   // cross-dissolve into the new one — each sentence cleanly fades in right before its beat.
   const preshowCaption = useCallback((k) => {
     lastCapAtRef.current = performance.now();
+    shownBeatRef.current = k;
     const inner = capInnerRef.current;
     if (inner) { inner.style.transition = 'none'; inner.style.opacity = '0'; }
     beatSpansRef.current[k] = buildCaption(k);
@@ -589,6 +595,7 @@ export default function BuilderScrollDemo() {
       if (collapsedRef.current || armedRef.current || p >= 0.90) capOp = 0;
       else if (topBeatRef.current < 0) capOp = String(entry); // pre-seat hero rise
       else if (!seatedRef.current) capOp = 1;
+      else if (performance.now() < readHoldUntilRef.current) capOp = 1; // read-pause: keep the sentence readable
       else {
         const nextBeat = BEATS.find((b, i) => i > topBeatRef.current && p >= b - CAPTION_LEAD);
         const imminent = nextBeat !== undefined && !appliedRef.current.has(BEATS.indexOf(nextBeat));
@@ -662,6 +669,7 @@ export default function BuilderScrollDemo() {
   useEffect(() => { frameRef2.current = frame; }, [frame]);
   useEffect(() => { measureRef.current = measure; }, [measure]);
   useEffect(() => { snapRef.current = snapStrayChips; }, [snapStrayChips]);
+  useEffect(() => { preshowRef.current = preshowCaption; }, [preshowCaption]);
   useEffect(() => { armedRef.current = armed; }, [armed]);
   useEffect(() => { seatedRef.current = seated; }, [seated]);
   // render the hero sentence as soon as the builder boots, so it's present (in the sticky band) while
@@ -758,20 +766,36 @@ export default function BuilderScrollDemo() {
     const doEscape = () => {
       engagedRef.current = false;
       cancelAnimationFrame(rafScrollRef.current); rafScrollRef.current = 0;
-      progRef.current = false; transitionRef.current = null; burstRef.current = 0;
+      if (transitionRef.current && transitionRef.current.readTimer) clearTimeout(transitionRef.current.readTimer);
+      progRef.current = false; transitionRef.current = null; burstRef.current = 0; readHoldUntilRef.current = 0;
     };
+
+    const build = (ty) => easeTo(ty, TRANSITION_MS, () => {
+      transitionRef.current = null;
+      // NO queue: reset the burst so the NEXT beat needs a fresh gesture — one gesture = one full,
+      // legible beat, then park. (Shaw 2026-07-12: chained/queued beats flew by too fast to read.)
+      burstRef.current = 0; burstDirRef.current = 0;
+    });
 
     const startTransition = (dir) => {
       const to = currentValley() + dir;
       if (to < 0 || to >= REST_P.length) { doEscape(); return; } // off the ends → let them leave
       const ty = restY(to); if (ty == null) return;
       transitionRef.current = { dir };
-      easeTo(ty, TRANSITION_MS, () => {
-        transitionRef.current = null;
-        // NO queue: reset the burst so the NEXT beat needs a fresh gesture — one gesture = one full,
-        // legible beat, then park. (Shaw 2026-07-12: chained/queued beats flew by too fast to read.)
-        burstRef.current = 0; burstDirRef.current = 0;
-      });
+      if (dir < 0) { build(ty); return; } // REVERSE: single ease back, no read pause
+      // FORWARD: READ then BUILD. Show beat k's sentence NOW (still parked, below its commit threshold)
+      // and HOLD it readable for READ_MS; THEN ease across the threshold so the engine flies the chips /
+      // commits the data. Reading is separated from the build so the sentence no longer just flashes.
+      const k = to - 1; // the beat this valley commits
+      readHoldUntilRef.current = performance.now() + READ_MS;
+      if (shownBeatRef.current !== k && preshowRef.current) preshowRef.current(k); // swap in the new sentence
+      else { shownBeatRef.current = k; lastCapAtRef.current = performance.now(); } // already showing k (hero) — just hold
+      if (frameRef2.current) frameRef2.current(); // kick a frame so the band un-fades to show the held sentence
+      transitionRef.current.readTimer = setTimeout(() => {
+        readHoldUntilRef.current = 0;
+        if (transitionRef.current) transitionRef.current.readTimer = 0;
+        build(ty);
+      }, READ_MS);
     };
 
     const settle = () => {
@@ -830,6 +854,7 @@ export default function BuilderScrollDemo() {
     return () => {
       targets.forEach(w => { try { w.removeEventListener('wheel', onWheel); w.removeEventListener('keydown', onKey); } catch { /* */ } });
       clearTimeout(idleTimerRef.current);
+      if (transitionRef.current && transitionRef.current.readTimer) clearTimeout(transitionRef.current.readTimer);
       cancelAnimationFrame(rafScrollRef.current);
     };
   }, [isDesktop, booted]);
