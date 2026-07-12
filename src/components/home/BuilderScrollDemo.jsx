@@ -151,6 +151,7 @@ export default function BuilderScrollDemo() {
   const idleTimerRef = useRef(0);     // idle debounce → settle / burst reset / re-arm
   const rafScrollRef = useRef(0);     // rAF handle for the eased scroll
   const readHoldUntilRef = useRef(0); // performance.now() until which a forward read-pause holds the sentence up
+  const barFadeRef = useRef(false);   // chips have launched → fade the dark bar NOW (with the connectors), not at landing
   const shownBeatRef = useRef(-1);    // beat index whose sentence is currently in the caption (avoid re-flash)
   const preshowRef = useRef(null);    // latest preshowCaption() for the takeover controller (mirror, like snapRef)
   const [mountIframe, setMountIframe] = useState(false);
@@ -470,8 +471,10 @@ export default function BuilderScrollDemo() {
       clone.addEventListener('transitionend', done);
       setTimeout(done, 780); // safety if transform transitionend is missed
     });
-    // the connecting words fade as the filters leave for the strip
+    // the connecting words fade as the filters leave for the strip — and the dark bar fades WITH them
+    // (same instant), rather than lingering until the chips land on the strip. frame() reads barFadeRef.
     cap.querySelectorAll('.bsd-join').forEach(el => { el.style.transition = 'opacity .55s'; el.style.opacity = '0'; });
+    barFadeRef.current = true;
   }, []);
 
   // Wait for the just-committed strip to STOP reflowing, THEN fly. An immediate fly captures a target
@@ -618,8 +621,11 @@ export default function BuilderScrollDemo() {
       if (collapsedRef.current || armedRef.current || p >= 0.90) capOp = 0;
       else if (topBeatRef.current < 0) capOp = String(entry); // pre-seat hero rise
       else if (!seatedRef.current) capOp = 1;
-      // Hold the sentence up through the WHOLE transition — the read pause AND the build ease — so it
-      // stays readable continuously until the beat commits and the chip flies OUT of it. Without this,
+      // Once the chips LAUNCH (beat commit) the dark bar fades in the SAME instant as the connector words
+      // (barFadeRef set in flyChips) — it no longer lingers until the chips land on the strip.
+      else if (barFadeRef.current) capOp = 0;
+      // Hold the sentence up through the read pause AND the early build ease (before chips launch) — so it
+      // stays readable continuously until the beat commits and the chips fly OUT of it. Without this,
       // the caption blanked the instant the read ended (before the build reached its "imminent" zone),
       // then flashed back — reading as "the sentence vanishes and reverses" mid-nudge. Once parked
       // (transition done) the between-beats idle logic below fades it to reveal the top bar (Option 2).
@@ -801,6 +807,7 @@ export default function BuilderScrollDemo() {
       cancelAnimationFrame(rafScrollRef.current); rafScrollRef.current = 0;
       if (transitionRef.current && transitionRef.current.readTimer) clearTimeout(transitionRef.current.readTimer);
       progRef.current = false; transitionRef.current = null; burstRef.current = 0; readHoldUntilRef.current = 0;
+      barFadeRef.current = false;
     };
 
     const build = (ty) => easeTo(ty, TRANSITION_MS, () => {
@@ -815,6 +822,7 @@ export default function BuilderScrollDemo() {
       if (to < 0 || to >= REST_P.length) { doEscape(); return; } // off the ends → let them leave
       const ty = restY(to); if (ty == null) return;
       transitionRef.current = { dir };
+      barFadeRef.current = false; // fresh transition: keep the bar up until THIS beat's chips launch
       if (dir < 0) { build(ty); return; } // REVERSE: single ease back, no read pause
       // FORWARD: READ then BUILD. Show beat k's sentence NOW (still parked, below its commit threshold)
       // and HOLD it readable for READ_MS; THEN ease across the threshold so the engine flies the chips /
