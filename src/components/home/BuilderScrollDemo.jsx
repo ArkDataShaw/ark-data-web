@@ -46,8 +46,10 @@ const SEAT_HOLD_MS = 280; // between beats, wait this long idle before fading th
 // transition sweeps p across exactly one threshold → exactly one beat. Tunable (Shaw tunes on-device).
 const REST_P = [0.05, 0.18, 0.42, 0.64, 0.85];
 const TRANSITION_MS = 1100; // fixed, scroll-speed-independent duration of ONE beat transition
-const INTENT_PX = 50;       // accumulated wheel delta (one burst) that fires a beat; 2× queues one more
-const EXIT_PX = 300;        // accumulated burst that ESCAPES the takeover (native scroll carries out)
+const INTENT_PX = 50;       // accumulated wheel delta (one burst) that fires the FIRST beat of a gesture
+const CATCHUP_PX = 450;     // each ADDITIONAL this-much of burst in one fast gesture = one more beat to catch
+                            // up (a gentle nudge ≈ one beat; a hard fling catches up several, played in
+                            // sequence). Big enough that a nudge + its inertia tail stays ONE beat. Tunable.
 const SETTLE_MS = 250;      // ease duration for settle-to-rest (the ball rolls into the valley)
 const IDLE_MS = 150;        // idle after last wheel before settling / resetting the burst / re-arming
 const READ_MS = 1400;       // a forward nudge shows the sentence and HOLDS it this long (readable) BEFORE
@@ -150,6 +152,8 @@ export default function BuilderScrollDemo() {
   const burstDirRef = useRef(0);      // direction of the current burst (accumulation resets on flip)
   const idleTimerRef = useRef(0);     // idle debounce → settle / burst reset / re-arm
   const rafScrollRef = useRef(0);     // rAF handle for the eased scroll
+  const targetValleyRef = useRef(0);  // valley the takeover is CHASING (catch-up plays beats until here)
+  const anchorValleyRef = useRef(0);  // valley the current wheel gesture STARTED from (for step counting)
   const readHoldUntilRef = useRef(0); // performance.now() until which a forward read-pause holds the sentence up
   const barFadeRef = useRef(false);   // chips have launched → fade the dark bar NOW (with the connectors), not at landing
   const shownBeatRef = useRef(-1);    // beat index whose sentence is currently in the caption (avoid re-flash)
@@ -602,8 +606,11 @@ export default function BuilderScrollDemo() {
       // Reset the burst on engage so the scroll-in momentum doesn't instantly advance past the hero.
       // NB: re-engage happens ONLY on the seat EDGE (this flip); mid-section re-arm after an escape is
       // owned by resetIdle() — do NOT write engagedRef on a non-edge here or it would fight the escape.
-      if (shouldSeat && !armedRef.current) { engagedRef.current = true; burstRef.current = 0; }
-      else if (!shouldSeat) { engagedRef.current = false; }
+      if (shouldSeat && !armedRef.current) {
+        engagedRef.current = true; burstRef.current = 0;
+        const v = clamp(topBeatRef.current + 1, 0, REST_P.length - 1);
+        targetValleyRef.current = v; anchorValleyRef.current = v; // start parked, not chasing
+      } else if (!shouldSeat) { engagedRef.current = false; }
     }
     if (frameRef.current) frameRef.current.style.opacity = collapsedRef.current ? '1' : String(easeOut(entry));
     if (!w || !booted) return;
@@ -796,7 +803,6 @@ export default function BuilderScrollDemo() {
       const pin = 4.2 * (document.documentElement.clientHeight || window.innerHeight);
       return { A, pin };
     };
-    const pNow = () => { const g = geom(); return g ? clamp((window.scrollY - g.A) / g.pin, 0, 1) : 0; };
     const restY = (k) => { const g = geom(); return g ? g.A + REST_P[k] * g.pin : null; };
     const currentValley = () => clamp(topBeatRef.current + 1, 0, REST_P.length - 1);
     const seatedNow = () => { const t = trackRef.current; if (!t) return false; const r = t.getBoundingClientRect(); return r.top <= 1 && r.bottom > 0; };
@@ -823,11 +829,10 @@ export default function BuilderScrollDemo() {
       barFadeRef.current = false;
     };
 
+    // one beat's transition; on completion, pump() chases the next if we're still catching up.
     const build = (ty) => easeTo(ty, TRANSITION_MS, () => {
       transitionRef.current = null;
-      // NO queue: reset the burst so the NEXT beat needs a fresh gesture — one gesture = one full,
-      // legible beat, then park. (Shaw 2026-07-12: chained/queued beats flew by too fast to read.)
-      burstRef.current = 0; burstDirRef.current = 0;
+      pump();
     });
 
     const startTransition = (dir) => {
@@ -852,6 +857,18 @@ export default function BuilderScrollDemo() {
       }, READ_MS);
     };
 
+    // CATCH-UP PUMP: play beats one clean transition at a time until we reach targetValleyRef. A fast
+    // scroll sets a far target; this walks there beat-by-beat (each with its full read+fly+land) so the
+    // story is never driven live/janky and never skips a beat. Idempotent: a transition-in-flight just
+    // returns and re-pumps on completion. When caught up, park (settle) at the valley.
+    const pump = () => {
+      if (transitionRef.current || progRef.current) return;      // busy — re-pumps when the ease finishes
+      if (!engagedRef.current || !seatedNow()) return;
+      const c = currentValley();
+      if (targetValleyRef.current === c) { burstRef.current = 0; burstDirRef.current = 0; settle(); return; }
+      startTransition(targetValleyRef.current > c ? 1 : -1);
+    };
+
     const settle = () => {
       if (!engagedRef.current || progRef.current || transitionRef.current || !seatedNow()) return;
       const ty = restY(currentValley()); if (ty == null || Math.abs(window.scrollY - ty) < 3) return;
@@ -861,50 +878,50 @@ export default function BuilderScrollDemo() {
     const resetIdle = () => {
       clearTimeout(idleTimerRef.current);
       idleTimerRef.current = setTimeout(() => {
-        burstRef.current = 0; burstDirRef.current = 0;
+        burstRef.current = 0; burstDirRef.current = 0; // gesture ended → reset the step-count accumulator
         if (armedRef.current || collapsedRef.current) return;
-        if (!engagedRef.current) { // re-arm after an escape, but only INSIDE the valley band (not exiting an end)
-          const p = pNow();
-          if (seatedNow() && p >= REST_P[0] && p <= REST_P[REST_P.length - 1]) { engagedRef.current = true; settle(); }
-          return;
-        }
-        settle();
+        // Disengaged means we END-EXITED at a valley end; STAY disengaged so native scroll carries the
+        // user out. Re-entry re-engages via the seat EDGE in frame() (no mid-band re-arm — at the last
+        // valley that would just yank them back and trap them). Engaged + idle → settle into the valley.
+        if (engagedRef.current) settle();
       }, IDLE_MS);
     };
 
     const onWheel = (e) => {
-      // Disengaged (e.g. after an escape) but still over the pinned section: keep bumping the idle
+      // Disengaged (e.g. after an end-exit) but still over the pinned section: keep bumping the idle
       // timer so re-arm waits for the scroll to TRULY stop — never interrupts inertial scroll mid-flight.
       if (!engagedRef.current) { if (seatedNow() && !armedRef.current && !collapsedRef.current) resetIdle(); return; }
       if (armedRef.current || collapsedRef.current || !seatedNow()) return;
       const dir = e.deltaY > 0 ? 1 : -1;
-      // A transition (read hold or build) is already playing — you've COMMITTED to this beat.
-      // Same-direction input is just "keep going" (trackpad inertia keeps firing for ~1s and would
-      // otherwise pile up during the frozen read hold and cross EXIT_PX, false-escaping → snap-back to
-      // the previous valley). Swallow it: no accumulation, no escape, no queue. Only an OPPOSITE hard
-      // scroll (deliberate reverse) falls through below to the escape accumulator so a real bail works.
-      if (transitionRef.current && dir === transitionRef.current.dir) { e.preventDefault(); return; }
-      if (dir !== burstDirRef.current) { burstRef.current = 0; burstDirRef.current = dir; }
+      // A new gesture (direction flip, or first event) anchors the step count at the CURRENT valley.
+      if (dir !== burstDirRef.current) { burstRef.current = 0; burstDirRef.current = dir; anchorValleyRef.current = currentValley(); }
       burstRef.current += e.deltaY;
       resetIdle();
       const mag = Math.abs(burstRef.current);
-      // Escape (big burst) OR a nudge off the ends (no next valley) → release WITHOUT preventDefault so
-      // this very event scrolls natively and carries the user out (no swallowed "dead" end-nudge).
-      const atEnd = (dir > 0 && currentValley() >= REST_P.length - 1) || (dir < 0 && currentValley() <= 0);
-      if (mag >= EXIT_PX || atEnd) { doEscape(); return; }
+      if (mag < INTENT_PX) { e.preventDefault(); return; } // not enough intent yet — hold scroll, wait
+      // END-EXIT (the ONLY escape now): already parked at the far valley and still pushing outward →
+      // release so native scroll carries them out (down into the charts / up above the demo). A fast
+      // scroll MID-story never escapes; it catches up (below).
+      if ((dir > 0 && currentValley() >= REST_P.length - 1) || (dir < 0 && currentValley() <= 0)) { doEscape(); return; }
+      // CATCH-UP: first INTENT = 1 beat; each extra CATCHUP_PX of the SAME gesture = one more beat.
+      // A gentle nudge (+inertia tail) stays 1; a hard fling targets several, played in sequence.
+      const steps = 1 + Math.floor((mag - INTENT_PX) / CATCHUP_PX);
+      targetValleyRef.current = clamp(anchorValleyRef.current + dir * steps, 0, REST_P.length - 1);
       e.preventDefault();
-      // Opposite-direction input during a transition that didn't reach EXIT → ignore (no queue).
-      if (transitionRef.current) return;
-      if (mag >= INTENT_PX) startTransition(dir);
+      pump();
     };
 
     const onKey = (e) => {
-      if (armedRef.current || collapsedRef.current || !engagedRef.current || !seatedNow() || transitionRef.current) return;
+      if (armedRef.current || collapsedRef.current || !engagedRef.current || !seatedNow()) return;
       const down = ['ArrowDown', 'PageDown', ' ', 'Spacebar'].includes(e.key);
       const up = ['ArrowUp', 'PageUp'].includes(e.key);
       if (!down && !up) return;
       e.preventDefault();
-      startTransition(down ? 1 : -1);
+      const dir = down ? 1 : -1;
+      if ((dir > 0 && currentValley() >= REST_P.length - 1) || (dir < 0 && currentValley() <= 0)) { doEscape(); return; }
+      anchorValleyRef.current = currentValley();
+      targetValleyRef.current = clamp(currentValley() + dir, 0, REST_P.length - 1); // one beat per key press
+      pump();
     };
 
     const targets = [window];

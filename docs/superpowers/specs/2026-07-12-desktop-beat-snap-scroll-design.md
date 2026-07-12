@@ -184,8 +184,15 @@ FEEL to tune on-device: `TRANSITION_MS`, `REST_P` spacing, `INTENT_PX`, `EXIT_PX
   NO queue.** Further input during a transition is ignored until parked; the burst resets on park so the
   next beat needs a fresh gesture. One gesture = exactly one full, legible beat. (Queued/chained beats
   flew by too fast to read.) Escape (EXIT_PX) is still honored mid-transition so a hard scroll can bail.
-- **Escape:** a single big accumulated `wheel` burst (> EXIT_PX) abandons takeover for that gesture and
-  lets native scroll carry the user out; takeover re-arms on re-entry/re-seat.
+- **Escape:** ~~a single big accumulated `wheel` burst (> EXIT_PX) abandons takeover~~ → **REVISED
+  2026-07-12 (Shaw, on-device): CATCH-UP model.** A fast scroll mid-story NO LONGER escapes (that
+  disengaged the takeover and let `frame()` drive beats live/janky — sentence-less chips, off-target
+  flies). Instead the takeover stays engaged and CATCHES UP: a gesture targets a valley (first
+  `INTENT_PX` = 1 beat; each additional `CATCHUP_PX` = one more) and `pump()` plays the pending beats
+  one clean transition at a time (each with its full read+fly+land) until it reaches the target, then
+  parks. Escape now happens ONLY at the ends — a nudge outward while already parked at the first/last
+  valley releases to native scroll (down into the charts / up above the demo). Re-entry re-engages via
+  the seat EDGE in `frame()`; there is no mid-band re-arm (it would trap the user at the last valley).
 - **Hero valley:** valley 0 is its own rest — pin/seat shows the un-filtered builder + hero sentence,
   the user parks to read it, and a nudge STARTS the story (fires beat 0 / generate).
 - **TRANSITION_MS seed:** ~1100ms (clears the ~700–800ms chip fly+morph with a readable tail).
