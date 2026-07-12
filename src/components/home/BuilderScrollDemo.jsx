@@ -85,7 +85,7 @@ const lcsubstr = (a, b) => {
 const CHIP_CSS = {
   display: 'inline-flex', alignItems: 'center', gap: '6px',
   background: '#f5f3ff', border: '1px solid #ede9fe', borderRadius: '999px',
-  padding: '4px 9px', fontSize: '12px', color: '#7c3aed', fontWeight: 600,
+  padding: '3px 9px', fontSize: '12px', color: '#7c3aed', fontWeight: 600, // 3px keeps H≈21px (strip invariant) + pixel-matches the landed .chip
   fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif',
   whiteSpace: 'nowrap', lineHeight: 'normal', boxSizing: 'border-box',
 };

@@ -200,11 +200,15 @@
      then a native page scroll through charts/records. Class-gated: desktop/standalone are untouched. */
   body.ark-fullheight .shell{height:auto}
   body.ark-fullheight .main{overflow:visible;height:auto}
-  /* App-parity desktop strip (Shaw 2026-07-11 / IMPL_strip-thickness guide): flex-wrap:nowrap so the
-     reach count + chips sit in ONE row and the chips wrap INTERNALLY within their flex cell, growing
-     the strip from the first wrapped row. min-height:55px matches the app; no max-height, no 3-row
-     cap, no wrapchips reflow. */
-  .strip{display:flex;align-items:center;gap:16px;padding:12px 80px 12px 20px;background:#fff;border-bottom:1px solid var(--slate-200);flex-wrap:nowrap;min-height:55px;box-sizing:border-box;position:sticky;top:0;z-index:1001}
+  /* App-parity desktop strip (M1 height-floor mechanism — IMPL_strip-thickness guide, Shaw 2026-07-12).
+     The strip stays FIXED for 2 chip rows and grows only on row 3, purely from CSS math: a ZERO
+     VERTICAL PADDING .strip floored at min-height:55px. Invariant: 2·H + 1·G ≤ 55 < 3·H + 2·G where
+     H = chip height (~21px), G = chip gap (5px) → 47 ≤ 55 < 73. ⚠️ Vertical padding MUST stay 0
+     (any top/bottom padding steals the floor and the strip grows on row 2 — the bug this fixes).
+     Any change to chip padding/font/border/gap must be re-checked against the invariant.
+     flex-wrap:nowrap so the reach count + chips share one row, chips wrapping internally. No
+     max-height, no 3-row cap, no wrapchips reflow. */
+  .strip{display:flex;align-items:center;gap:16px;padding:0 80px 0 20px;background:#fff;border-bottom:1px solid var(--slate-200);flex-wrap:nowrap;min-height:55px;box-sizing:border-box;position:sticky;top:0;z-index:1001}
   .reachbox{display:flex;align-items:center;gap:12px}
   .reachnum{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
   .reachnum.loading{opacity:.4}
@@ -216,9 +220,12 @@
   .gauge .pin{position:absolute;top:-4px;width:4px;height:16px;border-radius:2px;background:var(--slate-900);transform:translateX(-50%);transition:left .4s ease;left:60%}
   .ghint{font-size:11px;font-weight:600;margin-top:5px}
   .hint-ideal{color:var(--green)}.hint-narrow{color:var(--rose)}.hint-broad{color:var(--amber)}
-  .stripchips{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0}
-  /* purple filter chips — match the real app's .pk-chip (--violet-50 bg / --violet text). Shaw 2026-07-10 */
-  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--violet-50);border:1px solid #ede9fe;border-radius:999px;padding:4px 9px;font-size:12px;color:var(--violet)}
+  .stripchips{display:flex;flex-wrap:wrap;gap:5px;flex:1;min-width:0}  /* G=5px (invariant gap) */
+  /* purple filter chips — match the real app's .pk-chip (--violet-50 bg / --violet text). Shaw 2026-07-10.
+     H≈21px (12px font + 3px vertical padding + 1px border) so 2 rows (47px) fit under the 55px strip
+     floor and only row 3 (73px) grows it — see the .strip invariant above. Keep in sync with the
+     parent's CHIP_CSS clone (BuilderScrollDemo.jsx) so the fly-in stays pixel-identical. */
+  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--violet-50);border:1px solid #ede9fe;border-radius:999px;padding:3px 9px;font-size:12px;color:var(--violet)}
   .chip b{font-weight:700;opacity:.75}.chip .x{cursor:pointer;color:var(--violet);opacity:.6;font-weight:700}.chip .x:hover{color:var(--rose);opacity:1}
   .chip.excl{background:#fef2f2;border-color:#fecaca;color:#dc2626}.chip.excl b{color:#dc2626}
   .emptychips{font-size:12.5px;color:var(--slate-400)}
