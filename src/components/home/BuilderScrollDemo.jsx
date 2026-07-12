@@ -852,6 +852,12 @@ export default function BuilderScrollDemo() {
       if (!engagedRef.current) { if (seatedNow() && !armedRef.current && !collapsedRef.current) resetIdle(); return; }
       if (armedRef.current || collapsedRef.current || !seatedNow()) return;
       const dir = e.deltaY > 0 ? 1 : -1;
+      // A transition (read hold or build) is already playing — you've COMMITTED to this beat.
+      // Same-direction input is just "keep going" (trackpad inertia keeps firing for ~1s and would
+      // otherwise pile up during the frozen read hold and cross EXIT_PX, false-escaping → snap-back to
+      // the previous valley). Swallow it: no accumulation, no escape, no queue. Only an OPPOSITE hard
+      // scroll (deliberate reverse) falls through below to the escape accumulator so a real bail works.
+      if (transitionRef.current && dir === transitionRef.current.dir) { e.preventDefault(); return; }
       if (dir !== burstDirRef.current) { burstRef.current = 0; burstDirRef.current = dir; }
       burstRef.current += e.deltaY;
       resetIdle();
@@ -861,8 +867,7 @@ export default function BuilderScrollDemo() {
       const atEnd = (dir > 0 && currentValley() >= REST_P.length - 1) || (dir < 0 && currentValley() <= 0);
       if (mag >= EXIT_PX || atEnd) { doEscape(); return; }
       e.preventDefault();
-      // A transition is playing → ignore further input (no queue). Escape (EXIT_PX) is still honored
-      // above, so a hard scroll can bail mid-transition; a normal nudge just waits until it parks.
+      // Opposite-direction input during a transition that didn't reach EXIT → ignore (no queue).
       if (transitionRef.current) return;
       if (mag >= INTENT_PX) startTransition(dir);
     };
