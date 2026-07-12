@@ -310,6 +310,9 @@ export default function BuilderScrollDemo() {
         position: 'fixed', left: from.left + 'px', top: from.top + 'px', margin: 0,
         zIndex: 25, transition: 'transform .62s cubic-bezier(.22,.61,.36,1), box-shadow .62s',
         boxShadow: '0 12px 40px rgba(124,58,237,0.35)', pointerEvents: 'none',
+        // fly at the BIG SENTENCE size (matches .bsd-cap .bsd-chip: 17px / 4px 15px). The size-morph
+        // in morph() shrinks this to the strip CHIP_CSS size (12px / 3px 9px) AFTER landing.
+        fontSize: '17px', padding: '4px 15px', fontWeight: 700,
       });
       // content lives in an inner, left-aligned span so the pill can grow to the right (overflow
       // clipped) without the sentence text recentering as it expands.
@@ -340,7 +343,21 @@ export default function BuilderScrollDemo() {
       // travel transform (pure inline can't be translated).
       const mkI = (t) => { const s = document.createElement('span'); s.style.cssText = 'display:inline;white-space:pre'; s.textContent = t; return s; };
       const mkIB = (t) => { const s = document.createElement('span'); s.style.cssText = 'display:inline-block;white-space:pre'; s.textContent = t; return s; };
+      const SIZE_MORPH_MS = 200; // morph A duration (17px→12px shrink) before the text expansion
+      // MORPH A (size): the clone landed at the BIG sentence size (17px / 4px 15px). Shrink it in
+      // place to the real strip-chip size (CHIP_CSS: 12px / 3px 9px) FIRST. Only once this settles
+      // does morph B (the text expansion below) run — the two are sequential, not simultaneous.
       const morph = () => {
+        void clone.offsetWidth;
+        clone.style.transition = 'font-size .2s ease-out, padding .2s ease-out, box-shadow .3s';
+        clone.style.fontSize = CHIP_CSS.fontSize;   // 17px → 12px
+        clone.style.padding = CHIP_CSS.padding;     // 4px 15px → 3px 9px
+        clone.style.fontWeight = CHIP_CSS.fontWeight;
+        setTimeout(textMorph, SIZE_MORPH_MS);
+      };
+      // MORPH B (text): the EXISTING lcsubstr expansion (Florida → Location: FL), gated to start
+      // AFTER morph A. Width grows + label/✕ fade in; unchanged from before.
+      const textMorph = () => {
         const startW = clone.getBoundingClientRect().width;
         clone.style.width = startW + 'px';
         clone.style.overflow = 'hidden';
@@ -431,10 +448,11 @@ export default function BuilderScrollDemo() {
         if (finished) return; finished = true;
         clone.removeEventListener('transitionend', done);
         morph();
-        // seamless handoff: once the morph has settled the clone is pixel-identical to the real strip
-        // chip (same bold label @.75, normal value, ✕ @.6, no shadow, same padding/font/gap), so we
-        // reveal the real chip and remove the clone in the SAME frame — an invisible swap, no fade.
-        setTimeout(landReal, 640);
+        // seamless handoff: once BOTH morphs (size A + text B) have settled the clone is
+        // pixel-identical to the real strip chip (same bold label @.75, normal value, ✕ @.6, no
+        // shadow, same padding/font/gap), so we reveal the real chip and remove the clone in the SAME
+        // frame — an invisible swap, no fade. 640ms (text-morph settle) + 200ms (size-morph A).
+        setTimeout(landReal, 840);
       };
       // hard-abort: the strip moved mid-flight → skip the fly/morph and land the real chip NOW.
       // (abort only fires BEFORE done, so the morph's transient nodes never exist yet.)
