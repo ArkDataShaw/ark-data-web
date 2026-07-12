@@ -703,8 +703,13 @@ export default function BuilderScrollDemo() {
         /* every sentence is the SAME big/bold size as the hero (Shaw 2026-07-10). */
         .bsd-cap .bsd-join{color:#fff;font-weight:700;font-size:32px;letter-spacing:-.015em}
         .bsd-cap .bsd-chip{font-size:17px !important;padding:8px 15px !important;font-weight:700 !important}
+        /* SEATED: the bar covers the builder's top bar → it needs its OWN opaque dark fill (the
+           unseated band is transparent, showing the dark page). Keyed off the SECTION class so the
+           caption's own JS-rewritten className can't drop it. Shadow makes it read as a ribbon
+           floating OVER the app, not a header row. */
+        section.bsd-seated .bsd-cap{background:#060D1A;height:${SENTENCE_ZONE + BAR_OVERLAP + 12}px;box-shadow:0 8px 20px rgba(0,0,0,0.45);border-radius:10px}
       `}</style>
-      <section ref={trackRef} style={{ height: sectionH, position: 'relative', boxSizing: 'border-box', paddingTop: collapsed ? `${NAV_PX}px` : 0, background: '#060D1A', borderTop: '1px solid #101E33' }}>
+      <section ref={trackRef} className={seated ? 'bsd-seated' : undefined} style={{ height: sectionH, position: 'relative', boxSizing: 'border-box', paddingTop: collapsed ? `${NAV_PX}px` : 0, background: '#060D1A', borderTop: '1px solid #101E33' }}>
         {/* sentence band FIRST in flow (above the builder): sticky, so it scrolls up into view with
             the builder and pins with it. display:none once collapsed so it doesn't hold flow space. */}
         <div ref={captionRef} className="bsd-cap" style={{ opacity: 0, display: collapsed ? 'none' : undefined }}>
