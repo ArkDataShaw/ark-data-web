@@ -455,6 +455,7 @@ export default function BuilderScrollDemo() {
   // swapped in while invisible (transition off) then faded 0→1, so you never see the old text
   // cross-dissolve into the new one — each sentence cleanly fades in right before its beat.
   const preshowCaption = useCallback((k) => {
+    lastCapAtRef.current = performance.now();
     const inner = capInnerRef.current;
     if (inner) { inner.style.transition = 'none'; inner.style.opacity = '0'; }
     beatSpansRef.current[k] = buildCaption(k);
@@ -550,12 +551,23 @@ export default function BuilderScrollDemo() {
     }
     storyDoneRef.current = complete;
 
-    // BAND opacity: fades in on scroll-entry with the builder (hero phase), stays visible through
-    // the story, hidden once explored or scrolled past the beats. The per-beat sentence fade is on
-    // the INNER wrapper (preshowCaption), independent of this.
+    // BAND opacity. Pre-seat (rising / hero): fade in with the builder on entry. Seated (Option 2):
+    // the bar COVERS the real top bar, so between beats we fade the whole bar out to REVEAL the top
+    // bar (Generate/Save) — reinforcing "full live app" — then re-cover for the next beat. Guards
+    // against strobe: only reveal after SEAT_HOLD_MS idle since the last sentence AND when the next
+    // beat isn't imminent (within CAPTION_LEAD of its threshold). Hidden entirely once explored/past.
     if (captionRef.current) {
-      const hideCap = collapsedRef.current || armedRef.current || p >= 0.90;
-      captionRef.current.style.opacity = hideCap ? '0' : (topBeatRef.current < 0 ? String(entry) : '1');
+      let capOp;
+      if (collapsedRef.current || armedRef.current || p >= 0.90) capOp = 0;
+      else if (topBeatRef.current < 0) capOp = String(entry); // pre-seat hero rise
+      else if (!seatedRef.current) capOp = 1;
+      else {
+        const nextBeat = BEATS.find((b, i) => i > topBeatRef.current && p >= b - CAPTION_LEAD);
+        const imminent = nextBeat !== undefined && !appliedRef.current.has(BEATS.indexOf(nextBeat));
+        const idle = performance.now() - lastCapAtRef.current > SEAT_HOLD_MS;
+        capOp = (idle && !imminent) ? 0 : 1; // reveal the top bar only when idle between beats
+      }
+      captionRef.current.style.opacity = String(capOp);
     }
     if (collapsedRef.current || armedRef.current) return; // frozen once explored
 
