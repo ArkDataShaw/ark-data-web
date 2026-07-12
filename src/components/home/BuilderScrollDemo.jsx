@@ -238,7 +238,7 @@ export default function BuilderScrollDemo() {
           ghost.classList.remove('ark-hidden');
           Object.assign(ghost.style, {
             position: 'fixed', left: (ifrBox.left + prev.left) + 'px', top: (ifrBox.top + prev.top) + 'px',
-            margin: 0, zIndex: 6, transition: 'opacity .3s ease-out', pointerEvents: 'none', visibility: 'visible',
+            margin: 0, zIndex: 25, transition: 'opacity .3s ease-out', pointerEvents: 'none', visibility: 'visible',
           });
           fly.appendChild(ghost);
           requestAnimationFrame(() => { ghost.style.opacity = '0'; });
@@ -308,7 +308,7 @@ export default function BuilderScrollDemo() {
       const clone = span.cloneNode(true);
       Object.assign(clone.style, CHIP_CSS, {
         position: 'fixed', left: from.left + 'px', top: from.top + 'px', margin: 0,
-        zIndex: 6, transition: 'transform .62s cubic-bezier(.22,.61,.36,1), box-shadow .62s',
+        zIndex: 25, transition: 'transform .62s cubic-bezier(.22,.61,.36,1), box-shadow .62s',
         boxShadow: '0 12px 40px rgba(124,58,237,0.35)', pointerEvents: 'none',
       });
       // content lives in an inner, left-aligned span so the pill can grow to the right (overflow
@@ -714,7 +714,7 @@ export default function BuilderScrollDemo() {
         .bsd-cap-inner{display:flex;flex-wrap:wrap;gap:10px 11px;align-items:center;justify-content:center}
         /* every sentence is the SAME big/bold size as the hero (Shaw 2026-07-10). */
         .bsd-cap .bsd-join{color:#fff;font-weight:700;font-size:32px;letter-spacing:-.015em}
-        .bsd-cap .bsd-chip{font-size:17px !important;padding:8px 15px !important;font-weight:700 !important}
+        .bsd-cap .bsd-chip{font-size:17px !important;padding:4px 15px !important;font-weight:700 !important}
         /* SEATED: the bar covers the builder's top bar → it needs its OWN opaque dark fill (the
            unseated band is transparent, showing the dark page). Keyed off the SECTION class so the
            caption's own JS-rewritten className can't drop it. Shadow makes it read as a ribbon
@@ -761,7 +761,7 @@ export default function BuilderScrollDemo() {
         </div>
 
         {/* fixed layer hosting the flying chip clones */}
-        <div ref={flyRef} style={{ position: 'fixed', inset: 0, zIndex: 6, pointerEvents: 'none' }} />
+        <div ref={flyRef} style={{ position: 'fixed', inset: 0, zIndex: 25, pointerEvents: 'none' }} />
 
         {!armed && (
           <button ref={scrimRef} onClick={onExplore}
