@@ -38,6 +38,7 @@
     '#saveBtn{display:none}', // no Save in the scripted homepage embed
     '#audname{display:none}', // no name input in the demo (Shaw 2026-07-07)
     '#viewSeg{display:none}', // no 500-row preview in the embed — Map & insights only
+    '.pvtitle{display:none}', // no auto audience title ("FL Homeowners — Pool Construction Intent") in the scripted demo — all beats (Shaw 2026-07-12)
     // funnel hold: everything is pre-baked — never show "Building full density"
     'body.ark-funnel-hold #mapLoading{display:none!important}',
   ].join('\n');
