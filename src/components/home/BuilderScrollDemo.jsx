@@ -33,6 +33,12 @@ const NAV_PX = 70; // pin the sentence band flush under the 70px fixed nav (no g
 // like a chat bubble). We reserve this band by pinning the builder SENTENCE_ZONE px lower, so the
 // sentence has room to display, the filters fly out of it into the strip, and the rest fades.
 const SENTENCE_ZONE = 54;
+// When the demo pins, the builder slides UP so its own top bar tucks BEHIND the dark sentence bar,
+// reclaiming the sentence-band space. BAR_OVERLAP = the gap left below the nav so the top bar's top
+// border isn't flush against the nav (breathing room). The builder's pinned top goes from
+// NAV_PX+SENTENCE_ZONE (band-above) to NAV_PX+BAR_OVERLAP (tucked behind the bar). Desktop only.
+const BAR_OVERLAP = 6;
+const SEAT_HOLD_MS = 280; // between beats, wait this long idle before fading the bar to reveal the top bar
 
 // beat COMMIT thresholds (data update + chip fly) over the pinned range. Each beat's sentence
 // fades in CAPTION_LEAD earlier, so the sentence always reads a moment BEFORE its data lands.
@@ -121,6 +127,9 @@ export default function BuilderScrollDemo() {
 
   const [H, setH] = useState(0);
   const [collapsed, setCollapsed] = useState(false);
+  const [seated, setSeated] = useState(false); // pinned → builder slid up behind the dark bar (desktop overlay)
+  const seatedRef = useRef(false);             // mirror for frame() without a stale closure
+  const lastCapAtRef = useRef(0);              // performance.now() when the current beat's sentence was last shown
   const [mountIframe, setMountIframe] = useState(false);
   const [booted, setBooted] = useState(false);
   const [armed, setArmed] = useState(false);
@@ -609,6 +618,7 @@ export default function BuilderScrollDemo() {
   useEffect(() => { measureRef.current = measure; }, [measure]);
   useEffect(() => { snapRef.current = snapStrayChips; }, [snapStrayChips]);
   useEffect(() => { armedRef.current = armed; }, [armed]);
+  useEffect(() => { seatedRef.current = seated; }, [seated]);
   // render the hero sentence as soon as the builder boots, so it's present (in the sticky band) while
   // the section scrolls up into view — before frame()/any beat runs. Opacity is driven by frame().
   useEffect(() => { if (booted && topBeatRef.current < 0) { preshowCaption(0); if (captionRef.current) captionRef.current.style.opacity = '0'; } }, [booted, preshowCaption]);
