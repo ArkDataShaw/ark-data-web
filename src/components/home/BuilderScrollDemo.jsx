@@ -332,12 +332,21 @@ export default function BuilderScrollDemo() {
       const clone = span.cloneNode(true);
       Object.assign(clone.style, CHIP_CSS, {
         position: 'fixed', left: from.left + 'px', top: from.top + 'px', margin: 0,
-        zIndex: 25, transition: 'transform .62s cubic-bezier(.22,.61,.36,1), box-shadow .62s',
+        zIndex: 25, transition: 'transform .62s cubic-bezier(.22,.61,.36,1), box-shadow .62s, font-size .62s cubic-bezier(.22,.61,.36,1), padding .62s cubic-bezier(.22,.61,.36,1), font-weight .62s cubic-bezier(.22,.61,.36,1)',
         boxShadow: '0 12px 40px rgba(124,58,237,0.35)', pointerEvents: 'none',
       });
       // content lives in an inner, left-aligned span so the pill can grow to the right (overflow
       // clipped) without the sentence text recentering as it expands.
       clone.style.justifyContent = 'flex-start';
+      // SIZE MORPH IN FLIGHT: start at the SENTENCE chip's rendered size (mirrors the `.bsd-cap .bsd-chip`
+      // CSS below: 17px / 4px 15px / 700) so the clone launches pixel-identical to the chip in the
+      // sentence, then tween height+font DOWN to the strip size (CHIP_CSS: 12px / 3px 9px / 600) over the
+      // .62s flight so it ARRIVES already at its landed dimensions — no size pop at launch or landing.
+      // End values == CHIP_CSS == exactly what it was before, so the landing state + morph/expand are
+      // UNCHANGED; only the in-flight interpolation is new.
+      clone.style.fontSize = '17px';
+      clone.style.padding = '4px 15px';
+      clone.style.fontWeight = '700';
       const inner0 = document.createElement('span');
       inner0.style.cssText = 'display:inline-flex;align-items:center;gap:6px;white-space:nowrap';
       while (clone.firstChild) inner0.appendChild(clone.firstChild);
@@ -347,9 +356,13 @@ export default function BuilderScrollDemo() {
       // check-at-LAUNCH: reveal this filter's sidebar selection the moment the chip STARTS moving
       // from the sentence toward the strip (Shaw 2026-07-11) — not when it lands.
       try { if (w.ArkEmbed.landSel) w.ArkEmbed.landSel(chip.value, chip.label); } catch { /* noop */ }
+      void clone.offsetWidth; // flush the sentence-size START so the size tween (below) animates from it
       requestAnimationFrame(() => {
         clone.style.transform = `translate(${tx - from.left}px, ${ty - from.top}px)`;
         clone.style.boxShadow = '0 2px 10px rgba(124,58,237,0.12)';
+        clone.style.fontSize = '12px';    // → strip font (CHIP_CSS), tweened over the flight
+        clone.style.padding = '3px 9px';  // → strip padding: height shrinks to the landed strip height
+        clone.style.fontWeight = '600';   // → strip weight (morph then sets per-part weights on landing)
       });
       let finished = false;
       const outStr = span.textContent || ''; // the SENTENCE form ("Florida", "Miami", …)
