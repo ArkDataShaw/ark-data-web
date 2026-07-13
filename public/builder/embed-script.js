@@ -263,6 +263,18 @@
     _setStageMeta: function (idx) {
       var st = this._stages && this._stages[idx];
       if (!st) return;
+      // SMOOTH BEAT-TO-BEAT CHART TWEEN (Shaw 2026-07-13): reuse the app's own FLIP system so every bar
+      // chart (Top States/Cities, income, net worth, intent), the age pyramid, and the coverage counts
+      // animate from their PREVIOUS value to the NEXT — the way the homeownership + family donuts already
+      // do (those self-tween in svgDonut). snapshotCharts() captures each bar width/height + coverage
+      // number BEFORE we overwrite them; after the repaint, animateCharts(false) sets each element back to
+      // its old value, reflows, then transitions to the new one (CSS width/height/flex-grow transition +
+      // a coverage count-up). Bars are matched POSITIONALLY (row 0, row 1, …), so Top States → Top Cities
+      // tweens each bar's width from the old state's value to the new city's value while the label swaps —
+      // the bars move/resize, they don't hard-cut. Guarded to a real beat change so per-tick reasserts
+      // (same idx) don't re-fire the animation mid-flight.
+      var beatChanged = (this._paintedMetaKey !== idx);
+      if (beatChanged && typeof window.snapshotCharts === 'function') { try { window.snapshotCharts(); } catch (e) { /* noop */ } }
       // reach only re-rendered OUTSIDE the animation grace window (reassert path)
       try {
         if (window._reach !== st.reach) {
@@ -280,6 +292,7 @@
         for (var k = 0; k < ns.length && k < vals.length; k++) ns[k].textContent = vals[k] == null ? '\u2014' : Number(vals[k]).toLocaleString();
       }
       this._paintStageCharts(idx);
+      if (beatChanged && typeof window.animateCharts === 'function') { try { window.animateCharts(false); } catch (e) { /* noop */ } }
     },
     _paintedMetaKey: -1,
     // Scale an age/gender split to a target reach (keeps the real per-stage SHAPE, makes the
