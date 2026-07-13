@@ -52,7 +52,7 @@ const CATCHUP_PX = 450;     // each ADDITIONAL this-much of burst in one fast ge
                             // sequence). Big enough that a nudge + its inertia tail stays ONE beat. Tunable.
 const SETTLE_MS = 250;      // ease duration for settle-to-rest (the ball rolls into the valley)
 const IDLE_MS = 150;        // idle after last wheel before settling / resetting the burst / re-arming
-const READ_MS = 1400;       // a forward nudge shows the sentence and HOLDS it this long (readable) BEFORE
+const READ_MS = 900;        // a forward nudge shows the sentence and HOLDS it this long (readable) BEFORE
                             // the chips fly / data commits — reading is separated from the build. Tunable.
 
 // beat COMMIT thresholds (data update + chip fly) over the pinned range. Each beat's sentence
@@ -577,6 +577,16 @@ export default function BuilderScrollDemo() {
     }
   }, []);
 
+  // Land (hand off) EVERY lingering flying clone into its real strip chip NOW. abort() reveals the real
+  // strip chip (which lives INSIDE the iframe — structurally below the parent's dark sentence bar) and
+  // removes the fixed clone. Called when a NEW beat commits so the PREVIOUS beat's clone can't still be
+  // a z-25 fixed element crossing/over the next beat's dark bar as it re-covers (the "chip clips through
+  // the dark bar" artifact on fast/catch-up beats). The launching beat's OWN chips fly a frame later, so
+  // this only clears stragglers. No-op when nothing is in flight (the common, well-paced case).
+  const landAllInFlight = useCallback(() => {
+    for (let i = inFlightRef.current.length - 1; i >= 0; i--) inFlightRef.current[i].abort();
+  }, []);
+
   const frame = useCallback(() => {
     const track = trackRef.current;
     if (!track) return;
@@ -695,6 +705,7 @@ export default function BuilderScrollDemo() {
         if (engagedRef.current && tr_ && i !== tr_.commitBeat) break;
         if (now - lastBeatAtRef.current >= BEAT_MIN_GAP_MS) {
           if (i >= 1 && (!generatedRef.current || !w.ArkEmbed.mapReady())) break; // wait for map
+          landAllInFlight(); // hand off any straggler clone from the previous beat before this beat's bar/chips
           let spans = beatSpansRef.current[i];
           if (!spans) { spans = buildCaption(i); beatSpansRef.current[i] = spans; capShownRef.current.add(i); } // fast scroll skipped the pre-show
           const prevRects = captureChipRects(w); // FLIP: existing chip positions BEFORE the rebuild
@@ -728,7 +739,7 @@ export default function BuilderScrollDemo() {
     // keep all landed chips revealed — the builder's renderChips rebuilds + re-hides #chips on
     // every sync (per-stage repaint), which would otherwise drop already-flown chips for a frame.
     if (landedRef.current.size) { readChips(w).forEach(c => { if (landedRef.current.has(c.key)) c.el.classList.remove('ark-hidden'); }); }
-  }, [mountIframe, booted, app, buildCaption, settleThenFly, preshowCaption, reverseTo, snapStrayChips]);
+  }, [mountIframe, booted, app, buildCaption, settleThenFly, preshowCaption, reverseTo, snapStrayChips, landAllInFlight]);
 
   const measure = useCallback(() => {
     const w = app();
@@ -983,7 +994,7 @@ export default function BuilderScrollDemo() {
            unseated band is transparent, showing the dark page). Keyed off the SECTION class so the
            caption's own JS-rewritten className can't drop it. Shadow makes it read as a ribbon
            floating OVER the app, not a header row. */
-        section.bsd-seated .bsd-cap{background:#060D1A;height:${SENTENCE_ZONE + BAR_OVERLAP + 12}px;box-shadow:0 8px 20px rgba(0,0,0,0.45);border-radius:10px}
+        section.bsd-seated .bsd-cap{background:#060D1A;height:${SENTENCE_ZONE + BAR_OVERLAP + 2}px;box-shadow:0 8px 20px rgba(0,0,0,0.45);border-radius:10px}
       `}</style>
       <section ref={trackRef} className={seated ? 'bsd-seated' : undefined} style={{ height: sectionH, position: 'relative', boxSizing: 'border-box', paddingTop: collapsed ? `${NAV_PX}px` : 0, background: '#060D1A', borderTop: '1px solid #101E33' }}>
         {/* sentence band FIRST in flow (above the builder): sticky, so it scrolls up into view with
