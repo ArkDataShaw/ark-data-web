@@ -372,11 +372,18 @@
           if (typeof SHOW === 'function') SHOW('card-networth', vbars('networthBars', nwEntries, { fmt: typeof nwLabel === 'function' ? nwLabel : undefined }));
         }
         // DESKTOP: Intent Strength lives in the always-visible maprail, so it must narrate per beat
-        // too. It's a mock proportional of reach (same split renderCharts uses: 25/45/30) — the
-        // scripted story never picks a score filter, so drive it straight off the stage's reach.
+        // too. The OLD split was a fixed 25/45/30 of reach — identical every beat, so the bars never
+        // moved (nothing for the tween to animate). Real score_category barely shifts as a % and is
+        // ~0% high, so it reads as a dead chart. Instead use a DESIGNED per-beat split that mirrors the
+        // real RAW trend: high-intent count actually falls as the audience narrows (real highs:
+        // 1776 → 110 → 11 → 1), so HIGH intent decreases each beat here too, capped ≤9% (never fake-hot).
+        // Low rises, Medium eases — all three bars move, so the chart narrates + tweens per beat.
+        // Reach-scaled to counts so the tooltip shows realistic numbers while the bars show the split.
         if (st.income && typeof vbars === 'function' && st.reach != null) {
           var _r = st.reach;
-          var mockIntent = [['Low', Math.round(_r * 0.25)], ['Medium', Math.round(_r * 0.45)], ['High', Math.round(_r * 0.30)]];
+          var _isplit = [ { l: 63, m: 28, h: 9 }, { l: 66, m: 27, h: 7 }, { l: 69, m: 26, h: 5 }, { l: 72, m: 25, h: 3 } ];
+          var _sp = _isplit[idx] || _isplit[_isplit.length - 1];
+          var mockIntent = [['Low', Math.round(_r * _sp.l / 100)], ['Medium', Math.round(_r * _sp.m / 100)], ['High', Math.round(_r * _sp.h / 100)]];
           if (typeof SHOW === 'function') SHOW('card-intent', vbars('intentBars', mockIntent, {}));
         }
         // apply the insights grid order NOW (the story skips renderCharts) so Home/Family sit in
