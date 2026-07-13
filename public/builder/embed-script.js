@@ -371,20 +371,19 @@
           var nwEntries = Object.entries(st.networth).filter(function (e) { return e[1] > 0; }).sort(function (a, b) { return nwRank(a[0]) - nwRank(b[0]); });
           if (typeof SHOW === 'function') SHOW('card-networth', vbars('networthBars', nwEntries, { fmt: typeof nwLabel === 'function' ? nwLabel : undefined }));
         }
-        // DESKTOP: Intent Strength lives in the always-visible maprail, so it must narrate per beat
-        // too. The OLD split was a fixed 25/45/30 of reach — identical every beat, so the bars never
-        // moved (nothing for the tween to animate). Real score_category barely shifts as a % and is
-        // ~0% high, so it reads as a dead chart. Instead use a DESIGNED per-beat split that mirrors the
-        // real RAW trend: high-intent count actually falls as the audience narrows (real highs:
-        // 1776 → 110 → 11 → 1), so HIGH intent decreases each beat here too, capped ≤9% (never fake-hot).
-        // Low rises, Medium eases — all three bars move, so the chart narrates + tweens per beat.
-        // Reach-scaled to counts so the tooltip shows realistic numbers while the bars show the split.
+        // DESKTOP: Intent Strength lives in the always-visible maprail, so it must narrate per beat too.
+        // These are the REAL score_category splits for each stage's exact audience, pulled from the live
+        // insights API 2026-07-13 (kept as percentages, reach-scaled below so the counts track the baked
+        // stage reach). Using real data means a visitor who re-runs this audience in the actual builder
+        // sees the SAME picture — no over-promise. High intent really IS ~0% for this audience, so the
+        // High bar is honestly a near-zero sliver; Low/Medium shift enough (Med ~32%→24%) to tween.
+        // Real per-stage L/M/H %: b0 67.9/31.7/0.4 · b1 70.4/29.2/0.4 · b2 69.1/30.7/0.2 · b3 75.3/24.1/0.6.
         if (st.income && typeof vbars === 'function' && st.reach != null) {
           var _r = st.reach;
-          var _isplit = [ { l: 63, m: 28, h: 9 }, { l: 66, m: 27, h: 7 }, { l: 69, m: 26, h: 5 }, { l: 72, m: 25, h: 3 } ];
+          var _isplit = [ { l: 67.9, m: 31.7, h: 0.4 }, { l: 70.4, m: 29.2, h: 0.4 }, { l: 69.1, m: 30.7, h: 0.2 }, { l: 75.3, m: 24.1, h: 0.6 } ];
           var _sp = _isplit[idx] || _isplit[_isplit.length - 1];
-          var mockIntent = [['Low', Math.round(_r * _sp.l / 100)], ['Medium', Math.round(_r * _sp.m / 100)], ['High', Math.round(_r * _sp.h / 100)]];
-          if (typeof SHOW === 'function') SHOW('card-intent', vbars('intentBars', mockIntent, {}));
+          var realIntent = [['Low', Math.round(_r * _sp.l / 100)], ['Medium', Math.round(_r * _sp.m / 100)], ['High', Math.round(_r * _sp.h / 100)]];
+          if (typeof SHOW === 'function') SHOW('card-intent', vbars('intentBars', realIntent, {}));
         }
         // apply the insights grid order NOW (the story skips renderCharts) so Home/Family sit in
         // their row-1 slots beside Age from the start — not Household Income (Shaw 2026-07-09).
