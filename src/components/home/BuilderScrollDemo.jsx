@@ -538,7 +538,30 @@ export default function BuilderScrollDemo() {
     const w = app(); try { if (w && w.ArkEmbed.setSidebarStage) w.ArkEmbed.setSidebarStage(k); } catch { /* noop */ }
   }, [buildCaption, app]);
 
-  // scroll-up: hide chips owned by beats > k, keep the rest revealed, restore beat k's caption.
+  // REVERSE FADE (desktop Option 3, Shaw 2026-07-13): clone the departing strip chip into the fly
+  // overlay and dissolve it in place (fade + slight shrink) — a gentle "undo", NOT a full fly back.
+  // Mirrors flipChips' clone-to-overlay pattern. The real chip is removed by beatOffDesktop right after.
+  const dissolveChip = useCallback((w, i) => {
+    const fly = flyRef.current, ifr = iframeRef.current;
+    if (!fly || !ifr) return;
+    const ifrBox = ifr.getBoundingClientRect();
+    readChips(w).forEach(c => {
+      if (ownerOf(c) !== i) return;
+      const r = c.el.getBoundingClientRect();
+      const ghost = c.el.cloneNode(true);
+      ghost.classList.remove('ark-hidden');
+      Object.assign(ghost.style, {
+        position: 'fixed', left: (ifrBox.left + r.left) + 'px', top: (ifrBox.top + r.top) + 'px',
+        margin: 0, zIndex: 25, pointerEvents: 'none', visibility: 'visible', transformOrigin: 'center',
+        transition: 'opacity .32s ease-out, transform .32s ease-out',
+      });
+      fly.appendChild(ghost);
+      requestAnimationFrame(() => { ghost.style.opacity = '0'; ghost.style.transform = 'scale(0.9)'; });
+      setTimeout(() => { if (ghost.parentNode) ghost.remove(); }, 380);
+    });
+  }, []);
+
+  // scroll-up: hide chips owned by beats > k, keep the rest revealed, restore the UNDONE beat's caption.
   const reverseTo = useCallback((w, k) => {
     readChips(w).forEach(c => {
       if (ownerOf(c) > k) { c.el.classList.add('ark-hidden'); landedRef.current.delete(c.key); }
@@ -547,18 +570,24 @@ export default function BuilderScrollDemo() {
     // beats above k are no longer shown/committed → allow them to pre-show + fly again on re-descent
     CAPTIONS.forEach((_, bi) => { if (bi > k) { capShownRef.current.delete(bi); delete beatSpansRef.current[bi]; } });
     if (k < 0) { capShownRef.current.delete(0); preshowCaption(0); return; } // back above beat 0 → restore the hero
-    renderCaptionOnly(k);
+    // Show the UNDONE beat's (k+1) sentence WITH its chip, faded in — so the chip that just dissolved off
+    // the strip visually "returns" to the sentence (the reverse crossfade). At rest the between-beats bar
+    // fade hides it anyway; re-descent rebuilds it fresh (capShownRef/beatSpansRef for k+1 were cleared).
+    renderReverseCaption(k + 1);
   }, [preshowCaption]);
 
-  // restore beat k's caption text on reverse (connectors only — chips already landed in the strip).
-  const renderCaptionOnly = useCallback((k) => {
-    const cap = captionRef.current, inner = capInnerRef.current;
-    if (!cap || !inner) return;
-    const spec = CAPTIONS[k]; if (!spec) { inner.innerHTML = ''; return; }
-    cap.className = 'bsd-cap ark-display' + (spec.hero ? ' bsd-hero' : '');
-    inner.style.transition = 'none'; inner.style.opacity = '1';
-    inner.innerHTML = spec.segs.filter(s => s.t != null).map(s => `<span class="bsd-join" style="opacity:0">${s.t}</span>`).join('');
-  }, []);
+  // render the undone beat's sentence (chips + connectors) and fade the whole band in — the "chip returns
+  // to the sentence" half of the reverse crossfade. buildCaption paints the chip spans; we just fade in.
+  const renderReverseCaption = useCallback((undone) => {
+    const inner = capInnerRef.current;
+    if (!inner) return;
+    if (!CAPTIONS[undone]) { inner.innerHTML = ''; return; }
+    buildCaption(undone); // paints undone beat's sentence WITH its chip span(s) into the caption
+    inner.style.transition = 'none'; inner.style.opacity = '0';
+    void inner.offsetWidth; // commit opacity:0 with no transition
+    inner.style.transition = 'opacity .3s ease-out';
+    requestAnimationFrame(() => { if (capInnerRef.current) capInnerRef.current.style.opacity = '1'; });
+  }, [buildCaption]);
 
   // Snap any in-flight chip once the page has scrolled meaningfully since the chip launched. The
   // clone is position:fixed (viewport-anchored); if the user keeps scrolling during the ~640ms
@@ -724,6 +753,12 @@ export default function BuilderScrollDemo() {
     }
     for (let i = BEATS.length - 1; i >= 0; i--) {
       if (p < BEATS[i] && appliedRef.current.has(i)) {
+        // Drop this beat's chip keys from landedRef WHILE they're still in #chips — beatOffDesktop below
+        // removes them from the DOM, after which reverseTo can no longer see them to clean up. Without
+        // this the key stays orphaned in landedRef → on RE-DESCENT the chip is not "fresh" → it never
+        // re-flies (the "scroll back down, no chips" bug). ownerOf needs the live DOM chip (label+value).
+        readChips(w).forEach(c => { if (ownerOf(c) === i) landedRef.current.delete(c.key); });
+        dissolveChip(w, i); // reverse crossfade: dissolve the departing strip chip (before it's removed)
         w.ArkEmbed.beatOffDesktop(i);
         appliedRef.current.delete(i);
         topBeatRef.current = i - 1;
@@ -739,7 +774,7 @@ export default function BuilderScrollDemo() {
     // keep all landed chips revealed — the builder's renderChips rebuilds + re-hides #chips on
     // every sync (per-stage repaint), which would otherwise drop already-flown chips for a frame.
     if (landedRef.current.size) { readChips(w).forEach(c => { if (landedRef.current.has(c.key)) c.el.classList.remove('ark-hidden'); }); }
-  }, [mountIframe, booted, app, buildCaption, settleThenFly, preshowCaption, reverseTo, snapStrayChips, landAllInFlight]);
+  }, [mountIframe, booted, app, buildCaption, settleThenFly, preshowCaption, reverseTo, snapStrayChips, landAllInFlight, dissolveChip]);
 
   const measure = useCallback(() => {
     const w = app();
