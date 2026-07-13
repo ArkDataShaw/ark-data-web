@@ -748,8 +748,16 @@ export default function BuilderScrollDemo() {
           appliedRef.current.add(i);
           topBeatRef.current = i;
           lastBeatAtRef.current = now;
-          // generate on beat 0 BEFORE the fly (the strip chips + map need the generate flow)
-          if (i === 0 && !generatedRef.current) { generatedRef.current = !!w.ArkEmbed.generate(); if (generatedRef.current) { w.ArkEmbed.setDataReveal(1); revealedRef.current = true; } }
+          // generate on beat 0 BEFORE the fly (the strip chips + map need the generate flow).
+          // Reveal is DECOUPLED from generate: generate runs ONCE, but the reveal must re-fire on every
+          // re-descent. Scrolling up above the hero re-adds `ark-data-hidden` (opacity:0 on all cards
+          // except the maprail + Age/Home/Family), and setDataReveal(1) is what removes it. If we gate
+          // the reveal on !generatedRef (as before), a RE-DESCENT skips it → the charts below Age/Home/
+          // Family stay invisible. So: generate if needed, then reveal whenever beat 0 commits un-revealed.
+          if (i === 0) {
+            if (!generatedRef.current) generatedRef.current = !!w.ArkEmbed.generate();
+            if (generatedRef.current && !revealedRef.current) { w.ArkEmbed.setDataReveal(1); revealedRef.current = true; }
+          }
           flipChips(w, prevRects);          // existing chips slide/fade to their new positions
           settleThenFly(w, i, spans);       // the NEW filter flies into the strip once it's settled, connectors fade
           if (!rafKickRef.current) { rafKickRef.current = true; setTimeout(() => { rafKickRef.current = false; frameRef2.current && frameRef2.current(); }, BEAT_MIN_GAP_MS + 30); }
