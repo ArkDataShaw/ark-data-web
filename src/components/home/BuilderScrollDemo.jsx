@@ -462,8 +462,11 @@ export default function BuilderScrollDemo() {
       // strip actually MOVES on screen (pin released / scrolled past the section) does the abort fire.
       const entry = { y0: ifrBox.top, abort: null };
       inFlightRef.current.push(entry);
+      let landed = false, landTimer = 0;
       const unregister = () => { const i = inFlightRef.current.indexOf(entry); if (i >= 0) inFlightRef.current.splice(i, 1); };
       const landReal = () => {
+        if (landed) return; landed = true;
+        clearTimeout(landTimer);
         landedRef.current.add(chip.key);
         readChips(w).forEach(rc => { if (rc.key === chip.key) rc.el.classList.remove('ark-hidden'); }); // renderChips rebuilds #chips
         clone.remove();
@@ -476,14 +479,17 @@ export default function BuilderScrollDemo() {
         // seamless handoff: once the morph has settled the clone is pixel-identical to the real strip
         // chip (same bold label @.75, normal value, ✕ @.6, no shadow, same padding/font/gap), so we
         // reveal the real chip and remove the clone in the SAME frame — an invisible swap, no fade.
-        setTimeout(landReal, 640);
+        landTimer = setTimeout(landReal, 640);
       };
-      // hard-abort: the strip moved mid-flight → skip the fly/morph and land the real chip NOW.
-      // (abort only fires BEFORE done, so the morph's transient nodes never exist yet.)
+      // hard-abort: the strip moved (pin released / scrolled past the section) → land the real chip NOW.
+      // Works in BOTH phases: pre-done (skip the fly/morph) AND during the 640ms morph-linger (cancel the
+      // pending landReal + swap immediately). Without the post-done case, a lingering clone (esp. the LAST
+      // beat, where the user scrolls out right after it lands) floats fixed-to-viewport while the strip
+      // scrolls away, then vanishes — the "Net Worth chip stays with the scroll then fades" bug.
       entry.abort = () => {
-        if (finished) return; finished = true;
+        finished = true;
         clone.removeEventListener('transitionend', done);
-        landReal();
+        landReal(); // idempotent (landed guard) — lands now whether or not done() already ran
       };
       clone.addEventListener('transitionend', done);
       setTimeout(done, 780); // safety if transform transitionend is missed
