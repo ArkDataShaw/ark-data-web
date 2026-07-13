@@ -372,15 +372,15 @@
           if (typeof SHOW === 'function') SHOW('card-networth', vbars('networthBars', nwEntries, { fmt: typeof nwLabel === 'function' ? nwLabel : undefined }));
         }
         // DESKTOP: Intent Strength lives in the always-visible maprail, so it must narrate per beat too.
-        // These are the REAL score_category splits for each stage's exact audience, pulled from the live
-        // insights API 2026-07-13 (kept as percentages, reach-scaled below so the counts track the baked
-        // stage reach). Using real data means a visitor who re-runs this audience in the actual builder
-        // sees the SAME picture — no over-promise. High intent really IS ~0% for this audience, so the
-        // High bar is honestly a near-zero sliver; Low/Medium shift enough (Med ~32%→24%) to tween.
-        // Real per-stage L/M/H %: b0 67.9/31.7/0.4 · b1 70.4/29.2/0.4 · b2 69.1/30.7/0.2 · b3 75.3/24.1/0.6.
+        // Per-stage L/M/H splits, reach-scaled below. Low/Medium are the REAL score_category shares for
+        // each stage's exact audience (pulled from the live insights API 2026-07-13), so the demo tracks
+        // what a real re-run returns and Medium narrates + tweens (~32%→24%). High is pinned at 1% every
+        // beat (Shaw 2026-07-13) — real High is ~0.4% (would display as 0%); 1% is the honest floor that
+        // keeps a consistent, visible High bar without over-promising. Real L/M/H was: b0 67.9/31.7/0.4 ·
+        // b1 70.4/29.2/0.4 · b2 69.1/30.7/0.2 · b3 75.3/24.1/0.6 — here L/M are renormalized to leave 1 for H.
         if (st.income && typeof vbars === 'function' && st.reach != null) {
           var _r = st.reach;
-          var _isplit = [ { l: 67.9, m: 31.7, h: 0.4 }, { l: 70.4, m: 29.2, h: 0.4 }, { l: 69.1, m: 30.7, h: 0.2 }, { l: 75.3, m: 24.1, h: 0.6 } ];
+          var _isplit = [ { l: 67.5, m: 31.5, h: 1 }, { l: 70.0, m: 29.0, h: 1 }, { l: 68.5, m: 30.5, h: 1 }, { l: 75.0, m: 24.0, h: 1 } ];
           var _sp = _isplit[idx] || _isplit[_isplit.length - 1];
           var realIntent = [['Low', Math.round(_r * _sp.l / 100)], ['Medium', Math.round(_r * _sp.m / 100)], ['High', Math.round(_r * _sp.h / 100)]];
           if (typeof SHOW === 'function') SHOW('card-intent', vbars('intentBars', realIntent, {}));
