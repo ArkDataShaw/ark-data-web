@@ -580,6 +580,14 @@ export default function BuilderScrollDemo() {
   const frame = useCallback(() => {
     const track = trackRef.current;
     if (!track) return;
+    // READ-HOLD PIN: while a forward transition is holding its sentence readable, keep the page nailed to
+    // the from-valley. Runs on every scroll event, so a hard scroll's residual native momentum is caught
+    // and reverted here (before it drifts scrollY deep and makes the build sweep p across several beats →
+    // burst-commit / detached-span flies). Only re-pin when off by >1px so an exact match fires no event.
+    const _tr = transitionRef.current;
+    if (engagedRef.current && _tr && _tr.dir > 0 && _tr.holdY != null && performance.now() < readHoldUntilRef.current) {
+      if (Math.abs(window.scrollY - _tr.holdY) > 1) { window.scrollTo(0, _tr.holdY); }
+    }
     const r = track.getBoundingClientRect(); // flushes layout — read iframe rect AFTER this (sticky pos is stale on the first read of a post-scroll frame)
     snapStrayChips();
     const vh = window.innerHeight;
@@ -676,10 +684,15 @@ export default function BuilderScrollDemo() {
     // TAKEOVER: while engaged, forward beats commit ONLY through the controller's BUILD phase (after the
     // read hold has elapsed) — never on stray scroll momentum (fast scroll-in / settle overshoot), so the
     // read pause can't be skipped. Disengaged (escaped) → frame drives beats live as before.
-    const allowForward = !engagedRef.current || (transitionRef.current != null && now >= readHoldUntilRef.current);
+    const tr_ = transitionRef.current;
+    const allowForward = !engagedRef.current || (tr_ != null && tr_.dir > 0 && now >= readHoldUntilRef.current);
     for (let i = 0; i < BEATS.length; i++) {
       if (p >= BEATS[i] && !appliedRef.current.has(i)) {
         if (!allowForward) break;
+        // While engaged, commit ONLY this transition's target beat — never a burst. If scroll overshot
+        // deep, p may be past several thresholds; without this, beats 0..n would all commit in a few
+        // frames and beat 0's fly would run against spans a later beat already detached (chips from 0,0).
+        if (engagedRef.current && tr_ && i !== tr_.commitBeat) break;
         if (now - lastBeatAtRef.current >= BEAT_MIN_GAP_MS) {
           if (i >= 1 && (!generatedRef.current || !w.ArkEmbed.mapReady())) break; // wait for map
           let spans = beatSpansRef.current[i];
@@ -839,7 +852,9 @@ export default function BuilderScrollDemo() {
       const to = currentValley() + dir;
       if (to < 0 || to >= REST_P.length) { doEscape(); return; } // off the ends → let them leave
       const ty = restY(to); if (ty == null) return;
-      transitionRef.current = { dir };
+      // commitBeat = the ONE beat this transition commits (forward) — frame() will commit ONLY this beat,
+      // never a burst, even if scroll has overshot deep past several thresholds.
+      transitionRef.current = { dir, commitBeat: dir > 0 ? to - 1 : to };
       barFadeRef.current = false; // fresh transition: keep the bar up until THIS beat's chips launch
       if (dir < 0) { build(ty); return; } // REVERSE: single ease back, no read pause
       // FORWARD: READ then BUILD. Show beat k's sentence NOW (still parked, below its commit threshold)
@@ -850,10 +865,16 @@ export default function BuilderScrollDemo() {
       if (shownBeatRef.current !== k && preshowRef.current) preshowRef.current(k); // swap in the new sentence
       else { shownBeatRef.current = k; lastCapAtRef.current = performance.now(); } // already showing k (hero) — just hold
       if (frameRef2.current) frameRef2.current(); // kick a frame so the band un-fades to show the held sentence
+      // FREEZE the page at the FROM valley during the read hold. Nothing else drives scroll during the
+      // read, so a hard scroll's residual native momentum could otherwise drift scrollY deep past beat
+      // thresholds; then the build would sweep p across several at once → burst-commit with detached
+      // caption spans (chips flying from 0,0 / a half-built next sentence). frame() re-pins to holdY on
+      // every scroll event (and heartbeat) while readHoldUntilRef is in the future — see frame() top.
+      transitionRef.current.holdY = restY(currentValley());
       transitionRef.current.readTimer = setTimeout(() => {
         readHoldUntilRef.current = 0;
         if (transitionRef.current) transitionRef.current.readTimer = 0;
-        build(ty);
+        build(ty); // easeTo takes over the scroll
       }, READ_MS);
     };
 
