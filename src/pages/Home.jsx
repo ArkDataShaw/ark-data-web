@@ -62,7 +62,10 @@ export default function Home() {
     <div style={{ background: '#060D1A', color: '#fff' }}>
       <style>{`
         .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items: center; }
+        .hero-grid > * { min-width: 0; }
         @media (max-width: 960px) { .hero-grid { grid-template-columns: 1fr; gap: 24px; } }
+        .hero-pad { padding-top: 80px; padding-bottom: 64px; }
+        @media (max-width: 960px) { .hero-pad { padding-top: 40px; } }
         .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #14263F; border: 1px solid #14263F; border-radius: 10px; overflow: hidden; }
         @media (max-width: 720px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
         .vid-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
@@ -71,7 +74,7 @@ export default function Home() {
 
       {/* HERO — intent-first */}
       <section style={{ position: 'relative', overflow: 'hidden', background: 'radial-gradient(1100px 550px at 78% 30%, rgba(20,60,110,0.28) 0%, transparent 60%), #060D1A' }}>
-        <div className="sc" style={{ paddingTop: '80px', paddingBottom: '64px', position: 'relative', zIndex: 2 }}>
+        <div className="sc hero-pad" style={{ position: 'relative', zIndex: 2 }}>
           <div className="hero-grid">
             <div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', border: '1px solid rgba(25,195,125,0.3)', borderRadius: '100px', padding: '6px 14px', marginBottom: '26px', background: 'rgba(25,195,125,0.05)' }}>
