@@ -246,11 +246,11 @@ A1 `618ba77` · A2 `618ba77` · A3 `6e65d8a` · A4 `391b99d` (root cause: rechar
 | B4 | **Sparse-vbar rebalance** (1–3-bar card → quarter, dense neighbor → three-quarter; motivating case: 1-bar `$1M+` Net Worth beside 9-bar Income) | React-idiomatic: compute spans from `entries.length` at render (no DOM measurement / `balanceSparseRows` port needed). Only in the ≥2-col grid tier; both-sparse → equal halves, per Shaw's rule | medium |
 | B5 | **"Companies" vs "Unique companies" tile label** — pending Shaw's call (he flagged the ambiguity 2026-07-13). App says "Unique companies" (`aggToSample.ts:120`); website/mockup say "Companies" (Shaw's earlier P5 rename). ⚠ if changed: label doubles as the `STAT_ICONS` key — change both or the icon vanishes | `aggToSample.ts:120` + `StatRow.tsx` `STAT_ICONS` | trivial |
 
-### 6.4 Tier C — verify first, port only if the intent is actually unmet
+### 6.4 Tier C — ✅ CLOSED 2026-07-17 (C1 verified N/A; see row note)
 
 | # | Question | How to verify |
 |---|---|---|
-| C1 | **Map bottom aligned to last maprail card** (desktop) | Check whether the app's `.maprow` already bottom-aligns; the #4 rule existed because of the demo caption removal — may be moot in-app |
+| C1 | **Map bottom aligned to last maprail card** (desktop) | ⊘ **CLOSED 2026-07-17 — N/A for the app.** Verified: app map column = `.mapwrap` 590px + `.mapnote` caption (kept, per guide §7 "removed in the demo, kept in standalone"); maprail = natural-height flex, no alignment mechanism. The alignment requirement was explicitly consequent to the demo's caption removal — a surface that keeps its caption was never subject to it. No change. |
 
 ### 6.5 Explicitly NOT ported / explicitly kept as-is
 
