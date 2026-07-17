@@ -48,9 +48,8 @@ Legend: ✅ ready as-is · ◔ small change · ◑ moderate change · ⊘ N/A
 - Map engines' state-choropleth-from-states path and state↔full transition animations.
 - `shouldSkipInsights` / `isOnlyGeoChange` / `geoSeqRef` in #2/#3 — the race machinery the two-phase scheduler needs already exists.
 
-### L1 — #1 HTML standalone: pass the tier param (smallest win, ships first)
-Add `sections:'light'` to the `insightsCoverage` fn's DataMoon call (`netlify/functions/audience.js:451`). Nothing else changes — the client already treats the response as light.
-**Effort:** one line + deploy. **Risk:** none (param ignored until vendor ships → identical behavior). **Verify:** `elapsed` in the fn log drops ~3–4s → sub-second once DataMoon flips; reach/state-map/coverage paint timing improves on Generate.
+### L1 — ✅ SHIPPED 2026-07-17 (mockup `c033d53`, deployed to arkdata-audience-builder-demo.netlify.app)
+`sections:'light'` added to the `insightsCoverage` fn's DataMoon call. Live smoke test with the param in place: fn returns coverage/reach/geoStates(51) normally — inert as designed until DataMoon ships the tier. ⚠ Param name per the templates doc; if Sami's final param lands as `include` instead of `sections`, update this one call site. Note: the repo's `.netlify/state.json` points at the STALE mock-6380 site — always deploy via `deploy.sh` (targets the real demo site id).
 
 ### L2 — #2/#3: two-phase fetch in `callInsights` (the core work)
 In both `App.tsx` (#2) and `AudienceBuilder.jsx` (#3), same shape:
@@ -72,7 +71,7 @@ A4 diagnosis (empirical DOM-sampling harness against the real components): **the
 **Effort:** trivial. **Risk:** none. **Verify:** Companies tile fills from insights pre-Save; absent field renders "—". *(2026-07-17: the "#2 still uses `\|\| 0`" half of this item is DONE — `f201e6a` brought #2 to `?? null` + null-safe scaling; only the `unique_companies` wiring itself still waits on DataMoon.)*
 
 ### Sequencing
-**L1 (ships today, inert until vendor flips) → ~~L4~~ (✅ done 2026-07-17) → L2+L3 together per surface (#3 first, #2 twin-port same pass) → L5 when DataMoon ships the metric.** Nothing here blocks Sami — the templates doc (investigation Parts 3–4) is the only vendor dependency, and it's already written. *(2026-07-17: vendor side not live yet — Sami still building; the `sections` param currently changes nothing on `/insights`.)*
+**~~L1~~ (✅ shipped 2026-07-17, `c033d53`) → ~~L4~~ (✅ done 2026-07-17) → L2+L3 together per surface (#3 first, #2 twin-port same pass) → L5 when DataMoon ships the metric.** Nothing here blocks Sami — the templates doc (investigation Parts 3–4) is the only vendor dependency, and it's already written. *(2026-07-17: vendor side not live yet — Sami still building; the `sections` param currently changes nothing on `/insights`.)*
 
 ---
 
