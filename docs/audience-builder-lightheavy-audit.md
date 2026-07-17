@@ -75,6 +75,16 @@ A4 diagnosis (empirical DOM-sampling harness against the real components): **the
 
 ---
 
+## 2b. Proposals surface (proposals.arkdata.io) — ADDED 2026-07-17
+
+A fifth consumer of the builder appeared mid-plan: proposals.arkdata.io's Audience tab iframes #1's netlify demo with `?embed=insights`. Shaw's directive: **insights-only surface — never wait for the full audience pull.** Shipped same day (mockup `c63e744` → `af0db86`, all live + browser-verified):
+
+- **`insightsAgg` fn action**: ONE stateless insights call returns the geoPoll-shaped payload (distributions converted server-side to `streamAggregate`'s agg shape; ZIPs county-joined; states deduped; coverage per the golden rule with `unique_companies` fallback). Client publishes via `__abPublishInsightsAgg` through the existing geoPoll-success pipeline. Generate ≈ 4s (was 15–25s build+CSV); no upstream audience, no PII. One **retry on 5xx** — the endpoint intermittently 500s on valid payloads (Shaw's Tennis-shoes spec failed once, passed 3/3 on retry).
+- **Live re-agg on EVERY filter change** (narrowing AND widening): debounced 600ms insights re-call, no regen button, no ClientRec limits. Verified both directions (74,183 ⇄ 1,067,016).
+- **Embed layout**: Intent Strength restored (`body.embed-insights #card-intent{display:block}` — the <1000px iframe was inheriting the mobile hide) with real score data; maprail reordered Coverage | Intent side-by-side, Top States full-width below (`2a806a6`).
+- **Geo capability gaps closed** (global, not embed-gated — the api-15 porting-list items that never landed in the mockup): tri-state include/exclude toggles for states + cities (red ⊘ chips), ZIP radius search (haversine over `ZIP_LOOKUP.centroids`, resolved ZIP list rides `spec.loc.zip`), resolver `not_in` exclude block ported from the react fn.
+- **Light/heavy note**: `insightsAgg` must stay HEAVY (map needs `geo.*.zips`); its ~4s is ZIP-transport-dominated and drops materially when the vendor tier ships. Deploy: netlify demo site alone reaches proposals (the gcp deploy only stages `proposal-builder.html`).
+
 ## 3. Notes & discrepancies
 
 - The investigation doc's "audience.js:444 insightsCoverage" describes **#1's** fn; **#2's** fn has only the full `insights` action (`:456`, case `:522`) — the two repos' netlify fns have diverged. #2 never adopted the stripped parallel call; it went straight to full-insights-as-primary. Under L2 this difference disappears (both speak tiers).
