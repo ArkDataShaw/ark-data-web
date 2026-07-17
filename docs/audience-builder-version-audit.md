@@ -97,7 +97,7 @@ remount bug — bars already tweened; measured empirically with a DOM-sampling h
 
 | Rule | #1 HTML standalone | #2 React standalone | #3 app.arkdata.io | #4 arkdata.io iframe |
 |---|---|---|---|---|
-| 4 tiles; label = `STAT_ICONS` key; "Companies" label | ✅ "Companies" | ◑ 4 tiles + icons ✅ but label still **"Unique companies"** (`aggToSample.ts:120`) — pre-P5 wording | ◑ same | ✅ |
+| 4 tiles; label = `STAT_ICONS` key; "Companies" label | ✅ "Companies" | ✅ *(2026-07-17)* "Companies" (`42f950b`) | ✅ *(2026-07-17)* "Companies" (`8430d09`) | ✅ |
 | Golden rule: absent → null → "—", never 0 | ✅ | ✅ *(2026-07-17)* `?? null` throughout + null-safe patchCoverage/geo scaling + nullable StatRow (`f201e6a`) | ✅ *(2026-07-17)* `orDash` (`618ba77`; Shaw's call: "—" for old reaggs) | ✅ |
 | Icons **bottom-right** (11px) | ✅ (`:307`) | ⊘ Shaw's call 2026-07-17: app-side icons **stay in their current corner** — the bottom-right rule is #1/#4-only | ⊘ same call | ✅ (`:334`) |
 | Parallel non-blocking coverage fetch, seq-guarded | ✅ (`b20167c` instant fill from insights response) | ✅ equivalent (`patchCoverage` + `baselineCoverageRef`, api-14 fixes) | ✅ (origin of the pattern) | ✅ `d29003d` |
@@ -236,7 +236,7 @@ A1 `618ba77` · A2 `618ba77` · A3 `6e65d8a` · A4 `391b99d` (root cause: rechar
 | A4 | **Charts must tween on ClientRec narrowing — vertical, horizontal, AND donut** (Shaw: they don't today, but they should). Note: the CSS transitions already exist (`--chart-dur:650ms` on `.fill` width / vbar height / flex-grow, `audience.css:178/231/298/352`) and donuts are recharts `animationDuration=420` — so if bars snap, the transition is being **defeated by remounts** (each remount re-runs `useMounted` → re-grow-from-zero or instant-jump; likely suspects: est→live tree swap, changing keys, `Calc`↔chart swaps). Fix the remounts; do NOT port the FLIP engine | `Insights.tsx` / `HBars/VBars/Pyramid/Donut` mount behavior | small–medium (diagnosis first) | low | narrow a generated audience (pure ClientRec path): every bar chart + both donuts morph in place; nothing re-grows from zero or snaps |
 | A5 | **#2 (React standalone) breadcrumb** "Create New" → "Create" (Shaw: yes) | `audience-builder-react src/components/TopBar.tsx:36` | one-liner | none | crumb reads "Audiences › Create" |
 
-### 6.3 Tier B — B1 `7e291ea` ✅ · B2 `8c47f1b` ✅ · B3 `618ba77` ✅ · B4 `bb63021` ✅ (all shipped 2026-07-17 + twin-ported) · B5 still OPEN (Shaw's call)
+### 6.3 Tier B — B1 `7e291ea` ✅ · B2 `8c47f1b` ✅ · B3 `618ba77` ✅ · B4 `bb63021` ✅ · B5 `8430d09`/`42f950b` ✅ ("Companies", Shaw's call 2026-07-17) — all shipped + twin-ported
 
 | # | Feature | Notes | Effort |
 |---|---|---|---|
@@ -279,8 +279,7 @@ Decided:
 5. Coverage icons: **stay as-is** on the app.
 6. Bars/donuts **must tween** on ClientRec narrowing (Shaw observes they don't today).
 
-Open:
-1. **B5:** rename the app's coverage tile "Unique companies" → "Companies" to match the demo surfaces, or keep? (one-word + icon-key change)
+Open: *(none — B5 resolved 2026-07-17: Shaw chose "Companies"; shipped to both React surfaces, `8430d09`/`42f950b`)*
 
 ---
 
