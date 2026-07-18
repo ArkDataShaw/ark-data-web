@@ -279,6 +279,8 @@ Decided:
 5. Coverage icons: **stay as-is** on the app.
 6. Bars/donuts **must tween** on ClientRec narrowing (Shaw observes they don't today).
 
+**Post-plan additions (2026-07-18):** ZIP radius search + tri-state geo excludes + seniority hierarchy landed in the mockup (`af0db86`, `3cb06ff`, `563930c`), closing its popover gaps vs the app. **Radius-default Zip sub-mode** shipped to app (`b64453a`), react standalone (`781b57b`), and mockup (`bb640e2`) — consistent everywhere except the vendored #4 copy (no radius mode; re-vendor HOLD, now further behind: flat seniority, no tri-excludes, no radius).
+
 Open: *(none — B5 resolved 2026-07-17: Shaw chose "Companies"; shipped to both React surfaces, `8430d09`/`42f950b`)*
 
 ---
