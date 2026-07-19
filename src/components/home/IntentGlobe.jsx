@@ -244,6 +244,8 @@ export default function IntentGlobe() {
   const popupEls = useRef(new Map()); // `${id}-src` / `${id}-dst` -> element
   const flowsRef = useRef([]);
   const [mounted, setMounted] = useState([]); // flows that need popup DOM
+  const [narrow, setNarrow] = useState(false); // phone width: smaller flying cards + kept clear of the viewport edges
+  const narrowRef = useRef(false);             // mirror for the placement math (runs inside the animation effect closure)
 
   useEffect(() => { preloadAllLogos(); }, []);
 
@@ -266,6 +268,8 @@ export default function IntentGlobe() {
       canvas.height = cssSize * dpr;
       canvas.style.width = cssSize + 'px';
       canvas.style.height = cssSize + 'px';
+      const n = cssSize < 470; // phone-sized globe → smaller cards + edge inset
+      narrowRef.current = n; setNarrow(n);
     }
     resize();
     window.addEventListener('resize', resize);
@@ -301,8 +305,11 @@ export default function IntentGlobe() {
       const pw = el.offsetWidth || 190;
       const ph = el.offsetHeight || 110;
       let left = side > 0 ? x + 14 : x - 14 - pw;
-      left = Math.min(Math.max(left, -24), w - pw + 24);
-      const top = Math.min(Math.max(y - 30, 0), w - ph);
+      // narrow (phone): keep an 8px inset from both edges; desktop: keep the original 24px bleed.
+      const bleed = narrowRef.current ? -8 : 24;
+      left = Math.min(Math.max(left, -bleed), w - pw + bleed);
+      const vIn = narrowRef.current ? 8 : 0;
+      const top = Math.min(Math.max(y - 30, vIn), w - ph - vIn);
       return { left, top, w: pw, h: ph };
     }
 
@@ -334,12 +341,14 @@ export default function IntentGlobe() {
           } else {
             dstRect.top = srcRect.top - dstRect.h - 10;
           }
-          dstRect.top = Math.min(Math.max(dstRect.top, -12), w - dstRect.h + 12);
+          const edgeY = narrowRef.current ? -8 : 12; // phone: 8px inset; desktop: 12px bleed
+          const edgeX = narrowRef.current ? -8 : 24; // phone: 8px inset; desktop: 24px bleed
+          dstRect.top = Math.min(Math.max(dstRect.top, -edgeY), w - dstRect.h + edgeY);
           // if clamping pushed it back into the source card, resolve horizontally
           if (rectsOverlap(srcRect, dstRect, 0)) {
             dstRect.left = f.dstCardSide > 0
-              ? Math.min(srcRect.left + srcRect.w + 10, w - dstRect.w + 24)
-              : Math.max(srcRect.left - dstRect.w - 10, -24);
+              ? Math.min(srcRect.left + srcRect.w + 10, w - dstRect.w + edgeX)
+              : Math.max(srcRect.left - dstRect.w - 10, -edgeX);
           }
         }
         dstEl.style.transform = `translate(${dstRect.left}px, ${dstRect.top}px)`;
@@ -520,10 +529,10 @@ export default function IntentGlobe() {
           <React.Fragment key={id}>
             {/* SOURCE: person surfacing the signal */}
             <div ref={setPopupRef(`${id}-src`)} style={{
-              position: 'absolute', top: 0, left: 0, opacity: 0, width: '196px',
+              position: 'absolute', top: 0, left: 0, opacity: 0, width: narrow ? '162px' : '196px',
               transition: 'opacity 0.3s', pointerEvents: 'none', zIndex: 10 + id * 2,
               background: 'rgba(8,16,32,0.94)', border: `1px solid ${srcAccent}55`,
-              borderLeft: `3px solid ${srcAccent}`, borderRadius: '8px', padding: '10px 12px',
+              borderLeft: `3px solid ${srcAccent}`, borderRadius: '8px', padding: narrow ? '8px 10px' : '10px 12px',
               boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
             }}>
               <p className="ark-mono" style={{ color: srcAccent, fontSize: '8.5px', letterSpacing: '0.12em', margin: '0 0 6px', fontWeight: 600 }}>
@@ -541,11 +550,11 @@ export default function IntentGlobe() {
 
             {/* DESTINATION: where the signal goes */}
             <div ref={setPopupRef(`${id}-dst`)} style={{
-              position: 'absolute', top: 0, left: 0, opacity: 0, width: '190px',
+              position: 'absolute', top: 0, left: 0, opacity: 0, width: narrow ? '158px' : '190px',
               transition: 'opacity 0.3s', pointerEvents: 'none', zIndex: 11 + id * 2,
               background: `linear-gradient(135deg, ${dest.color}26 0%, rgba(8,16,32,0.94) 55%)`,
               border: `1px solid ${dest.color}88`, borderLeft: `3px solid ${dest.color}`,
-              borderRadius: '8px', padding: '10px 12px',
+              borderRadius: '8px', padding: narrow ? '8px 10px' : '10px 12px',
               boxShadow: `0 8px 24px rgba(0,0,0,0.45), 0 0 18px ${dest.color}22`,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '7px' }}>
