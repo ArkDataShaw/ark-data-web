@@ -105,12 +105,19 @@
   .sub-sign{font-size:13px;font-weight:800;color:var(--slate-400)}
   /* animatable collapse (mirrors .acc-body): grid-template-rows 0fr→1fr with an overflow-hidden
      inner wrapper, so opening/closing a subcategory carries motion instead of snapping. */
-  .sub-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .26s ease}
+  .sub-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .26s ease;overflow:hidden} /* [CORE] leak fix (mockup 3cb06ff) — DESKTOP/TABLET/MOBILE */
   .sub.open .sub-body{grid-template-rows:1fr}
-  .sub-body-in{overflow:hidden;min-height:0;padding:2px 2px 2px 6px}
+  .sub-body-in{overflow:hidden;min-height:0;padding:0 2px 0 6px} /* [CORE] vertical padding ONLY when open — a 0fr track can't shrink below child padding, leaking the "Match" dropdown's top border under every collapsed picker (mockup 3cb06ff) */
+  .sub.open .sub-body-in{padding:2px 2px 2px 6px}
 
   /* checkbox rows */
   .cbrow{display:flex;align-items:center;gap:9px;padding:5px 8px;border-radius:6px;font-size:13px;cursor:pointer;color:var(--slate-700)}
+  /* [CORE] seniority hierarchy (mockup 3cb06ff) — DESKTOP/TABLET/MOBILE */
+  .hier-group{margin-bottom:4px;padding-top:4px}
+  .hier-group+.hier-group{border-top:1px solid var(--slate-100)}
+  .hier-parent{font-size:13px;letter-spacing:.01em}
+  .hier-parent strong{font-weight:700;text-transform:uppercase;font-size:12.5px;color:var(--slate-500);letter-spacing:.04em}
+  .hier-child.cbrow{margin-left:8px;font-size:13px}
   .cbrow:hover{background:var(--slate-50)}
   .cbrow input{width:15px;height:15px;accent-color:var(--violet)}
   .tag-pf{margin-left:auto;font-size:9.5px;font-weight:700;letter-spacing:.03em;color:var(--amber);background:#fffbeb;border:1px solid #fde68a;padding:1px 6px;border-radius:999px}
@@ -1135,7 +1142,7 @@ const SIDEBAR=[
     {id:"revenue",label:"Annual Revenue",type:"check",options:["< $1M","$1M - $5M","$5M - $10M","$10M - $25M","$25M - $50M","$50M - $100M","$100M - $250M","$250M - $500M","$500M - $1B","> $1B"]},
   ]},
   {id:"career",ico:"briefcase",label:"Career",cls:"business",subs:[
-    {id:"seniority",label:"Seniority Level",type:"check",options:["CXO","Vice President","Director","Partner","Owner","Manager","Senior Individual Contributor","Entry","Training","Unpaid"]},
+    {id:"seniority",label:"Seniority Level",type:"hierarchy",hierarchy:[{parent:"C-Suite",children:["CXO","Partner","Owner"]},{parent:"VP",children:["Vice President"]},{parent:"Director",children:["Director"]},{parent:"Manager",children:["Manager"]},{parent:"Staff",children:["Senior Individual Contributor","Entry","Training","Unpaid"]}]},
     {id:"department",label:"Department",type:"check",options:["Accounting","Administrative","Arts and Design","Business Development","Community and Social Services","Consulting","Education","Engineering","Entrepreneurship","Finance","Healthcare Services","Human Resources","Information Technology","Legal","Marketing","Media and Communication","Military and Protective Services","Operations","Product Management","Program and Project Management","Purchasing","Quality Assurance","Real Estate","Research","Sales","Support"]},
     {id:"job_title",label:"Job Title",type:"picker",ph:"Job title...",ops:["contains","in","not_in","=","!=","has_value"]},
     {id:"job_title_normalized",label:"Job Title (Normalized)",type:"picker",ph:"Normalized title...",ops:["contains","in","not_in","=","!=","has_value"]},
@@ -1192,6 +1199,7 @@ function _supp(d){try{return !!(window.ArkEmbed&&window.ArkEmbed._suppressSel&&w
 function subCount(s){
   let n=0;
   if(s.type==="check") s.options.forEach(o=>{if(S.checks[s.id]?.has(o)&&!_supp('check:'+s.id+':'+o))n++;});
+  else if(s.type==="hierarchy") (s.hierarchy||[]).forEach(g=>g.children.forEach(o=>{if(S.checks[s.id]?.has(o)&&!_supp('check:'+s.id+':'+o))n++;}));
   else if(s.type==="text" && S.texts[s.id]) n++;
   else if(s.type==="picker") n+=pickerActive(s);
   else if(s.type==="location"){const L=S.loc[s.group];const c=(setv,tab)=>{let x=0;setv.forEach(v=>{if(!_supp('loc:'+s.group+':'+tab+':'+v))x++;});return x;};n+=c(L.state,'state')+c(L.city,'city')+(L.metro?c(L.metro,'metro'):0)+c(L.zip,'zip')+(L.excludeState?L.excludeState.size:0)+(L.excludeCity?L.excludeCity.size:0);}
@@ -1379,6 +1387,29 @@ function renderBody(cat){
       if(sub.id==="networth"){opts=[...sub.options].sort((a,b)=>nwRank(b)-nwRank(a));disp=nwLabel;}
       else if(sub.id==="income"){opts=[...sub.options].sort((a,b)=>incRank(b)-incRank(a));disp=incLabel;}
       opts.forEach(o=>body.appendChild(checkRow(sub.id,o,sub.pf,disp?disp(o):null)));
+    }
+    else if(sub.type==="hierarchy"){
+      // [CORE] app-parity 2-level hierarchy (mockup 3cb06ff) — DESKTOP/TABLET/MOBILE. Selection
+      // lives ONLY in the child set (S.checks[sub.id]); the child enum IS the old flat option
+      // list, so buildSpec/resolver are untouched; parents are derived UI state.
+      S.checks[sub.id]=S.checks[sub.id]||new Set();
+      const sel=S.checks[sub.id];
+      (sub.hierarchy||[]).forEach(gr=>{
+        const gdiv=document.createElement("div");gdiv.className="hier-group";
+        const all=gr.children.every(c=>sel.has(c)),some=gr.children.some(c=>sel.has(c));
+        const prow=document.createElement("label");prow.className="cbrow hier-parent";
+        prow.innerHTML=`<input type="checkbox" ${all?'checked':''}><strong>${gr.parent}</strong>`;
+        const pin=prow.querySelector("input");pin.indeterminate=some&&!all;
+        pin.onchange=()=>{const on=!gr.children.every(c=>sel.has(c));gr.children.forEach(c=>{on?sel.add(c):sel.delete(c);});renderSidebar();sync();};
+        gdiv.appendChild(prow);
+        gr.children.forEach(c=>{
+          const crow=document.createElement("label");crow.className="cbrow hier-child";
+          crow.innerHTML=`<input type="checkbox" ${sel.has(c)?'checked':''}>${c}`;
+          crow.querySelector("input").onchange=e=>{e.target.checked?sel.add(c):sel.delete(c);renderSidebar();sync();};
+          gdiv.appendChild(crow);
+        });
+        body.appendChild(gdiv);
+      });
     }
     else if(sub.type==="text"){
       const inp=document.createElement("input");inp.className="txtin";inp.placeholder=sub.ph||"";inp.value=S.texts[sub.id]||"";
@@ -1757,7 +1788,7 @@ function clearAllFn(){S.topics.clear();S.topicMeta={};S.checks={};S.texts={};S.f
 function buildSpec(){
   const checks={},pickers={},texts={};
   const walk=(node)=>{
-    if(node.type==="check"||node.type==="check-flat"){const v=[...(S.checks[node.id]||[])];if(v.length)checks[node.id]=v;}
+    if(node.type==="check"||node.type==="check-flat"||node.type==="hierarchy"){const v=[...(S.checks[node.id]||[])];if(v.length)checks[node.id]=v;}
     else if(node.type==="text"){if(S.texts[node.id])texts[node.id]=S.texts[node.id];}
     else if(node.type==="picker"){
       const op=S.ops[node.id]||(node.ops||["in"])[0];const mode=OP_META[op]?.mode;
