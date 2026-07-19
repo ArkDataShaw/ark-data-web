@@ -1464,7 +1464,7 @@ function renderLocation(body,sub){
     // "N zips in Xmi of ZIP" disclosure with removable chips + Clear. Client-side haversine
     // over ZIP_LOOKUP.centroids; resolved ZIPs ride spec.loc.*.zip at Search-time.
     const rad=L.radius;
-    if(L.zipMode===undefined)L.zipMode=rad?"radius":"manual";
+    if(L.zipMode===undefined)L.zipMode=(L.zip.size&&!rad)?"manual":"radius"; // [CORE] Radius default (mockup bb640e2 + app b64453a): manual only when hand-entered ZIPs exist sans radius
     const zseg=`<div class="loc-seg" style="grid-template-columns:1fr 1fr;margin-bottom:8px">
         <button data-zm="manual" class="${L.zipMode==='manual'?'on':''}">Manual</button>
         <button data-zm="radius" class="${L.zipMode==='radius'?'on':''}">Radius</button>
