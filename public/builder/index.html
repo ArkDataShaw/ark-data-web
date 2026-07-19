@@ -169,6 +169,11 @@
   .pk-row:last-child{border-bottom:0}
   .pk-row:hover{background:var(--slate-50)}
   .pk-row.sel{background:var(--violet-50);color:var(--violet);font-weight:600}
+  .pk-row.excl{background:#fef2f2;color:#dc2626;font-weight:600}
+  /* [CORE] tri-toggle box (include ✓ → exclude ⊘ → unset) — DESKTOP/TABLET/MOBILE */
+  .pk-row .tri{width:15px;height:15px;flex-shrink:0;border:1.5px solid var(--slate-300);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;line-height:1;background:#fff}
+  .pk-row .tri.inc{background:var(--violet);border-color:var(--violet);color:#fff}
+  .pk-row .tri.exc{background:#dc2626;border-color:#dc2626;color:#fff}
   .pk-row input{pointer-events:none;accent-color:var(--violet);flex-shrink:0}
   .pk-empty{padding:14px;font-size:12px;color:var(--slate-400);text-align:center}
   .pk-row.disabled{opacity:.4;cursor:not-allowed}
@@ -1160,7 +1165,7 @@ const LABELS={}; SIDEBAR.forEach(c=>{LABELS[c.id]=c.label;(c.subs||[]).forEach(s
 // ---------- state ----------
 // US states (50 + DC) for the Location State dropdown
 const STATE_OPTS=[["AL","Alabama"],["AK","Alaska"],["AZ","Arizona"],["AR","Arkansas"],["CA","California"],["CO","Colorado"],["CT","Connecticut"],["DE","Delaware"],["DC","District of Columbia"],["FL","Florida"],["GA","Georgia"],["HI","Hawaii"],["ID","Idaho"],["IL","Illinois"],["IN","Indiana"],["IA","Iowa"],["KS","Kansas"],["KY","Kentucky"],["LA","Louisiana"],["ME","Maine"],["MD","Maryland"],["MA","Massachusetts"],["MI","Michigan"],["MN","Minnesota"],["MS","Mississippi"],["MO","Missouri"],["MT","Montana"],["NE","Nebraska"],["NV","Nevada"],["NH","New Hampshire"],["NJ","New Jersey"],["NM","New Mexico"],["NY","New York"],["NC","North Carolina"],["ND","North Dakota"],["OH","Ohio"],["OK","Oklahoma"],["OR","Oregon"],["PA","Pennsylvania"],["RI","Rhode Island"],["SC","South Carolina"],["SD","South Dakota"],["TN","Tennessee"],["TX","Texas"],["UT","Utah"],["VT","Vermont"],["VA","Virginia"],["WA","Washington"],["WV","West Virginia"],["WI","Wisconsin"],["WY","Wyoming"]];
-const newLoc=()=>({tab:"state",state:new Set(),city:new Set(),metro:new Set(),zip:new Set()});
+const newLoc=()=>({tab:"state",state:new Set(),city:new Set(),metro:new Set(),zip:new Set(),excludeState:new Set(),excludeCity:new Set()}); // [CORE] tri-state excludes (port of mockup af0db86, Shaw 2026-07-19) — DESKTOP/TABLET/MOBILE
 let S={mode:"standard",cls:"consumer",
   topics:new Set(), topicMeta:{}, checks:{}, texts:{}, freetext:"",
   picks:{}, ops:{}, search:{}, single:{}, contactReq:{},
@@ -1189,7 +1194,7 @@ function subCount(s){
   if(s.type==="check") s.options.forEach(o=>{if(S.checks[s.id]?.has(o)&&!_supp('check:'+s.id+':'+o))n++;});
   else if(s.type==="text" && S.texts[s.id]) n++;
   else if(s.type==="picker") n+=pickerActive(s);
-  else if(s.type==="location"){const L=S.loc[s.group];const c=(setv,tab)=>{let x=0;setv.forEach(v=>{if(!_supp('loc:'+s.group+':'+tab+':'+v))x++;});return x;};n+=c(L.state,'state')+c(L.city,'city')+(L.metro?c(L.metro,'metro'):0)+c(L.zip,'zip');}
+  else if(s.type==="location"){const L=S.loc[s.group];const c=(setv,tab)=>{let x=0;setv.forEach(v=>{if(!_supp('loc:'+s.group+':'+tab+':'+v))x++;});return x;};n+=c(L.state,'state')+c(L.city,'city')+(L.metro?c(L.metro,'metro'):0)+c(L.zip,'zip')+(L.excludeState?L.excludeState.size:0)+(L.excludeCity?L.excludeCity.size:0);}
   return n;
 }
 function catCount(cat){
@@ -1434,8 +1439,15 @@ function renderLocation(body,sub){
     const q=(S.search[sub.id]||"").toLowerCase();
     const list=body.querySelector(`#loclist-${sub.id}`);
     const draw=()=>{const qq=(S.search[sub.id]||"").toLowerCase();const opts=STATE_OPTS.filter(([c,n])=>n.toLowerCase().includes(qq)||c.toLowerCase()===qq);
-      list.innerHTML=opts.map(([c,n])=>{const sel=L.state.has(c)&&!_supp('loc:'+sub.group+':state:'+c);return `<div class="pk-row${sel?' sel':''}" data-c="${c}"><input type="checkbox" ${sel?'checked':''}><span>${n} <span class="trow-cat">${c}</span></span></div>`;}).join("")||`<div class="pk-empty">No match</div>`;
-      list.querySelectorAll(".pk-row").forEach(r=>r.onclick=()=>{const c=r.dataset.c;L.state.has(c)?L.state.delete(c):L.state.add(c);renderSidebar();sync();});};
+      // [CORE] tri-toggle rows: none → include ✓ → exclude red ⊘ → none (mockup af0db86). _supp keeps
+      // the demo's not-yet-landed chip suppression on the include state. DESKTOP/TABLET/MOBILE.
+      list.innerHTML=opts.map(([c,n])=>{const inc=L.state.has(c)&&!_supp('loc:'+sub.group+':state:'+c),exc=L.excludeState.has(c);
+        return `<div class="pk-row${inc?' sel':exc?' excl':''}" data-c="${c}"><span class="tri${inc?' inc':exc?' exc':''}">${inc?'✓':exc?'⊘':''}</span><span>${n} <span class="trow-cat">${c}</span></span></div>`;}).join("")||`<div class="pk-empty">No match</div>`;
+      list.querySelectorAll(".pk-row").forEach(r=>r.onclick=()=>{const c=r.dataset.c;
+        if(L.state.has(c)){L.state.delete(c);L.excludeState.add(c);}
+        else if(L.excludeState.has(c)){L.excludeState.delete(c);}
+        else{L.state.add(c);}
+        renderSidebar();sync();});};
     draw();
     body.querySelector(`#locsearch-${sub.id}`).oninput=e=>{S.search[sub.id]=e.target.value;draw();};
   }else if(L.tab==="city"){
@@ -1464,14 +1476,19 @@ function renderLocation(body,sub){
         var key=nm+", "+st;
         var popLabel=pop>=1000000?(Math.round(pop/100000)/10)+"M":pop>=1000?Math.round(pop/1000)+"K":"";
         var label=nm+' <span class="trow-cat">'+st+(popLabel?" | "+popLabel:"")+'</span>';
-        html+='<div class="pk-row'+(L.city.has(key)?" sel":"")+'" data-c="'+key.replace(/"/g,"&quot;")+'" data-type="city"><input type="checkbox" '+(L.city.has(key)?"checked":"")+"><span>"+label+"</span></div>";
+        var cInc=L.city.has(key),cExc=L.excludeCity.has(key);
+        html+='<div class="pk-row'+(cInc?" sel":cExc?" excl":"")+'" data-c="'+key.replace(/"/g,"&quot;")+'" data-type="city"><span class="tri'+(cInc?" inc":cExc?" exc":"")+'">'+(cInc?"✓":cExc?"⊘":"")+"</span><span>"+label+"</span></div>";
       });
       if(!html){clist.innerHTML='<div class="pk-empty">No match -- press Enter to add "'+q.replace(/</g,"&lt;")+'"</div>';return;}
       clist.innerHTML=html;
       clist.querySelectorAll(".pk-row").forEach(function(rw){rw.onclick=function(){
         var c=rw.dataset.c,t=rw.dataset.type;
         if(t==="metro"){L.metro.has(c)?L.metro.delete(c):L.metro.add(c);}
-        else{L.city.has(c)?L.city.delete(c):L.city.add(c);}
+        else{ // [CORE] tri-cycle (mockup af0db86)
+          if(L.city.has(c)){L.city.delete(c);L.excludeCity.add(c);}
+          else if(L.excludeCity.has(c)){L.excludeCity.delete(c);}
+          else{L.city.add(c);}
+        }
         renderSidebar();sync();
       };});
     };
@@ -1591,6 +1608,7 @@ function gatherChips(){
       out.push({grp:LOC_LABEL[g],v,rm:()=>L.state.clear()});
     }
     if(L.excludeState)[...L.excludeState].forEach(v=>out.push({grp:LOC_LABEL[g],v,exclude:true,rm:()=>{if(L.excludeState.delete)L.excludeState.delete(v);}}));
+    if(L.excludeCity)[...L.excludeCity].forEach(v=>out.push({grp:LOC_LABEL[g],v,exclude:true,rm:()=>{if(L.excludeCity.delete)L.excludeCity.delete(v);}}));
     L.city.forEach(v=>out.push({grp:LOC_LABEL[g],v,rm:()=>L.city.delete(v)}));
     if(L.metro)L.metro.forEach(v=>{var dName=v;if(typeof US_METROS!=="undefined"){var found=US_METROS.find(function(x){return x.n===v;});if(found)dName=found.n;}out.push({grp:LOC_LABEL[g],v:dName,rm:()=>L.metro.delete(v)});});
     L.zip.forEach(v=>out.push({grp:LOC_LABEL[g],v,rm:()=>L.zip.delete(v)}));
@@ -1774,7 +1792,10 @@ function buildSpec(){
     });}
     if(allStates.size)o.state=[...allStates];
     if(allCities.size)o.city=[...allCities];
-    if(allZips.size)o.zip=[...allZips];if(Object.keys(o).length)loc[g]=o;});
+    if(allZips.size)o.zip=[...allZips];
+    if(L.excludeState&&L.excludeState.size)o.excludeState=[...L.excludeState];
+    if(L.excludeCity&&L.excludeCity.size)o.excludeCity=[...L.excludeCity].map(function(v){return String(v).split(", ")[0];}); // "City, ST" → bare city
+    if(Object.keys(o).length)loc[g]=o;});
   return {mode:S.mode,cls:S.cls,timeframe:S.timeframe,topics,checks,pickers,texts,loc,
     contactReq:{...S.contactReq},
     name:(document.getElementById("audname").value||"").trim()||buildAudienceTitle()};
