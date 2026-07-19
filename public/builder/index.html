@@ -1558,6 +1558,15 @@ function renderLocation(body,sub){
     cinp.onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();var v=(S.search["city_"+sub.id]||"").trim();if(v){L.city.add(v);S.search["city_"+sub.id]="";renderSidebar();sync();}}};
     cdraw();
   }else{
+    // [CORE] radius needs ZIP_LOOKUP, which the payload diet width-gates to >1000px (line ~761,
+    // mobile demo diet). Lazy-load it on first Zip-tab open at ANY width so radius works on
+    // mobile/tablet free-play too; Search no-ops gracefully until it lands, then re-render arms it.
+    if(typeof ZIP_LOOKUP==="undefined"&&!window.__zipLookupPending){
+      window.__zipLookupPending=true;
+      var _zl=document.createElement("script");_zl.src="zip-lookup.js";
+      _zl.onload=function(){renderSidebar();};
+      document.head.appendChild(_zl);
+    }
     body.querySelectorAll('[data-zm]').forEach(b=>b.onclick=()=>{L.zipMode=b.dataset.zm;renderSidebar();});
     if(L.zipMode==="manual"){
       body.querySelector(`#loczip-${sub.id}`).oninput=e=>{L.zip=new Set(e.target.value.split(/[\s,]+/).map(s=>s.trim()).filter(z=>/^\d{5}$/.test(z)));sync();};
