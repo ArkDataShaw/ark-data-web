@@ -1202,7 +1202,7 @@ function subCount(s){
   else if(s.type==="hierarchy") (s.hierarchy||[]).forEach(g=>g.children.forEach(o=>{if(S.checks[s.id]?.has(o)&&!_supp('check:'+s.id+':'+o))n++;}));
   else if(s.type==="text" && S.texts[s.id]) n++;
   else if(s.type==="picker") n+=pickerActive(s);
-  else if(s.type==="location"){const L=S.loc[s.group];const c=(setv,tab)=>{let x=0;setv.forEach(v=>{if(!_supp('loc:'+s.group+':'+tab+':'+v))x++;});return x;};n+=c(L.state,'state')+c(L.city,'city')+(L.metro?c(L.metro,'metro'):0)+c(L.zip,'zip')+(L.excludeState?L.excludeState.size:0)+(L.excludeCity?L.excludeCity.size:0);}
+  else if(s.type==="location"){const L=S.loc[s.group];const c=(setv,tab)=>{let x=0;setv.forEach(v=>{if(!_supp('loc:'+s.group+':'+tab+':'+v))x++;});return x;};n+=c(L.state,'state')+c(L.city,'city')+(L.metro?c(L.metro,'metro'):0)+c(L.zip,'zip')+(L.excludeState?L.excludeState.size:0)+(L.excludeCity?L.excludeCity.size:0)+(L.radius?1:0);}
   return n;
 }
 function catCount(cat){
@@ -1459,7 +1459,38 @@ function renderLocation(body,sub){
   }else if(L.tab==="city"){
     inputHTML=`<input class="topicsearch" id="locin-${sub.id}" placeholder="Search cities..." value="${(S.search['city_'+sub.id]||'').replace(/"/g,'&quot;')}"><div class="pk-list" id="loccity-${sub.id}"></div><div class="pk-help">Type a city, press Enter to add.</div>`;
   }else{
-    inputHTML=`<textarea class="freetext" id="loczip-${sub.id}" placeholder="Comma-separated ZIPs, e.g. 34102, 33139, 90210" style="min-height:64px">${[...L.zip].join(", ")}</textarea><div class="pk-help">5-digit ZIPs, comma or space separated.</div>`;
+    // [CORE] ZIP tab, app-parity (mockup 563930c) — DESKTOP/TABLET/MOBILE. Manual | Radius
+    // sub-mode; radius = center ZIP + 1-100mi slider + gated Search; result = expandable
+    // "N zips in Xmi of ZIP" disclosure with removable chips + Clear. Client-side haversine
+    // over ZIP_LOOKUP.centroids; resolved ZIPs ride spec.loc.*.zip at Search-time.
+    const rad=L.radius;
+    if(L.zipMode===undefined)L.zipMode=rad?"radius":"manual";
+    const zseg=`<div class="loc-seg" style="grid-template-columns:1fr 1fr;margin-bottom:8px">
+        <button data-zm="manual" class="${L.zipMode==='manual'?'on':''}">Manual</button>
+        <button data-zm="radius" class="${L.zipMode==='radius'?'on':''}">Radius</button>
+      </div>`;
+    if(L.zipMode==="manual"){
+      inputHTML=zseg+`<textarea class="freetext" id="loczip-${sub.id}" placeholder="Comma-separated ZIPs, e.g. 34102, 33139, 90210" style="min-height:64px">${[...L.zip].join(", ")}</textarea><div class="pk-help">5-digit ZIPs, comma or space separated.</div>`;
+    }else{
+      const miles=L.radDraftMiles!=null?L.radDraftMiles:(rad?rad.miles:25);
+      const czip=L.radDraftZip!=null?L.radDraftZip:(rad?rad.zip:'');
+      inputHTML=zseg+`
+        <input class="topicsearch" id="radzip-${sub.id}" placeholder="Center ZIP, e.g. 34102" maxlength="5" inputmode="numeric" value="${czip}">
+        <div style="display:flex;align-items:center;gap:8px;margin:8px 0">
+          <input type="range" id="radmi-${sub.id}" min="1" max="100" value="${miles}" style="flex:1;accent-color:var(--violet)">
+          <span id="radmiv-${sub.id}" style="font-size:12px;color:var(--slate-500);min-width:42px;text-align:right;font-variant-numeric:tabular-nums">${miles} mi</span>
+        </div>
+        <button class="pk-addbtn" id="radgo-${sub.id}" style="width:100%;padding:8px 0${/^\d{5}$/.test(czip)?'':';opacity:.4'}">Search</button>
+        ${rad?`
+        <div style="margin-top:8px">
+          <div id="raddisc-${sub.id}" style="font-size:13px;font-weight:600;color:var(--violet);cursor:pointer;display:flex;align-items:center;gap:6px">
+            <span id="raddiscch-${sub.id}" style="display:inline-block;font-size:15px;transition:transform .2s${L.radExpanded?';transform:rotate(180deg)':''}">\u25be</span>
+            ${rad.zips.length} zips in ${rad.miles}mi of ${rad.zip}
+          </div>
+          <div class="pk-chips" id="radchips-${sub.id}" style="margin-top:6px;max-height:160px;overflow-y:auto;${L.radExpanded?'':'display:none'}">${rad.zips.map(z=>`<span class="pk-chip" data-z="${z}">${z}<span class="x">\u2715</span></span>`).join('')}</div>
+          <button id="radclear-${sub.id}" style="margin-top:8px;background:var(--slate-100);border:1px solid var(--slate-300);border-radius:8px;color:var(--violet);font-size:12px;font-weight:600;padding:6px 14px;cursor:pointer;width:100%">Clear radius</button>
+        </div>`:''}`;
+    }
   }
   body.innerHTML=`<div class="loc-seg" id="locseg-${sub.id}">${tabs.map(([v,l])=>`<button data-v="${v}" class="${L.tab===v?'on':''}">${l}</button>`).join("")}</div>${inputHTML}${chips()}`;
   // tab toggle
@@ -1527,7 +1558,40 @@ function renderLocation(body,sub){
     cinp.onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();var v=(S.search["city_"+sub.id]||"").trim();if(v){L.city.add(v);S.search["city_"+sub.id]="";renderSidebar();sync();}}};
     cdraw();
   }else{
-    body.querySelector(`#loczip-${sub.id}`).oninput=e=>{L.zip=new Set(e.target.value.split(/[\s,]+/).map(s=>s.trim()).filter(z=>/^\d{5}$/.test(z)));sync();};
+    body.querySelectorAll('[data-zm]').forEach(b=>b.onclick=()=>{L.zipMode=b.dataset.zm;renderSidebar();});
+    if(L.zipMode==="manual"){
+      body.querySelector(`#loczip-${sub.id}`).oninput=e=>{L.zip=new Set(e.target.value.split(/[\s,]+/).map(s=>s.trim()).filter(z=>/^\d{5}$/.test(z)));sync();};
+    }else{
+      const zinEl=body.querySelector(`#radzip-${sub.id}`),miEl=body.querySelector(`#radmi-${sub.id}`),
+            miV=body.querySelector(`#radmiv-${sub.id}`),goEl=body.querySelector(`#radgo-${sub.id}`);
+      zinEl.oninput=e=>{const v=e.target.value.replace(/\D/g,'').slice(0,5);e.target.value=v;L.radDraftZip=v;goEl.style.opacity=/^\d{5}$/.test(v)?'':'0.4';};
+      miEl.oninput=e=>{L.radDraftMiles=parseInt(e.target.value,10);miV.textContent=L.radDraftMiles+" mi";};
+      const doSearch=()=>{
+        const zin=zinEl.value.trim(),mi=parseInt(miEl.value,10);
+        if(!/^\d{5}$/.test(zin)||!(mi>0))return;
+        const C=(typeof ZIP_LOOKUP!=="undefined")&&ZIP_LOOKUP.centroids;
+        const ctr=C&&C[zin];if(!ctr)return;
+        const R=3959,rd=Math.PI/180,la1=ctr[0]*rd,zips=[];
+        for(const z in C){const c=C[z];const dLa=(c[0]-ctr[0])*rd,dLo=(c[1]-ctr[1])*rd;
+          const a=Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(la1)*Math.cos(c[0]*rd)*Math.sin(dLo/2)*Math.sin(dLo/2);
+          if(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))<=mi)zips.push(z);}
+        L.radius={zip:zin,miles:mi,zips:zips};L.radDraftZip=null;L.radDraftMiles=null;
+        renderSidebar();sync();
+      };
+      goEl.onclick=doSearch;
+      zinEl.onkeydown=e=>{if(e.key==="Enter")doSearch();};
+      const disc=body.querySelector(`#raddisc-${sub.id}`);
+      if(disc)disc.onclick=()=>{L.radExpanded=!L.radExpanded;renderSidebar();};
+      const chipsEl=body.querySelector(`#radchips-${sub.id}`);
+      if(chipsEl)chipsEl.querySelectorAll('.pk-chip .x').forEach(x=>x.onclick=e=>{
+        const z=e.target.closest('.pk-chip').dataset.z;
+        L.radius.zips=L.radius.zips.filter(v=>v!==z);
+        if(!L.radius.zips.length)L.radius=null;
+        renderSidebar();sync();
+      });
+      const clr=body.querySelector(`#radclear-${sub.id}`);
+      if(clr)clr.onclick=()=>{L.radius=null;L.radDraftZip=null;L.radDraftMiles=null;renderSidebar();sync();};
+    }
   }
 }
 function renderPicker(body,sub){
@@ -1640,6 +1704,7 @@ function gatherChips(){
     }
     if(L.excludeState)[...L.excludeState].forEach(v=>out.push({grp:LOC_LABEL[g],v,exclude:true,rm:()=>{if(L.excludeState.delete)L.excludeState.delete(v);}}));
     if(L.excludeCity)[...L.excludeCity].forEach(v=>out.push({grp:LOC_LABEL[g],v,exclude:true,rm:()=>{if(L.excludeCity.delete)L.excludeCity.delete(v);}}));
+    if(L.radius)out.push({grp:LOC_LABEL[g],v:L.radius.miles+"mi of "+L.radius.zip,rm:()=>{L.radius=null;}});
     L.city.forEach(v=>out.push({grp:LOC_LABEL[g],v,rm:()=>L.city.delete(v)}));
     if(L.metro)L.metro.forEach(v=>{var dName=v;if(typeof US_METROS!=="undefined"){var found=US_METROS.find(function(x){return x.n===v;});if(found)dName=found.n;}out.push({grp:LOC_LABEL[g],v:dName,rm:()=>L.metro.delete(v)});});
     L.zip.forEach(v=>out.push({grp:LOC_LABEL[g],v,rm:()=>L.zip.delete(v)}));
@@ -1823,6 +1888,7 @@ function buildSpec(){
     });}
     if(allStates.size)o.state=[...allStates];
     if(allCities.size)o.city=[...allCities];
+    if(L.radius&&L.radius.zips)L.radius.zips.forEach(function(z){allZips.add(z);}); // [CORE] radius → ZIP list
     if(allZips.size)o.zip=[...allZips];
     if(L.excludeState&&L.excludeState.size)o.excludeState=[...L.excludeState];
     if(L.excludeCity&&L.excludeCity.size)o.excludeCity=[...L.excludeCity].map(function(v){return String(v).split(", ")[0];}); // "City, ST" → bare city
