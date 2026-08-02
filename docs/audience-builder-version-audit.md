@@ -292,3 +292,41 @@ Open: *(none — B5 resolved 2026-07-17: Shaw chose "Companies"; shipped to both
 ---
 
 *Audit complete. All ✅/✗ cells above are grep/read-verified against code as of 2026-07-13 (ark-data-web HEAD `31841a0`, mockup HEAD `fc5be20`). No builder code was modified.*
+
+---
+
+## 7. 2026-08-02 full-family surface census (Audience-Builder-Audit-2, read-only)
+
+Mission-0 deep research across the grown builder family (init `4b7ed9d`). All findings grep/read-verified; **no code modified**.
+
+### 7.1 Surface inventory & classification
+
+| # | Surface | Repo / entry | Class | Deploy / URL | Last activity | Owning lineage |
+|---|---|---|---|---|---|---|
+| 1 | HTML standalone + proposals embed | `audience-builder-mockup/index.html` + netlify fn | LIVE | `./deploy.sh` → arkdata-audience-builder-demo | 07-22 `0a66838` | proposals-fable-6 (tmux) drives #5 side; #1 core quiet |
+| 2 | React standalone (standard) | `audience-builder-react` | LIVE | netlify (site 7cdff50a…) | 08-02 `a108b1e` | custom-intent lineage (active TODAY) |
+| 3 | app.arkdata.io | `arkdata/apps/web` | LIVE (reference) | deploy-arkdata.sh | ongoing | many app lineages |
+| 4 | arkdata.io vendored | `ark-data-web/public/builder/` | LIVE | git CI push=deploy | **frozen at `0e48df5`** — zero drift since 07-20 | opus-5 tmux GONE — push protocol unowned |
+| 5 | proposal-builder native charts | `audience-builder-mockup/proposal-builder.html` | LIVE | gcp-proposals/deploy.sh → proposals.arkdata.io | 07-22, 21 commits | proposals-fable-6 |
+| 6 | Custom-intent mode | `audience-builder-react` (mode:'custom') | LIVE feature | same netlify as #2 | 08-02 | custom-intent lineage |
+| 7 | proposals-refactor React replica | `proposals-refactor/app` | LIVE dev — **GO HAPPENED** (~07-27, Phase 2.5 audience fold-in) | proposals-react-replica.netlify.app | 08-02 (mobile UX) | proposals-refactor tmux |
+| 8a | `proposal-builder` repo | 1 commit, 06-28 | STALE snapshot fork of mockup proposal files | (deploys via its own gcp-proposals copy) | 06-28 | none |
+| 8b | `arkdata-customintent` | feat/custom-intent-meta-ca | BACKEND only (Meta-CA callables + platform_admin ops UI; no builder UI) | firebase | 07-24 | merge lineages |
+| 8c | `arkdata-proposals-foldin` | feat/proposals-foldin | PREP — Phases 1–3 done, flag-gated, NOT merged/deployed; iframes builder, no builder copy | — | 07-26 | proposals fold-in lineage |
+| 8d | `arkdata-reports@feat/reports-phase3-builder` | reports builder (Canvas/EditorRail + proposal-parity.css) | LIVE dev — REPORTS builder, **not** an audience-builder port | app domain | 07-28 | reports-page-2 tmux |
+| 8e | `SimpleAudienceMobile` | failover-work | DEAD (git corrupted, last 2026-03) | — | 03-27 | none |
+| 8f | `arkdata-audiences-mobile` | Next.js mobile builder | DORMANT independent build (ground-up, not a port; 2 commits, last 05-08) | netlify | 05-08 | none |
+
+### 7.2 Drift verdicts vs the 07-20 parity baseline (`ca896ef`/`85602f3`/`4bad5b7`)
+
+- **#1 core: SAFE.** 27 mockup commits since 85602f3 → 21 are #5-only (templates/AI-compose/drag-resize/asset library), 3 docs. Only 3 touch index.html/fn: `945d340` (26s AbortController budget → structured 504 in fn dm(); client retry loop), `b9db7e6` (4s/10s retry backoff), `4ff5119` (map-snapshot postMessage for drag ghosts). **Resolver semantics (department, seniority hier, insightsAgg shape) untouched since `4bad5b7`.** No chart/popover behavior changes.
+- **#2/#6: standard mode untouched** by the custom-intent lineage — custom is additive (early-return in Sidebar.tsx:32, separate CustomFilterPanel, guards in App.tsx). Custom mode shares NO parity-item components: no location/hierarchy/checkbox/donut code paths (all N/A or separate). `void pc` debt: GONE. StatRow tooltip: present (different wording than the spec'd "Save the audience…" — verify intent).
+- **#4: ZERO drift** — no commits, clean tree.
+- **#3: no new builder-UI work** on feat/managed-audience-pipeline beyond the known Arc-2 set; main additionally carries brand-theming batches touching audience.css/donuts (`d367e37`,`c282618`,`bad6b76`,`0bbe058`) + dataflows rebrand — main is 581 commits ahead of the feature branch (sharp divergence, but builder parity items all present on both).
+- **#7 proposals-refactor: RE-SYNCED, not drift-dated anymore.** All 7 tracked post-`395c99d` fixes verified PRESENT in `app/src/audience/`: department field (resolver.js:74), seniority hierarchy (filters.ts:83), .cbrow −10px (index.css:577), radius (store.tsx:21), tri-excludes (store.tsx:244), border-leak (index.css:557), embed layout (InsightsShell.tsx:28). Runs its OWN netlify resolver (not the mockup fn). The §7-reconciliation task from the 07-20 handoff is **CLOSED**.
+- **LIGHT/HEAVY tier: NOT shipped** — no `sections`/`include` tier params, no tier routing anywhere in arkdata. L2+L3 stays PARKED.
+
+### 7.3 New inputs addressed to this lineage
+
+- `audience-builder-react` `a108b1e` (2026-08-02): `docs/PATTERN-accordion-single-open.md` — a single-open accordion spec explicitly "for audience-builder-audit". Calls the standard sidebar's `openAcc: string[]` an anti-pattern → convert to `string | null` across surfaces. **Awaiting Shaw's confirmation before acting.**
+- Mockup untracked docs `IMPL_strip-thickness-chip-density.md` + `IMPL_sub-filter-activity-dot.md`: parity work assigned to `datamoon-audience-api-15` (another agent) — not ours.
