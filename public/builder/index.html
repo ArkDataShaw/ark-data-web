@@ -1237,14 +1237,7 @@ function renderSidebar(){
     item.innerHTML=`<button class="acc-trigger"><span class="acc-ico"><i data-lucide="${cat.ico}"></i></span><span class="acc-label">${labelTxt}</span>${cnt?`<span class="acc-badge">${cnt}</span>`:""}<span class="acc-chev">▾</span></button><div class="acc-body"></div>`;
     item.querySelector(".acc-trigger").onclick=()=>{
       const nowOpen=!S.openAcc.has(cat.id);
-      // Single-open (user clicks only — the scripted demo stages multi-member Sets and must keep rendering them):
-      // opening a category collapses any other open one and resets the sub level.
-      if(nowOpen){
-        [...accRoot.querySelectorAll(".acc-item.open")].forEach(el=>{if(el!==item)el.classList.remove("open");});
-        [...accRoot.querySelectorAll(".sub.open")].forEach(el=>el.classList.remove("open")); // strip stale sub DOM (no re-render here)
-        S.openAcc.clear();S.openSub.clear();
-        S.openAcc.add(cat.id);
-      }else S.openAcc.delete(cat.id);
+      if(nowOpen)S.openAcc.add(cat.id);else S.openAcc.delete(cat.id);
       item.classList.toggle("open",nowOpen);
     };
     const inner=document.createElement("div");inner.className="acc-body-in";
@@ -1384,7 +1377,7 @@ function renderBody(cat){
     if(isOpen!==wasOpen) subAnim.push({el:sd,open:isOpen}); // ...animate to target (flushed by renderSidebar)
     const hasFilter=subCount(sub)>0; // presence dot when this subcategory has an active filter
     sd.innerHTML=`<div class="sub-h"><span class="sub-hl">${sub.label}<i class="sub-dot${hasFilter?' on':''}"></i></span><span class="sub-sign">${isOpen?'−':'+'}</span></div><div class="sub-body"><div class="sub-body-in"></div></div>`;
-    sd.querySelector(".sub-h").onclick=()=>{if(isOpen)S.openSub.delete(sub.id);else{S.openSub.clear();S.openSub.add(sub.id);}renderSidebar();};
+    sd.querySelector(".sub-h").onclick=()=>{isOpen?S.openSub.delete(sub.id):S.openSub.add(sub.id);renderSidebar();};
     const body=sd.querySelector(".sub-body-in");
     if(sub.type==="check"){
       // Net worth & Household income: show the compact band labels from the chart bars (nwLabel/
@@ -1848,7 +1841,7 @@ document.addEventListener("scroll",repositionOpenDropdowns,true); // capture pha
 function setMode(m){
   S.mode=m;
   document.querySelectorAll(".modeswitch button").forEach(x=>x.classList.toggle("active",x.dataset.mode===m));
-  if(m==="custom"){S.openAcc.clear();S.openSub.clear();S.openAcc.add("topics");} // single-open slot write (also drops any stale sub)
+  if(m==="custom")S.openAcc.add("topics");
   renderSidebar();sync();
 }
 document.querySelectorAll(".modeswitch button").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
