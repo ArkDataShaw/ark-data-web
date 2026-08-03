@@ -364,3 +364,5 @@ Full-codebase sweep of every remaining surface (read-only). Residual check on #2
 | #7 proposals-refactor | handed to its lineage (tmux, recipe at /tmp/audit2-to-proposals-refactor-singleopen.md incl. the css `>` combinator upgrade) | — | pending their ship + my verify |
 
 Vanilla twin delta vs the react diff: the Set container is KEPT (demo staging needs multi-member) and the category handler additionally strips sibling `.acc-item.open` + stale `.sub.open` classes because it toggles DOM directly without re-render.
+
+**§7.6 addendum — #7 SHIPPED + VERIFIED (2026-08-03):** proposals-refactor `338add2` (their lineage, per the handoff recipe): exact reference diff + the index.css:507 descendant→`>` upgrade; 11 tests pass. Independently verified by Audit-2: zero residual array-shaped consumers (grep), live bundle on proposals-react-replica.netlify.app carries the slot model, and CDP acceptance on the deployed audience page passes (open B closes A, sub resets on parent switch, click-again closes all, 0.3s grid-rows transition intact). **Single-open accordion rollout: ALL FIVE surfaces live. Family closed.**
