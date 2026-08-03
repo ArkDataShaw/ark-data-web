@@ -352,3 +352,15 @@ Full-codebase sweep of every remaining surface (read-only). Residual check on #2
 **#7 proposals-refactor — 95% mechanical vs 87d9b41.** store.tsx :45-46/:74-75/:154-155/:176-177 + Sidebar.tsx :78/:108 map 1:1 (copy the reference ternaries exactly — its current setMode lacks the openSub reset). One divergence found: index.css:507 uses the DESCENDANT selector `.acc-item.open .acc-body` where every other surface uses child `>` — recommend upgrading in the same pass. Mobile filter popover (ceb089b) reuses the same Sidebar/state — no separate port. restore() :266 discards accordion state by design; no persistence, no tests. Their lineage applies; we verify.
 
 **Execution order:** #3 app → #1 mockup → #4 vendored (blocked on push-owner decision) → #7 handoff. Per-surface acceptance = opus-8's §7 checklist (single-open at both levels, sub reset on parent switch, animation intact, collapsed override, mode-switch auto-open, responsive parity).
+
+### 7.6 Single-open rollout — EXECUTED 2026-08-03 (per-surface ship log)
+
+| Surface | Commit | Deploy | Verification |
+|---|---|---|---|
+| #2 react standalone | `87d9b41` (opus-8) | netlify prod | §7 checklist 10/10, desktop+mobile |
+| #3 app.arkdata.io | `2dfb4d7` (feat) → main `1119593` via merge-8 (branch discipline: direct main push now hook-blocked; merge-agent flow) | CI 30842418087, hosting verified live | vite exit 0 + tsc clean both branches; identical diff to reference |
+| #1 mockup | `ff7dd44` | `./deploy.sh`, patch confirmed live | CDP: single-open both levels, sub reset on parent switch, collapsed override, grid-rows anim. Found+fixed in-pass: category click handler doesn't re-render, so stale `.sub.open` DOM classes had to be stripped in the handler |
+| #4 vendored | `cf46e62` | push=CI, patch confirmed live on arkdata.io | CDP free-play + **full wheel-driven scroll-demo regression**: beats walk `['topics','personal']+homeowner → geo+loc_personal → personal+networth` and unwind in reverse identically; scripted multi-member staging renders untouched (enforcement is click-handler-only); Sets remain Sets (embed-script sameSet/replace unaffected). NOTE: demo is wheel-gesture-driven — `window.scrollTo` does NOT advance beats (harness must dispatch `Input.dispatchMouseEvent mouseWheel`) |
+| #7 proposals-refactor | handed to its lineage (tmux, recipe at /tmp/audit2-to-proposals-refactor-singleopen.md incl. the css `>` combinator upgrade) | — | pending their ship + my verify |
+
+Vanilla twin delta vs the react diff: the Set container is KEPT (demo staging needs multi-member) and the category handler additionally strips sibling `.acc-item.open` + stale `.sub.open` classes because it toggles DOM directly without re-render.
