@@ -6,7 +6,7 @@
 <title>Audience Builder -- Mockup</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
-<link rel="preconnect" href="https://unpkg.com" crossorigin><link rel="preconnect" href="https://basemaps.cartocdn.com" crossorigin><link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://unpkg.com" crossorigin><link rel="preconnect" href="https://basemaps.cartocdn.com" crossorigin><link rel="preconnect" href="https://tiles.basemaps.cartocdn.com" crossorigin><link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
 <style>
   :root{
     --violet:#7c3aed; --violet-d:#6d28d9; --violet-50:#f5f3ff;
@@ -3292,9 +3292,19 @@ renderSidebar();sync();
   const LINE_COLOR=['interpolate',['linear'],['coalesce',['feature-state','density'],0],0,'rgba(255,255,255,0)',1,'#3b82f6',5,'#6366f1',12,'#8b5cf6',25,'#a855f7',40,'#ef4444',100,'#f87171'];
   const ZIP_FILL=['interpolate',['linear'],['coalesce',['feature-state','density'],0],0,'rgba(0,0,0,0)',1,'#1e3a5f',15,'#2563eb',35,'#7c3aed',60,'#a855f7',80,'#dc2626',100,'#ef4444'];
   const ZIP_LINE=['interpolate',['linear'],['coalesce',['feature-state','density'],0],0,'rgba(255,255,255,0)',1,'#3b82f6',15,'#6366f1',35,'#8b5cf6',60,'#a855f7',80,'#ef4444',100,'#f87171'];
-  const DARK_STYLE={version:8,name:"Dark",
-    sources:{"osm":{type:"raster",tiles:["https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"],tileSize:256,attribution:"© CARTO © OSM"}},
-    layers:[{id:"bg",type:"background",paint:{"background-color":"#0b1020"}},{id:"osm",type:"raster",source:"osm",paint:{"raster-opacity":0.55}}]};
+  // CARTO basemap. The old raster endpoint (basemaps.cartocdn.com/dark_all/...) serves an
+  // "API KEY REQUIRED" watermark tile to unkeyed requests, which is what this map was
+  // showing. The parameter that lifts it is ?key= (NOT ?api_key=, which is silently
+  // ignored and still returns the watermark). We use the vector GL style rather than a
+  // keyed raster URL because it needs no key at all, so this public static file ships no
+  // credential — and it is CARTO's supported current basemap. The product app
+  // (app.arkdata.io) solves the same problem server-side via infra/functions/src/
+  // carto-basemap-proxy.ts in the arkdata monorepo; that proxy is NOT reachable from
+  // arkdata.io, which is served by Netlify, hence the different mechanism here.
+  const DARK_STYLE="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
+  // The raster basemap was painted at 0.55 opacity to sit back behind the choropleth. The
+  // vector style has no single knob for that, so a translucent scrim reproduces the look.
+  const BASEMAP_SCRIM={id:"basemap-scrim",type:"background",paint:{"background-color":"#0b1020","background-opacity":0.45}};
 
   let map=null,ready=false,geoData=null,ids=null,pollTimer=null,seq=0,lastPulled=null;
   // geoSeq: monotonic counter for INSTANT geo updates (client-side narrowing). Async pull
@@ -3337,6 +3347,7 @@ renderSidebar();sync();
     map=window._fullMap=new maplibregl.Map({container:"mapFull",style:DARK_STYLE,bounds:US_BOUNDS,fitBoundsOptions:{padding:24},attributionControl:false});
     map.addControl(new maplibregl.NavigationControl({showCompass:false}),"bottom-right");
     map.on("load",()=>{
+      map.addLayer(BASEMAP_SCRIM);
       map.addSource("counties",{type:"vector",url:`pmtiles://${TILES}/counties.pmtiles`,promoteId:{counties:"GEOID"}});
       map.addSource("zctas",{type:"vector",url:`pmtiles://${TILES}/zctas.pmtiles`,promoteId:{zctas:"GEOID20"}});
       map.addSource("states",{type:"vector",url:`pmtiles://${TILES}/states.pmtiles`,promoteId:{states:"STUSPS"}});
