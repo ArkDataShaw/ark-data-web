@@ -1,3 +1,23 @@
+**Deploying**
+
+This repo builds **arkdata.io**, which is Netlify site `arkdata`
+(`8bd2de42-51d6-49c1-9de6-e8e81fd8da08`). `.netlify/state.json` is gitignored, so a fresh
+clone or a stale link can point `netlify` at the wrong site — it was previously linked to an
+unrelated preview site, where a plain `netlify deploy --prod` would have published
+arkdata.io's content to a preview URL and left arkdata.io untouched. Name the site
+explicitly:
+
+```
+npm run build
+netlify deploy --prod --dir=dist --site 8bd2de42-51d6-49c1-9de6-e8e81fd8da08
+```
+
+Confirm with `netlify status` before deploying: it must say `Current project: arkdata` and
+`Project URL: https://arkdata.io`.
+
+Not to be confused with **app.arkdata.io**, the product app, which lives in the `arkdata`
+monorepo on Firebase Hosting and deploys through GitHub Actions — never from here.
+
 **Welcome to your Base44 project** 
 
 **About**
